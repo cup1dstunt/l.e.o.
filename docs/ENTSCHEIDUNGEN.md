@@ -7,7 +7,7 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
 | E34 | 08.11.2026 | **Design und Farben auf keinen Fall an iDoceo orientieren.** Die iDoceo-Analyse beschreibt nur Aufbau und Rechenlogik | Konstantin |
-| E33 | 08.11.2026 | Halbjahresnoten werden weiter in den **Excel-Tabellen der Schule** eingetragen. L.E.O. zeigt sie keinen anderen Lehrkräften, sondern liefert sie zum Übertragen (Kopieren/Export im passenden Format). **Ersetzt E32** | Konstantin |
+| E33 | 08.11.2026 | Halbjahresnoten werden weiter in den **Excel-Tabellen der Schule** eingetragen. Je Fach wird nur die (Halb-)Jahresendnote **von Hand** übertragen. L.E.O. zeigt sie keinen anderen Lehrkräften und braucht **keinen Export und keine Tabellenvorlage**; die Endnote muss nur klar ablesbar sein. **Ersetzt E32** | Konstantin |
 | E32 | 08.11.2026 | ~~Halbjahresnoten für alle Lehrkräfte einsehbar~~ → **ersetzt durch E33** (Missverständnis) | |
 | E31 | 08.11.2026 | **Doppelsteckung:** Unterrichten zwei oder drei Lehrkräfte **dasselbe Fach im selben Kurs** (z. B. Lernfeld 3), sehen und ändern **alle** das Notenbuch dieses Fachs. Sonst sieht niemand fremde Noten | Konstantin: Doppelsteckungen gibt es, dort ist das sinnvoll |
 | E30 | 08.11.2026 | Ideen aus [IDEEN.md](IDEEN.md) übernommen, außer I33 („Wer sieht das?“), das durch E29 entfällt | Konstantin: „alles gute Ideen“ |

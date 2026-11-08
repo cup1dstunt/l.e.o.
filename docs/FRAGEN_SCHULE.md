@@ -9,7 +9,7 @@
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
 6. ~~V1–V6, V3b~~ beantwortet.
 7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.
-8. Eine leere Vorlage der **Excel-Halbjahresnotentabelle** der Schule (für den Export, E33).
+8. ~~Vorlage der Excel-Halbjahresnotentabelle~~ nicht nötig (E33).
 9. Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
 10. ~~Kriterienraster Selbsteinschätzung~~ erhalten (08.11.2026), gekürzter Entwurf in BEWERTUNGSBOEGEN.md.
 

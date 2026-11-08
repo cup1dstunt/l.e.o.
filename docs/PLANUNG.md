@@ -125,7 +125,7 @@ Endnoten für die Konferenz an die Klassenleitung geben).
 Weitere Punkte:
 - **Doppelsteckung (E31):** Unterrichten zwei oder drei Lehrkräfte dasselbe Fach im selben Kurs (z. B. Lernfeld 3), sehen und ändern alle
   das Notenbuch dieses Fachs. Jede Eingabe zeigt, wer sie gemacht hat. Das ist die **einzige** Ausnahme.
-- **Halbjahresnoten (E33)** trägt die Schule weiter in ihre Excel-Tabellen ein. L.E.O. liefert sie zum Übertragen, zeigt sie aber niemand anderem.
+- **Halbjahresnoten (E33)** trägt die Schule weiter in ihre Excel-Tabellen ein. Je Fach wird nur die Endnote von Hand übertragen; L.E.O. zeigt sie klar an, ein Export ist nicht nötig.
 - **Teilen ist eine bewusste Handlung** mit Empfänger und Umfang (z. B. „Endnoten 2FOS 25-1 an Klassenleitung, bis 30.01.“). Zurücknehmen geht jederzeit.
 - **Ehrlich zur Technik:** Die Oberfläche zeigt niemandem fremde Noten. Wer den Server betreibt, könnte technisch an die Datenbank.
   Deshalb: Betrieb nur durch eine vertrauenswürdige Stelle, verschlüsselte Sicherungen, und im Backlog die Prüfung einer
