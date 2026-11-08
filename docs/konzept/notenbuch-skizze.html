@@ -152,6 +152,44 @@ td.cursor{outline:2px solid var(--acc);outline-offset:-2px}
 .btn{display:inline-block;background:var(--acc);color:#fff;border-radius:9px;padding:10px 16px;font-weight:600;font-size:13px}
 .btn.ghost{background:none;color:var(--acc);border:1px solid var(--acc)}
 .dim{position:absolute;inset:0;background:rgba(29,33,37,.18);z-index:6}
+/* Neue Leistung */
+.newbtn{display:inline-flex;align-items:center;gap:6px;background:var(--acc);color:#fff;border-radius:9px;padding:8px 14px;font-weight:600;font-size:13px}
+.nl{position:absolute;z-index:7;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.18);padding:22px 24px}
+.nl h3{margin:0;font-size:18px}
+.lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px}
+.arts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.arts div{border:1px solid var(--line);border-radius:12px;padding:10px 10px 9px;font-size:13px;font-weight:600}
+.arts div small{display:block;font-weight:400;color:var(--muted);font-size:11px;margin-top:2px}
+.arts div.on{border:2px solid var(--acc);background:var(--acc-soft);padding:9px 9px 8px}
+.fields{display:grid;grid-template-columns:1.4fr 1fr;gap:10px 14px}
+.fld{border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.fld .k{font-size:11px;color:var(--muted)}
+.fld .v{font-size:15px;font-weight:600;margin-top:2px}
+.fld.focus{border:2px solid var(--acc);padding:7px 11px}
+.seg2{display:flex;gap:6px}
+.seg2 span{border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--calc)}
+.seg2 span.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.impact{margin-top:16px;background:var(--acc-soft);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;align-items:center;gap:10px}
+.more{margin-top:12px;font-size:13px;color:var(--acc);font-weight:600}
+.kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;font-size:11px;color:var(--calc);background:#fff;margin-left:6px}
+.step{position:absolute;width:26px;height:26px;border-radius:50%;background:var(--star);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;z-index:9;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+td.newcol,th.newcol{background:#fff8e3}
+/* Handy Ablauf */
+.fab{position:absolute;right:18px;bottom:88px;width:58px;height:58px;border-radius:18px;background:var(--acc);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(47,93,98,.35)}
+.bsheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.15);padding:10px 16px 20px}
+.grab{width:40px;height:5px;border-radius:3px;background:#d9d6cf;margin:0 auto 12px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tiles div{border:1px solid var(--line);border-radius:12px;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.tiles div i{font-style:normal;font-size:18px;margin-bottom:2px}
+.tiles div.on{border:2px solid var(--acc);background:var(--acc-soft)}
+.wide{display:block;text-align:center;background:var(--acc);color:#fff;border-radius:12px;padding:14px;font-weight:700;margin-top:14px}
+.ppad{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 12px 16px}
+.pkeys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pkeys span{height:46px;border-radius:10px;background:#f1efe9;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700}
+.pkeys span.lowk{color:var(--warn)}
+.pkeys span.hit{background:var(--acc);color:#fff}
+.pkeys span.sm{font-size:13px;color:var(--calc);background:#fff;border:1px solid var(--line)}
+.dimp{position:absolute;inset:0;background:rgba(29,33,37,.25)}
 </style></head>
 <body>
 
@@ -269,6 +307,87 @@ td.cursor{outline:2px solid var(--acc);outline-offset:-2px}
   </div>
 </section>
 
+
+<!-- 7 PC Neue Leistung -->
+<section class="screen pc" id="s7" style="height:660px">
+  <div class="top"><span class="logo">L.E.O.</span><span class="crumb">2FOS 25-1 Englisch<small>24 Schüler</small></span>
+    <div class="seg"><span>1. Hj</span><span class="on">2. Hj</span><span>Schuljahr</span></div><div class="spacer"></div><span class="newbtn">＋ Neue Leistung <span class="kbd" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.5)">N</span></span><span class="pill">● online</span></div>
+  <div class="tabs"><span>Übersicht</span><span class="on">Noten</span><span>Mitarbeit</span><span>Anwesenheit</span><span>Sitzplan</span><span>Notizen</span></div>
+  <div class="gridwrap"><table id="t7"></table></div>
+  <div class="dim"></div>
+  <div class="step" style="left:1128px;top:4px">1</div>
+  <div class="nl" style="left:330px;top:84px;width:780px">
+    <div style="display:flex;align-items:baseline;gap:12px"><h3>Neue Leistung</h3><span class="cap">in 2FOS 25-1 Englisch · alles vorausgefüllt, Enter legt an</span></div>
+    <div class="lbl">Was ist es?</div>
+    <div class="step" style="left:-12px;top:70px">2</div>
+    <div class="arts">
+      <div>Test<small>Tests und Sonstiges · ×1</small></div>
+      <div class="on">Vokabeltest<small>Tests und Sonstiges · ×1</small></div>
+      <div>Verspätungstest<small>Tests und Sonst. · ×0,1 · alle 15</small></div>
+      <div>Referat / Präsentation<small>Tests und Sonstiges · ×1</small></div>
+      <div>Hausaufgabe<small>Mitarbeit · ×½</small></div>
+      <div>Monatsnote Mitarbeit<small>Mitarbeit · ×1</small></div>
+      <div>Klassenarbeit / Klausur<small>Klausuren · ×1 · Nachschreiber</small></div>
+      <div style="color:var(--acc)">＋ eigene Art<small>wird zur Vorlage</small></div>
+    </div>
+    <div class="lbl">Angaben (änderbar)</div>
+    <div class="fields">
+      <div class="fld focus"><div class="k">Name</div><div class="v">Vokabeltest 4<span style="color:var(--acc);font-weight:400">|</span></div></div>
+      <div class="fld"><div class="k">Datum</div><div class="v">heute, Di 09.03.2027</div></div>
+      <div class="fld"><div class="k">Gruppe</div><div class="v">Tests und Sonstiges ▾</div></div>
+      <div class="fld"><div class="k">Gewicht</div><div class="seg2" style="margin-top:4px"><span>×0,1</span><span>×½</span><span class="on">×1</span><span>×2</span><span>…</span></div></div>
+    </div>
+    <div class="impact"><span style="font-size:18px">⚖</span><span>Zählt <b>8,06 %</b> der Endnote. Test 1 und Test 2 sinken dafür von 11,90 % auf 8,06 %.</span></div>
+    <div class="more">▸ Mehr: Beschreibung, Anhang (Test als PDF), Notenart, Datum ausblenden</div>
+    <div style="margin-top:16px;display:flex;gap:10px;align-items:center"><span class="btn">Anlegen und eintragen <span class="kbd" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.5)">Enter</span></span><span class="btn ghost">Nur anlegen</span><span class="cap" style="margin-left:auto">Esc schließt, nichts geht verloren</span></div>
+    <div class="step" style="left:-12px;top:470px">3</div>
+  </div>
+</section>
+
+<!-- 8 Handy Ablauf -->
+<section class="screen phones" id="s8" style="width:1340px">
+  <div class="phone">
+    <div class="ph-top"><div class="t">2FOS 25-1 Englisch</div><div class="s">Noten · 2. Halbjahr · live</div></div>
+    <div class="chips"><span class="on">Alle</span><span>gefährdet</span><span>fehlt noch</span><span>★ Vorbehalt</span></div>
+    <div id="pl8"></div>
+    <div class="fab">＋</div>
+    <div class="step" style="right:70px;bottom:140px">1</div>
+    <div class="bottomnav"><span>Heute</span><span class="on">Kurse</span><span>Schüler</span><span>Mehr</span></div>
+  </div>
+  <div class="phone">
+    <div class="ph-top"><div class="t">2FOS 25-1 Englisch</div><div class="s">Noten · 2. Halbjahr · live</div></div>
+    <div id="pl8b"></div>
+    <div class="dimp"></div>
+    <div class="bsheet">
+      <div class="grab"></div>
+      <div style="font-size:17px;font-weight:700">Neue Leistung</div>
+      <div class="cap" style="margin-bottom:10px">Art antippen, der Rest ist vorausgefüllt</div>
+      <div class="tiles">
+        <div><i>✎</i>Test</div><div class="on"><i>Aa</i>Vokabeltest</div><div><i>⏱</i>Verspätung</div>
+        <div><i>◫</i>Referat</div><div><i>⌂</i>Hausaufgabe</div><div><i>＋</i>eigene Art</div>
+      </div>
+      <div class="fields" style="grid-template-columns:1fr 1fr;margin-top:12px">
+        <div class="fld"><div class="k">Name</div><div class="v">Vokabeltest 4</div></div>
+        <div class="fld"><div class="k">Datum</div><div class="v">heute</div></div>
+        <div class="fld"><div class="k">Gewicht</div><div class="v">×1 · 8,06 %</div></div>
+        <div class="fld"><div class="k">Gruppe</div><div class="v">Tests u. Sonst.</div></div>
+      </div>
+      <span class="wide">Anlegen und eintragen</span>
+      <div class="step" style="left:8px;top:64px">2</div>
+    </div>
+  </div>
+  <div class="phone">
+    <div class="ph-top"><div class="s">‹ 2FOS 25-1 Englisch</div><div class="t">Vokabeltest 4</div><div class="s">heute · ×1 · 2 von 8 eingetragen</div></div>
+    <div id="pl8c"></div>
+    <div class="toast" style="bottom:336px;font-size:12px;white-space:nowrap">Aylin: 13 <u>Rückgängig</u></div>
+    <div class="ppad">
+      <div class="cap" style="margin-bottom:8px">Jetzt: <b style="color:var(--ink);font-size:15px">Chiara Lange</b> <span class="nta">N</span> · danach Deniz</div>
+      <div class="pkeys" id="pk8"></div>
+      <div class="pkeys" style="margin-top:6px"><span class="sm">E</span><span class="sm">UE</span><span class="sm">leer ›</span><span class="sm">Rest = 15</span></div>
+    </div>
+    <div class="step" style="left:10px;top:466px">3</div>
+  </div>
+</section>
 <script>
 const ST=[
  {n:"Aylin Demir",a:"17 J.",K:[11,12],M:[10,11,12,null],T:[13,12,15]},
@@ -367,5 +486,13 @@ table("t6",{collapseM:true,sel:6});
  h+=r(2,"<b>Tests und Sonstiges</b>","",1,25);
  TN.forEach((t,i)=>h+=r(3,t,i===2?"Verspätungstest":"Test",String(TW[i]).replace('.',','),25*TW[i]/tw));
  document.getElementById("at").innerHTML=h;}
+
+table("t7",{collapseM:true});
+{const t=document.getElementById("t7");}
+{const names=ST.map(x=>x.n);let a="",b="",c="";ST.forEach(s=>{const g=calc(s).G;a+=`<div class="ph-li"><span class="n">${s.n}<small>Klausuren ${f2(calc(s).K)} · AT ${f2(calc(s).S)}</small></span><span class="g ${g<5?'low':''}">${f2(g)}</span></div>`});
+ document.getElementById("pl8").innerHTML=a;document.getElementById("pl8b").innerHTML=a;
+ const v=[13,9,null,null,null,null,null,null];ST.forEach((s,i)=>{c+=`<div class="ph-li" style="${i===2?'background:var(--sel);box-shadow:inset 4px 0 0 var(--acc)':''}"><span class="n">${s.n}</span><span class="g">${v[i]==null?'<span class=empty>·</span>':v[i]}</span></div>`});
+ document.getElementById("pl8c").innerHTML=c;
+ let k="";[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].forEach(i=>k+=`<span class="${i<5?'lowk':''} ${i===12?'hit':''}">${i}</span>`);document.getElementById("pk8").innerHTML=k;}
 </script>
 </body></html>

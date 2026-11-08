@@ -52,7 +52,7 @@ Lange drücken (Touch) oder Rechtsklick (PC) öffnet ein kleines Zellmenü, kein
 
 | # | Vorschlag |
 |---|---|
-| **NB19** | **Neue Spalte in zwei Tipps:** „+“ in einer Gruppe → **Spaltenart** wählen (Klausur, Test, Verspätungstest, Referat, Monatsnote …, I26). Name, Gewicht, Notenart und Datum (heute) sind vorausgefüllt und später änderbar. |
+| **NB19** | **Neue Leistung in zwei Tipps** (Konzeptbilder 7 und 8): Knopf „Neue Leistung“ (am PC Taste N, am Handy „+“) → Art antippen → „Anlegen und eintragen“ (Enter) führt direkt in die Schnelleingabe. Vor dem Anlegen zeigt L.E.O., wie viel die Leistung an der Endnote ausmacht und was sich bei den anderen verschiebt. Früher: **Neue Spalte in zwei Tipps:** „+“ in einer Gruppe → **Spaltenart** wählen (Klausur, Test, Verspätungstest, Referat, Monatsnote …, I26). Name, Gewicht, Notenart und Datum (heute) sind vorausgefüllt und später änderbar. |
 | **NB20** | **Aufbau-Ansicht** für den Notenbaum: Gruppen und Gewichte als eingerückte Liste, verschiebbar. Daneben steht für jede Spalte, **wie viel sie an der Endnote ausmacht** („Test 1 = 6,25 % der Endnote“). Das macht Gewichte endlich durchschaubar. |
 | **NB21** | **Vorlagen** (E5, I31): Kurs aus Vorlage anlegen, Kurs als Vorlage speichern, Vorlagen mit Kollegen per Link teilen. Eigene Spaltenarten gehören zur Vorlage. **(UPZ)**: welche Vorlagen Kollegen brauchen. |
 | **NB22** | **Struktur in Parallelkurse kopieren** (Q7): eine neue Spalte oder Gruppe mit einem Tipp in andere Kurse übernehmen, ohne Noten. |
