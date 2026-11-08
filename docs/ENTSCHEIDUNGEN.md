@@ -6,9 +6,11 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E28 | 08.11.2026 | **Bewertungsbögen** als eigenes Modul: klickbare Bögen für Selbst- und Fremdeinschätzung, übersichtlich, eigene erstellen oder hochladen, Bibliothek (z. B. aus MEDIAN). Konzept in [BEWERTUNGSBOEGEN.md](BEWERTUNGSBOEGEN.md) | Konstantin |
+| E27 | 08.11.2026 | Notenauswahl auf Touchgeräten: **ein Fenster mit allen Noten auf einen Blick** (z. B. 0–15 als Tastenfeld), ein Tipp setzt die Note und springt weiter. Ein Rad ist nur ok, wenn alle Werte ohne langes Scrollen erreichbar sind | Konstantin präzisiert E24 |
 | E26 | 08.11.2026 | Doku-Änderungen gehen **direkt auf `main`**, ohne Pull Request | Konstantin |
 | E25 | 08.11.2026 | **Kursübersicht mit Kacheln** statt vieler Reiter und Tabellen; Notizen, Hausaufgaben usw. müssen ohne Suchen erreichbar sein | Konstantin: Orga- und Hausaufgaben-Reiter in iDoceo hat er nie angeschaut |
-| E24 | 08.11.2026 | **Schnelleingabe ist Kernanforderung**: Test anlegen und Noten eintragen in Sekunden, kein Scrollrad, kein „OK“ je Zelle | Konstantin: iDoceo-Eingabe ist „Frontend-Design aus der Hölle“ |
+| E24 | 08.11.2026 | **Schnelleingabe ist Kernanforderung**: Test anlegen und Noten eintragen in Sekunden, kein langes Scrollen, kein „OK“ je Zelle (siehe E27) | Konstantin: iDoceo-Eingabe ist „Frontend-Design aus der Hölle“ |
 | E23 | 08.11.2026 | **Alles Ableitbare wird automatisch gepflegt** (Fehlzeiten je Halbjahr, Vorhalbjahresnote, Zähler) | Konstantin: niemand führt zehn Listen von Hand |
 | E22 | 08.11.2026 | Technik nach **V3b**: FastAPI + PostgreSQL, SvelteKit als installierbare Web-App (PWA) für iOS, Android und Windows | Konstantin verlässt sich auf Claudes Urteil |
 | E21 | 08.11.2026 | **Kurse leben über Halbjahre**; Entwicklung über Halbjahre und Jahre sichtbar machen ist ein Design-Fokus | Konstantin: in iDoceo jedes Halbjahr neu angelegt, dadurch keine Übersicht über frühere Leistungen |

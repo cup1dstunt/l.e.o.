@@ -10,7 +10,13 @@
 6. ~~V1–V6, V3b~~ beantwortet.
 7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.
 8. Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
-9. Gibt es noch das Kriterienraster zur Selbsteinschätzung der mündlichen Leistung aus dem Referendariat? Sonst bauen wir ein neues.
+9. ~~Kriterienraster Selbsteinschätzung~~ erhalten (08.11.2026), gekürzter Entwurf in BEWERTUNGSBOEGEN.md.
+10. Alt: Gibt es noch das Kriterienraster zur Selbsteinschätzung der mündlichen Leistung aus dem Referendariat? Sonst bauen wir ein neues.
+
+## An das MEDIAN-Team
+
+1. Dürfen die Bewertungs- und Reflexionsbögen aus MEDIAN in L.E.O. als klickbare Vorlagen nachgebaut werden?
+2. Gibt es die Bögen auch als bearbeitbare Dateien (Word), nicht nur als PDF?
 
 ## An Schulleitung / Datenschutz
 
@@ -19,6 +25,7 @@
 3. Wer darf was sehen? Insbesondere: Klassenleitung alle Fehlzeiten der Klasse, Konferenzteilnehmer alle Endnoten.
 4. Aufbewahrungs- und Löschfristen für Noten, Fehlzeiten, Notizen.
 5. Dürfen private Mailadressen der Schüler gespeichert werden (Einwilligung)?
+6. Dürfen Schüler ohne eigenes Konto über einen persönlichen Einmal-Link eine Selbsteinschätzung abgeben?
 
 ## An den Untis-/WebUntis-Admin
 

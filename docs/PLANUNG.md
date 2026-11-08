@@ -82,6 +82,7 @@ auffällig oft montags fehlt.
 | N | E-Mail | Vorlagen, Vorschau, Protokoll | später |
 | O | Dateiablage je Stunde | Konzept offen | offen |
 | P | Betrieb | Offline, Sicherung, Export, Updates | **Grundgerüst** |
+| Q | Bewertungsbögen | Selbst- und Fremdeinschätzung per Link/QR, Bibliothek, Upload | mittel |
 
 ---
 
@@ -204,7 +205,7 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
   Am Ende des Zeitraums erinnert L.E.O. daran.
 - **Schnelltest in zwei Tipps** (E24), z. B. Konstantins Verspätungstest (15 Vokabeln, 3 Minuten): „Neuer Test“ → alle Anwesenden bekommen
   den vollen Wert, wer laut Anwesenheit zu spät ist, 0. Danach nur Ausnahmen antippen.
-- **Schnelleingabe:** Zahlenfeld bleibt offen, nach jeder Eingabe springt es zum nächsten Schüler. Auf dem Handy große Zahlentasten 0–15.
+- **Schnelleingabe:** Auswahlfenster mit **allen Noten auf einen Blick** (0–15 als Tastenfeld bzw. 1–6 mit Tendenzen), ein Tipp setzt die Note und springt zum nächsten Schüler. Am PC Zahl tippen und Enter.
 - Weil andere Kollegen andere Vorlagen haben: **Vorlagen** sind Daten, nicht Code. Deine wird die erste. Später kann man sie teilen.
 - Die **UPZ-Dateien** der Kollegen (Excel-basierte Notenorganisation) zeigen, was andere brauchen.
   Sie werden zweite Grundlage für Vorlagen und vielleicht ein Import.
@@ -217,7 +218,7 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 - **Eine Anmerkung für mehrere Schüler auf einmal** (heute wird derselbe Satz mehrfach getippt).
 - Anwesenheit (✓ / ✗ / verspätet) wird aus WebUntis vorbelegt, eigene Einträge ergänzen.
 - Aufrufe aus dem Zufallsgenerator können als Mitarbeitsgelegenheit mitlaufen.
-- **Selbsteinschätzung der Schüler:** Schüler schätzen ihre mündliche Leistung anhand von Kriterien selbst ein (Formular per Link oder QR-Code,
+- **Selbsteinschätzung der Schüler** (Modul Q, Konzept in [BEWERTUNGSBOEGEN.md](BEWERTUNGSBOEGEN.md)): Schüler schätzen ihre mündliche Leistung anhand von Kriterien selbst ein (Formular per Link oder QR-Code,
   ohne eigenes Konto). Danach gibt die Lehrkraft ihre Einschätzung und Note ab, beides nebeneinander. Kriterienraster als Vorlage.
 - **Bericht zur Mitarbeit** je Zeitraum, als PDF oder Mail verschickbar (an Schüler, Klassenleitung, Konferenz).
 
@@ -279,6 +280,13 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 
 ### O Dateiablage je Stunde
 - **Konzept offen**, legst du noch fest. EWH-Inhalte bleiben draußen.
+
+### Q Bewertungsbögen
+- Klickbare Bögen mit Bereichen, Kriterien und 3–5 Stufen, Ich-Form für Schüler, Gewichte je Bereich.
+- Schüler füllen per Link/QR aus, die Lehrkraft schätzt daneben ein, L.E.O. schlägt die Note vor.
+- Eigene Bögen anlegen, teilen oder als Word/PDF hochladen und umwandeln. Bibliothek, z. B. mit Bögen aus MEDIAN.
+- Auch für Projekte, Präsentationen und Projektgruppen (Beitrag je Mitglied).
+- Details: [BEWERTUNGSBOEGEN.md](BEWERTUNGSBOEGEN.md).
 
 ### P Betrieb
 - Offline-Cache und Nachsenden, automatische Sicherung, Sicherung vor Updates, Wiederherstellung, vollständiger Export.

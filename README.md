@@ -15,6 +15,7 @@ mit Anmeldung über **IServ (Single-Sign-On)**.
 |---|---|
 | [docs/PLANUNG.md](docs/PLANUNG.md) | Zielbild, Module, Grundgerüst für den schulweiten Betrieb, Anbindungen, Fahrplan |
 | [docs/IDOCEO_ANALYSE.md](docs/IDOCEO_ANALYSE.md) | Aufbau des iDoceo-Notenbuchs als Vorlage für L.E.O. |
+| [docs/BEWERTUNGSBOEGEN.md](docs/BEWERTUNGSBOEGEN.md) | Selbst- und Fremdeinschätzung, Bibliothek, Entwurf Mitarbeit Englisch |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | alle Ideen und Wünsche mit Herkunft und Priorität |
 | [docs/ENTSCHEIDUNGEN.md](docs/ENTSCHEIDUNGEN.md) | was schon festgelegt ist und warum |
 | [docs/FRAGEN_SCHULE.md](docs/FRAGEN_SCHULE.md) | offene Fragen an Schulleitung, Untis- und IServ-Admin, Datenschutz |

@@ -154,6 +154,21 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | A4 | Endnoten aller Fächer für die Klassenleitung sammeln (statt Zettel/Rundmail) | C | 2 | M |
 | A5 | Leistungsstand per Knopfdruck: Diktat → KI-Text, keine Klarnamen an KI | B | 3 | M |
 
+## Bewertungsbögen
+
+| # | Punkt | Herkunft | Prio | Aufwand |
+|---|---|---|---|---|
+| B1 | Klickbarer Bogen: Bereiche mit Gewicht, Kriterien, 3–5 Stufen, Ich-Form für Schüler | K | 2 | M |
+| B2 | Ausfüllen per Einmal-Link/QR ohne Konto, Erinnerung an Säumige | K, C | 2 | M |
+| B3 | Selbst- und Fremdeinschätzung nebeneinander, Abweichungen markiert, Notenvorschlag ins Notenbuch | K, C | 2 | M |
+| B4 | Eigene Bögen erstellen, kopieren, teilen | K | 2 | S |
+| B5 | Bögen als Word/PDF hochladen und in klickbare Bögen umwandeln (KI darf helfen, leerer Bogen enthält keine Schülerdaten) | K | 3 | M |
+| B6 | Bibliothek mit Bögen aus MEDIAN (nach Absprache mit dem MEDIAN-Team) | K | 3 | M |
+| B7 | Verlauf Selbstbild gegen Fremdbild je Kriterium über das Jahr | C | 3 | S |
+| B8 | Daten aus L.E.O. (Hausaufgaben, Verspätungen) beim Einschätzen automatisch anzeigen | C | 2 | S |
+| B9 | Bogen als PDF an den Schüler | K | 3 | S |
+| B10 | Erster Bogen: Mitarbeit Englisch (Entwurf in BEWERTUNGSBOEGEN.md, Abschnitt 6) | K | 2 | S |
+
 ## Kleine Helfer (Quality of Life)
 
 Konstantin: „Das sind genau die QoL-Features, die mir in iDoceo fehlen, davon gibt es sicher noch zig mehr.“ Sammlung:
