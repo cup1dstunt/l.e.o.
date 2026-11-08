@@ -167,7 +167,12 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | B7 | Verlauf Selbstbild gegen Fremdbild je Kriterium über das Jahr | C | 3 | S |
 | B8 | Daten aus L.E.O. (Hausaufgaben, Verspätungen) beim Einschätzen automatisch anzeigen | C | 2 | S |
 | B9 | Bogen als PDF an den Schüler | K | 3 | S |
+| B11 | **MEDIAN in der App**: Schulressourcen-Kachel und Verlinkung bei der Planung; Matrizen und Arbeitstechniken als Grundlage für Bögen und Kriterien (Link mit Schlüssel in den Schuleinstellungen, nicht im Code). Details: IDEEN I1–I6 | K | 2 | M |
 | B10 | Erster Bogen: Mitarbeit Englisch (Entwurf in BEWERTUNGSBOEGEN.md, Abschnitt 6) | K | 2 | S |
+
+## Ideensammlung
+
+Weitere 35 Vorschläge (Features, Design, QoL, Onboarding) stehen in [IDEEN.md](IDEEN.md) und kommen nach Auswahl hierher.
 
 ## Kleine Helfer (Quality of Life)
 
