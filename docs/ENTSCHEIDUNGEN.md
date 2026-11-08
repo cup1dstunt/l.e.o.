@@ -6,6 +6,15 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E26 | 08.11.2026 | Doku-Änderungen gehen **direkt auf `main`**, ohne Pull Request | Konstantin |
+| E25 | 08.11.2026 | **Kursübersicht mit Kacheln** statt vieler Reiter und Tabellen; Notizen, Hausaufgaben usw. müssen ohne Suchen erreichbar sein | Konstantin: Orga- und Hausaufgaben-Reiter in iDoceo hat er nie angeschaut |
+| E24 | 08.11.2026 | **Schnelleingabe ist Kernanforderung**: Test anlegen und Noten eintragen in Sekunden, kein Scrollrad, kein „OK“ je Zelle | Konstantin: iDoceo-Eingabe ist „Frontend-Design aus der Hölle“ |
+| E23 | 08.11.2026 | **Alles Ableitbare wird automatisch gepflegt** (Fehlzeiten je Halbjahr, Vorhalbjahresnote, Zähler) | Konstantin: niemand führt zehn Listen von Hand |
+| E22 | 08.11.2026 | Technik nach **V3b**: FastAPI + PostgreSQL, SvelteKit als installierbare Web-App (PWA) für iOS, Android und Windows | Konstantin verlässt sich auf Claudes Urteil |
+| E21 | 08.11.2026 | **Kurse leben über Halbjahre**; Entwicklung über Halbjahre und Jahre sichtbar machen ist ein Design-Fokus | Konstantin: in iDoceo jedes Halbjahr neu angelegt, dadurch keine Übersicht über frühere Leistungen |
+| E20 | 08.11.2026 | **Mitarbeitsnoten frei im Rhythmus** (Stunde, Woche, Einheit, Monat, gar nicht) | Kollegen arbeiten unterschiedlich; Monatsnoten sind Konstantins Weg |
+| E19 | 08.11.2026 | **Notensystem je Bildungsgang**: Berufsschule vs. FOS/DQ, Punkte 0–15 oder ganze Noten, eigene Notenspiegel. Standard: 50 % schriftlich, 50 % AT. Bei 0–15 nicht bestanden unter 5 Punkten | Schulvorgabe; IBA und WK noch offen |
+| E18 | 08.11.2026 | Gewichtung **einzelner** Noten und Tests | Konstantin (z. B. Verspätungstests) |
 | E17 | 08.11.2026 | **Rolle Schulleitung**: sieht Endnoten, aber keine Teilnoten (wie heute). Admin sieht keine Noten | Konstantin zu V6 |
 | E16 | 08.11.2026 | WebUntis-Weg wird **noch nicht** festgelegt. Gebaut wird hinter austauschbaren Adaptern, Start mit Datei-Export | Konstantin zu V5: zuerst ein Projekt für ihn allein, aber alles Spätere immer mitdenken |
 | E15 | 08.11.2026 | **Pilot mit echten Daten auf dem Unraid-Server**: Konstantin und evtl. eine Kollegin, parallel zu iDoceo. Daten müssen gut geschützt sein (siehe PLANUNG 4.4) | Konstantin zu V4; Noten auf Endgeräten sind heute schon üblich (iDoceo, Excel) |
@@ -26,11 +35,15 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 ## Vorschläge (zu bestätigen)
 
+Keine offenen Vorschläge.
+
+## Erledigte Vorschläge (Details)
+
 | # | Vorschlag | Begründung |
 |---|---|---|
-| V3b | **Technik neu (ersetzt V3):** Backend Python/FastAPI mit PostgreSQL. Frontend **SvelteKit (Svelte 5, TypeScript) als PWA**, Offline-Speicher im Browser (IndexedDB), ein Code für Smartphone, Tablet und PC. Details in PLANUNG 4.3 | Konstantin: Smartphone muss mit rein. Der EWH-Ansatz (eine große Alpine-Datei ohne Build) trägt eine App dieser Größe mit Offline-Betrieb und drei Bildschirmgrößen nicht gut |
+| V3b (→ E22) | **Technik neu (ersetzt V3):** Backend Python/FastAPI mit PostgreSQL. Frontend **SvelteKit (Svelte 5, TypeScript) als PWA**, Offline-Speicher im Browser (IndexedDB), ein Code für Smartphone, Tablet und PC. Details in PLANUNG 4.3 | Konstantin: Smartphone muss mit rein. Der EWH-Ansatz (eine große Alpine-Datei ohne Build) trägt eine App dieser Größe mit Offline-Betrieb und drei Bildschirmgrößen nicht gut |
 
-## Erledigte Vorschläge
+## Erledigte Vorschläge (Übersicht)
 
 | # | Ergebnis |
 |---|---|
@@ -40,3 +53,4 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 | V4 | angenommen mit Änderung → E15 |
 | V5 | zurückgestellt → E16 |
 | V6 | angenommen mit Ergänzung → E17 |
+| V3b | angenommen → E22 |

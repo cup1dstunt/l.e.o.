@@ -2,7 +2,7 @@
 
 > **L**eistung · **E**ntwicklung · **O**rganisation. Ein Werkzeug für Lehrkräfte der Leopold-Ullstein-Schule.
 >
-> Stand: 08.11.2026 (zweite Fassung, nach Konstantins Antworten zu V1–V6 und den iDoceo-Screenshots). Planungsskizze, noch kein Design und kein Code. Alles hier ist Vorschlag, bis es in
+> Stand: 08.11.2026 (dritte Fassung, nach Konstantins Antworten zur iDoceo-Analyse; zweite Fassung nach Konstantins Antworten zu V1–V6 und den iDoceo-Screenshots). Planungsskizze, noch kein Design und kein Code. Alles hier ist Vorschlag, bis es in
 > [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) steht. Einzelne Wünsche und Ideen sammelt [BACKLOG.md](BACKLOG.md).
 
 ---
@@ -27,7 +27,14 @@ L.E.O. soll der Ort sein, an dem für eine Lehrkraft alles über ihre Kurse zusa
 4. **So einfach, dass man es wirklich nutzt.** Gerade beim Sitzplan: in zwei Minuten fertig, sonst ist er falsch gebaut.
 5. **Statistik überall, aber ruhig.** Daten werden nebenbei gesammelt und als Verlauf und Muster gezeigt, nicht als Zahlenfriedhof.
 6. **Die Lehrkraft entscheidet.** L.E.O. rechnet und schlägt vor, verschickt aber nichts ungesehen.
-7. **Gebaut für die ganze Schule.** Von Anfang an für ~100 Lehrkräfte mit Rollen und IServ-Anmeldung angelegt,
+7. **Entwicklung sichtbar machen.** Ein Kurs lebt über alle Halbjahre. Noten, Mitarbeit und Fehlzeiten früherer Halbjahre
+   sind auf Wunsch einen Tipp entfernt, als Verlauf statt als vergessene Altklasse. Das ist ein **Design-Fokus** von L.E.O.
+8. **Keine Listen von Hand.** Was sich berechnen oder übernehmen lässt (Fehlzeiten, Halbjahresnoten, Zähler), pflegt L.E.O. selbst.
+   Niemand hat Zeit, zehn Listen zu führen.
+9. **Schnelleingabe ist Pflicht.** Eine Note für eine ganze Klasse einzutragen dauert Sekunden: Zahl tippen, nächster Schüler, kein Scrollrad, kein „OK“.
+10. **Kacheln statt Tabellenwüste.** Jeder Kurs hat eine Übersicht mit Kacheln (Noten, Mitarbeit, Anwesenheit, Hausaufgaben, Notizen, Sitzplan),
+    von der aus alles in einem Tipp erreichbar ist.
+11. **Gebaut für die ganze Schule.** Von Anfang an für ~100 Lehrkräfte mit Rollen und IServ-Anmeldung angelegt,
    auch wenn zuerst nur einer damit arbeitet.
 
 ---
@@ -176,6 +183,16 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 - Alternativ: CSV/Excel-Import mit Spaltenzuordnung.
 
 ### C Notenbuch
+- **Notensystem je Bildungsgang** (E19). Berufsschule und FOS/DQ bewerten unterschiedlich: Notenpunkte 0–15 oder ganze Noten 1–6,
+  unterschiedliche Notenspiegel (ab wie viel Prozent welche Note). IBA und Willkommensklassen werden noch geklärt.
+  Das Notensystem hängt am Kurs, nicht an der Lehrkraft. Bei 0–15 gilt: **unter 5 Punkten nicht bestanden** (4 Punkte = 4− = mangelhaft).
+- **Schulvorgabe:** 50 % schriftliche Leistungen (Klassenarbeiten/Klausuren) und 50 % Allgemeiner Teil (AT: Tests, Mitarbeit,
+  Präsentationen, Arbeitsproben …). Das ist die Standard-Vorlage. Wie der AT innen aufgeteilt ist, entscheidet jede Lehrkraft.
+- **Mitarbeitsnoten frei im Rhythmus** (E20): je Stunde, Woche, Unterrichtseinheit, Monat oder gar nicht. Monatsnoten sind Konstantins Weg,
+  nicht der Standard.
+- **Gewichte für einzelne Noten und Tests**, jederzeit änderbar, mit sofort sichtbarer Wirkung auf die Gesamtnote
+  (z. B. „Wie stark zählen meine Verspätungstests?“).
+- **Kurse leben über Halbjahre** (E21). Die Note des Vorhalbjahres steht automatisch als Richtwert daneben, nicht mehr von Hand.
 - Wird **genau so aufgebaut, wie du es in iDoceo mit deinen eigenen Vorlagen nutzt**: Spalten, Kategorien, Berechnungen, Ansicht.
   Der Aufbau ist in [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md) beschrieben. Kurz:
   - Seiten je Kurs: **Noten**, **Mitarbeit**, **Anwesenheit** (in der Vorlage auch Orga und Hausaufgaben).
@@ -183,7 +200,11 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
     Sonstige = Mitarbeit (Monatsnoten) 50 % + Tests und Sonstiges (Einzelgewichte) 50 %. Leere Zellen zählen nicht, 0 zählt.
   - Rot unter 5 Punkten, Anmerkungen je Zelle, Zellfarben, Datum in der Zelle, Notenspiegel je Spalte.
   - Neue Kurse entstehen aus einer **Vorlagenklasse**.
-- Neu gegenüber iDoceo: **Monatsnote der Mitarbeit wird aus den Smileys vorgeschlagen**, statt sie von Hand zu übertragen.
+- Neu gegenüber iDoceo: **Mitarbeitsnote des Zeitraums wird aus den Smileys vorgeschlagen**, statt sie nach Gefühl von Hand zu übertragen.
+  Am Ende des Zeitraums erinnert L.E.O. daran.
+- **Schnelltest in zwei Tipps** (E24), z. B. Konstantins Verspätungstest (15 Vokabeln, 3 Minuten): „Neuer Test“ → alle Anwesenden bekommen
+  den vollen Wert, wer laut Anwesenheit zu spät ist, 0. Danach nur Ausnahmen antippen.
+- **Schnelleingabe:** Zahlenfeld bleibt offen, nach jeder Eingabe springt es zum nächsten Schüler. Auf dem Handy große Zahlentasten 0–15.
 - Weil andere Kollegen andere Vorlagen haben: **Vorlagen** sind Daten, nicht Code. Deine wird die erste. Später kann man sie teilen.
 - Die **UPZ-Dateien** der Kollegen (Excel-basierte Notenorganisation) zeigen, was andere brauchen.
   Sie werden zweite Grundlage für Vorlagen und vielleicht ein Import.
@@ -196,6 +217,9 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 - **Eine Anmerkung für mehrere Schüler auf einmal** (heute wird derselbe Satz mehrfach getippt).
 - Anwesenheit (✓ / ✗ / verspätet) wird aus WebUntis vorbelegt, eigene Einträge ergänzen.
 - Aufrufe aus dem Zufallsgenerator können als Mitarbeitsgelegenheit mitlaufen.
+- **Selbsteinschätzung der Schüler:** Schüler schätzen ihre mündliche Leistung anhand von Kriterien selbst ein (Formular per Link oder QR-Code,
+  ohne eigenes Konto). Danach gibt die Lehrkraft ihre Einschätzung und Note ab, beides nebeneinander. Kriterienraster als Vorlage.
+- **Bericht zur Mitarbeit** je Zeitraum, als PDF oder Mail verschickbar (an Schüler, Klassenleitung, Konferenz).
 
 ### E Hausaufgaben
 - Ein Tipp je Schüler: gemacht / nicht gemacht / teilweise.

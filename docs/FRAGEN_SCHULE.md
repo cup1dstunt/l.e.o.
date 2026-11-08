@@ -7,7 +7,10 @@
 3. Welche Exporte erlaubt dir WebUntis für Fehlzeiten und Stundenplan (Format, Felder)? Ein Beispiel-Export wäre ideal.
 4. Konzept der Dateiablage je Stunde.
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
-6. ~~V1–V6~~ beantwortet. Offen: **V3b** (SvelteKit-PWA statt Alpine).
+6. ~~V1–V6, V3b~~ beantwortet.
+7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.
+8. Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
+9. Gibt es noch das Kriterienraster zur Selbsteinschätzung der mündlichen Leistung aus dem Referendariat? Sonst bauen wir ein neues.
 
 ## An Schulleitung / Datenschutz
 

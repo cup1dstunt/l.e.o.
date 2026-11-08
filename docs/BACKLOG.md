@@ -27,6 +27,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | G14 | Rolle Schulleitung: Endnoten ja, Teilnoten nein (E17) | K | G | S |
 | G15 | Pilot-Schutz: Passkey/2FA, optional nur über VPN, App-Sperre nach Inaktivität, Sichtschutz-Knopf, verschlüsselte Sicherungen | K, C | G | M |
 | G16 | Responsive für Smartphone, iPad, PC; eigene schmale Smartphone-Ansichten | K | G | M |
+| G17 | Windows: PWA über Edge installieren (eigenes Fenster, Startmenü). Echte EXE (z. B. mit Tauri) nur, falls die PWA nicht reicht | K | 3 | M |
 | G13 | Rollen-, Datenschutz-, Lösch- und Aufbewahrungskonzept ausbauen | B | 2 | M |
 
 ## Stammdaten & Import
@@ -64,6 +65,12 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | N14 | **Monatsnote Mitarbeit aus den Smileys vorschlagen**, übernehmen oder überschreiben | C | 1 | S |
 | N15 | Fehlzeiten-Spalten je Halbjahr automatisch aus WebUntis | C | 2 | S |
 | N16 | Alter in Jahren und Monaten an der Schülerzeile | K (Screenshots) | 1 | S |
+| N17 | **Notensystem je Bildungsgang** (Berufsschule, FOS/DQ, später IBA/WK): 0–15 oder 1–6, Notenspiegel in Prozent, Bestehensgrenze | K | 1 | M |
+| N18 | Standard-Vorlage nach Schulvorgabe: 50 % schriftlich, 50 % AT | K | 1 | S |
+| N19 | **Kurse über Halbjahre**: Vorhalbjahresnote automatisch als Richtwert, frühere Halbjahre auf Wunsch einblendbar | K | 1 | M |
+| N20 | **Schnelltest in zwei Tipps** (z. B. Verspätungstest: Anwesende voller Wert, Verspätete 0, dann Ausnahmen) | K | 1 | S |
+| N21 | **Schnelleingabe**: Zahl tippen → nächster Schüler, große Zahlentasten auf dem Handy, Tastatur am PC, kein Scrollrad | K | 1 | M |
+| N22 | Gewichtsregler je Note/Test mit Live-Vorschau der Gesamtnoten | K, C | 2 | S |
 | N7 | Export der Endnoten für Zeugniskonferenz und WebUntis/LUSD | C | 2 | S |
 
 ## Anwesenheit, Mitarbeit, Hausaufgaben
@@ -73,6 +80,10 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | M1 | Anwesenheit und Mitarbeit als Kategorien mit Smiley, Kommentar aus **Textbausteinen** zum Antippen | K | 1 | M |
 | M8 | Eine Anmerkung für mehrere Schüler gleichzeitig | C | 1 | S |
 | M9 | Mitarbeit-Spalte mit Titel und Datum (z. B. „Jigsaw Reading“) | K (Screenshots) | 1 | S |
+| M10 | **Mitarbeit im frei gewählten Rhythmus** (Stunde, Woche, Einheit, Monat, keiner) | K | 1 | S |
+| M11 | Erinnerung am Ende des Zeitraums: „Mitarbeitsnoten für Oktober fehlen noch“ | K | 2 | S |
+| M12 | **Selbsteinschätzung der Schüler** nach Kriterien (Link/QR, ohne Konto), danach Einschätzung der Lehrkraft daneben | K | 2 | M |
+| M13 | Bericht zur Mitarbeit je Zeitraum als PDF/Mail | K | 3 | M |
 | M2 | Eigene Bausteine, Favoriten, Sortierung nach Häufigkeit, Freitext | K, C | 1 | S |
 | M3 | Bewerten direkt im Sitzplan | C | 1 | S |
 | M4 | Zufallsaufrufe fließen optional in Mitarbeit ein | B | 2 | S |
@@ -102,6 +113,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | T1 | **Zeitleiste** mit Phasen, Countdown, Beamer-Ansicht | B | 1 | M |
 | T2 | **Stundenabschluss**: Fortschrittsmarke je Kurs, Hausaufgabe ja/nein | B | 1 | S |
 | T3 | Abläufe als Vorlage speichern | C | 2 | S |
+| T7 | **Kursübersicht mit Kacheln** (Noten, Mitarbeit, Anwesenheit, Hausaufgaben, Notizen, Sitzplan, Entwicklung) | K | 1 | M |
 | T4 | „Heute“-Startseite mit Stunden, Hinweisen, offenen Aufgaben | C | 1 | M |
 | T5 | Stundencockpit: Sitzplan, Anwesenheit, Ablauf, Zufall, Gruppen auf einem Bildschirm | C | 2 | M |
 | T6 | Exit-Ticket per QR-Code | C | 3 | M |
@@ -142,6 +154,29 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | A4 | Endnoten aller Fächer für die Klassenleitung sammeln (statt Zettel/Rundmail) | C | 2 | M |
 | A5 | Leistungsstand per Knopfdruck: Diktat → KI-Text, keine Klarnamen an KI | B | 3 | M |
 
+## Kleine Helfer (Quality of Life)
+
+Konstantin: „Das sind genau die QoL-Features, die mir in iDoceo fehlen, davon gibt es sicher noch zig mehr.“ Sammlung:
+
+| # | Punkt | Herkunft | Prio | Aufwand |
+|---|---|---|---|---|
+| Q1 | Monatsnote aus Smileys vorschlagen (→ N14) | C | 1 | S |
+| Q2 | Ein Baustein / eine Note für mehrere Schüler auf einmal (→ M8) | C | 1 | S |
+| Q3 | **Rückgängig** für jede Eingabe, ohne Nachfrage-Dialoge | C | 1 | S |
+| Q4 | Spalte füllen („alle 15“) und dann nur Ausnahmen ändern | C | 1 | S |
+| Q5 | Hinweis „in dieser Spalte fehlen noch 3 Werte“ | C | 2 | S |
+| Q6 | Warnung beim Eintragen: „Durch diese Note fällt X unter 5 Punkte“ | C | 2 | S |
+| Q7 | Spaltenstruktur (z. B. ein Test) mit einem Tipp in Parallelkurse kopieren | C | 2 | S |
+| Q8 | Schnellsuche über alles (Schüler, Kurs, Notiz), am PC mit Strg+K | C | 2 | S |
+| Q9 | Kurs der aktuellen Stunde öffnet sich beim Start von selbst | C | 2 | S |
+| Q10 | Bausteine mit Platzhalter (`{Vorname}`) und zuletzt benutzte oben | C | 2 | S |
+| Q11 | Spracheingabe von Noten („Ali zwölf, Berta neun“), lokal verarbeitet | C | 3 | M |
+| Q12 | Namensspalte fixiert, Spaltengruppen ein- und ausklappbar | C | 1 | S |
+| Q13 | Zeugnisliste (alle Endnoten eines Kurses) mit einem Tipp kopieren oder exportieren | C | 2 | S |
+| Q14 | Abgaben-Zähler mit „fehlt noch“-Liste (Arbeitsproben, Hausaufgaben) | C | 2 | S |
+| Q15 | Dunkelmodus, Schriftgröße je Gerät | C | 2 | S |
+| Q16 | Geburtstagshinweis in „Heute“ (Alter ist ohnehin da) | C | 3 | S |
+
 ## E-Mail
 
 | # | Punkt | Herkunft | Prio | Aufwand |
@@ -161,5 +196,6 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | Punkt | Grund |
 |---|---|
 | Gutachten und Zeugnistexte | nicht benötigt (Brainstorm) |
+| Monatsnoten als Pflicht | Rhythmus frei wählbar (E20) |
 | EWH-Inhalte (Klausurarchiv, Bausteinkatalog für Klausuren) | L.E.O. ist eigenständig (Brainstorm) |
 | Design-Vorschläge in der Planung | nicht gewünscht |

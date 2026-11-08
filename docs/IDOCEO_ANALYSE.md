@@ -87,7 +87,19 @@ Daneben, nicht im Baum:
 | Verpasste Klausur = 0, entschuldigt = leer? | Status **E/UE** sichtbar an der Zelle, Nachschreiber-Workflow |
 | Rot unter 5, Überblick je Spalte | übernehmen |
 
-## 7 Fragen
+## 7 Fragen und Antworten (08.11.2026)
+
+| # | Frage | Antwort von Konstantin | Folge für L.E.O. |
+|---|---|---|---|
+| 1 | Orange Gesamtnote, Abiturprüfung, Gesamtnote X. Halbjahr | alle **von Hand** eingetragen. Die Halbjahresnote ist die Note des letzten Halbjahres als Richtwert. Kurse wurden jedes Halbjahr neu angelegt, dadurch fehlte der Blick auf frühere Leistungen | Kurse über Halbjahre (E21), Vorhalbjahresnote automatisch, Entwicklung sichtbar |
+| 2 | Monatsnote aus Smileys? | **nach Gefühl**. Wunsch: Erinnerung am Monatsende, Bericht zum Verschicken, Selbsteinschätzung der Schüler nach Kriterien | Vorschlag aus Smileys, Erinnerung, Bericht, Selbsteinschätzungsformular |
+| 3 | Lila Fehlzeiten-Spalten | gewollt, aber zu aufwendig von Hand | automatisch aus WebUntis (E23) |
+| 4 | 0 bei verpasster Klausur | 0 = **unentschuldigt verpasst**. Auch Verspätungstests: Anwesende 15, Zuspätkommende 0 | Schnelltest (E24), Gewicht je Test (E18), Status E/UE |
+| 5 | „0-15 Leo“ vs. „0-15 grade gerundet“ | weiß er nicht mehr | ignorieren, Notenarten neu aus den Bildungsgängen ableiten (E19) |
+| 6 | Reiter Orga und Hausaufgaben | gedacht für Notizen und Hausaufgaben, aber nie genutzt: zu viele Listen, zu viel Klicken | Kursübersicht mit Kacheln (E25) |
+| 7 | Vorlagen je Kurs gleich? | noch offen | |
+
+### Ursprüngliche Fragen
 
 1. **Orange „Gesamtnote“, „Abiturprüfung“, „Gesamtnote X. Halbjahr“:** Wie hängen sie zusammen? Ist die türkise Spalte die Zeugnisnote
    des Vorhalbjahres (von Hand)? Fließt die Abiturprüfung in die orange Gesamtnote ein, und mit welchem Gewicht?
