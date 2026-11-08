@@ -78,7 +78,7 @@ Konstantins Wunsch: MEDIAN soll in L.E.O. sichtbar sein, gerade bei der Planung.
 - **I34 Eigener Datenexport** jederzeit mit einem Tipp. Niemand fühlt sich eingesperrt.
 - ~~**I35 Protokoll für mich**~~ entfällt (E29).
 
-## 7 Zweite Runde (08.11.2026, noch nicht angenommen)
+## 7 Zweite Runde (08.11.2026, angenommen: E35)
 
 Auf Konstantins Frage „Hast du sonst noch gute Ideen?“ nach E33. Stehen im [BACKLOG](BACKLOG.md) unter „Vorschläge zweite Runde“.
 
@@ -93,11 +93,12 @@ Auf Konstantins Frage „Hast du sonst noch gute Ideen?“ nach E33. Stehen im [
 - **I40 Mitarbeit-Schnellrunde**: Am Stundenende eine Karte je Schüler, nach rechts/links wischen oder Smiley tippen, die ganze Klasse in zwei Minuten.
 - **I41 Stoffprotokoll**: Was in der Stunde dran war, in einer Zeile. Daraus entsteht die Stoffverteilung, und die Zeile lässt sich ins
   WebUntis-Klassenbuch kopieren. Im nächsten Halbjahr dient sie als Vorlage für den Parallelkurs.
-- **I42 Nachteilsausgleich sichtbar**: Ein Merkmal an der Schülerkarte (z. B. Zeitverlängerung), das bei Tests und Klausuren als Hinweis erscheint.
-  Sensible Daten: nur die eigene Lehrkraft, keine Diagnose, nur die Maßnahme. Datenschutz klären (FRAGEN_SCHULE).
+- **I42 Nachteilsausgleich sichtbar** (E36): Ein kleines, dezentes Symbol am Schüler. Welcher NTA gilt (z. B. Zeitverlängerung), zeigt Mouse-over
+  oder Antippen; er kann je Schüler verschieden sein. Bei Tests und Klassenarbeiten erscheint er als Hinweis. Eintragen: Klassenleitung
+  (für alle Lehrkräfte des Schülers) oder jede Lehrkraft für ihre eigenen Kurse.
 - **I43 Termine der Schule als Fristen**: Notenschluss, Zeugniskonferenz und Mahnfristen pflegt die Schule einmal zentral (wie I1).
   L.E.O. erinnert jede Lehrkraft rechtzeitig, und I37 rechnet damit.
-- **I44 Fehlende Leistung erkennt L.E.O. selbst**: War ein Schüler am Tag eines Tests abwesend (Anwesenheit oder WebUntis), landet er
+- **I44 Fehlende Klassenarbeit erkennt L.E.O. selbst** (nur Klassenarbeiten, nicht Tests; E35): War ein Schüler am Tag einer Klassenarbeit abwesend (Anwesenheit oder WebUntis), landet er
   automatisch auf der Nachschreiberliste. Niemand muss das von Hand abgleichen.
 - **I45 Kursstart-Assistent fürs neue Halbjahr**: „Halbjahr 2 beginnt: Kurse übernehmen, Abgänger ausblenden, Vorlage behalten?“
   in einem Schritt. Passt zu E21 (Kurse über Halbjahre).

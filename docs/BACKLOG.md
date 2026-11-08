@@ -207,7 +207,7 @@ Details in [IDEEN.md](IDEEN.md). Herkunft C, von Konstantin angenommen.
 | I32 | Fortbildungs-Kit für die Einführung | 3 | S |
 | I34 | Eigener Datenexport mit einem Tipp (→ G11) | G | — |
 
-## Vorschläge zweite Runde (08.11.2026, noch nicht angenommen)
+## Zweite Ideenrunde (08.11.2026, angenommen: E35)
 
 Beschreibung in [IDEEN](IDEEN.md) Abschnitt 7. Herkunft C.
 
@@ -219,9 +219,9 @@ Beschreibung in [IDEEN](IDEEN.md) Abschnitt 7. Herkunft C.
 | I39 | **Notenstand zum Mitgeben** (Zettel/QR, nur auf Tipp der Lehrkraft) | 2 | S |
 | I40 | Mitarbeit-Schnellrunde am Stundenende | 1 | S |
 | I41 | Stoffprotokoll je Stunde, kopierbar ins WebUntis-Klassenbuch | 2 | S |
-| I42 | Nachteilsausgleich als Hinweis bei Tests (Datenschutz klären) | 3 | S |
+| I42 | **Nachteilsausgleich**: dezentes Symbol, Details per Mouse-over/Antippen, eingetragen von Klassenleitung oder Kurslehrkraft (E36) | 1 | S |
 | I43 | Schultermine als Fristen, zentral gepflegt | 2 | S |
-| I44 | Abwesend beim Test → automatisch Nachschreiberliste | 1 | S |
+| I44 | Abwesend bei der **Klassenarbeit** (nicht Test) → automatisch Nachschreiberliste | 1 | S |
 | I45 | Kursstart-Assistent fürs neue Halbjahr | 1 | M |
 
 ## Kleine Helfer (Quality of Life)

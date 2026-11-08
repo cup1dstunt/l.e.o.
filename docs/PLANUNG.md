@@ -36,6 +36,8 @@ L.E.O. soll der Ort sein, an dem für eine Lehrkraft alles über ihre Kurse zusa
     von der aus alles in einem Tipp erreichbar ist.
 11. **Gebaut für die ganze Schule.** Von Anfang an für ~100 Lehrkräfte mit Rollen und IServ-Anmeldung angelegt,
    auch wenn zuerst nur einer damit arbeitet.
+12. **Viel drin, nichts überladen** (E38). Modern, schön, intuitiv, flüssig. Jede Ansicht zeigt nur, was man gerade braucht;
+    seltene Funktionen liegen eine Ebene tiefer. Der Notenrechner ist das Herzstück (E37).
 
 ---
 

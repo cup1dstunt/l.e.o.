@@ -6,6 +6,10 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E38 | 08.11.2026 | **Viele Funktionen, aber nicht überladen.** Die App soll modern, schön, intuitiv und flüssig sein. Selten genutzte Funktionen liegen eine Ebene tiefer, die Hauptansichten zeigen nur das Nötige | Konstantin |
+| E37 | 08.11.2026 | **Der Notenrechner ist das Herzstück.** Er war die Stärke von iDoceo und wird gründlich nachgebaut (im Kern wie Excel), aber modern und flüssig bedienbar | Konstantin |
+| E36 | 08.11.2026 | **Nachteilsausgleich (NTA)** wird dezent mit einem kleinen Symbol am Schüler markiert. Welcher NTA genau gilt, zeigt Mouse-over (PC) oder Antippen (Tablet/Handy); er kann sich je Schüler unterscheiden. Eintragen dürfen die Klassenleitung (gilt für alle Lehrkräfte des Schülers) oder jede Lehrkraft für ihre eigenen Kurse. Für Konstantin keine Datenschutzbedenken, weil Lehrkräfte das wissen müssen | Konstantin |
+| E35 | 08.11.2026 | Ideen **I36–I45 angenommen**. I44 gilt nur für **Klassenarbeiten**, nicht für Tests | Konstantin |
 | E34 | 08.11.2026 | **Design und Farben auf keinen Fall an iDoceo orientieren.** Die iDoceo-Analyse beschreibt nur Aufbau und Rechenlogik | Konstantin |
 | E33 | 08.11.2026 | Halbjahresnoten werden weiter in den **Excel-Tabellen der Schule** eingetragen. Je Fach wird nur die (Halb-)Jahresendnote **von Hand** übertragen. L.E.O. zeigt sie keinen anderen Lehrkräften und braucht **keinen Export und keine Tabellenvorlage**; die Endnote muss nur klar ablesbar sein. **Ersetzt E32** | Konstantin |
 | E32 | 08.11.2026 | ~~Halbjahresnoten für alle Lehrkräfte einsehbar~~ → **ersetzt durch E33** (Missverständnis) | |
