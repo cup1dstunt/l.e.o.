@@ -15,6 +15,7 @@ mit Anmeldung über **IServ (Single-Sign-On)**.
 |---|---|
 | [docs/PLANUNG.md](docs/PLANUNG.md) | Zielbild, Module, Grundgerüst für den schulweiten Betrieb, Anbindungen, Fahrplan |
 | [docs/IDOCEO_ANALYSE.md](docs/IDOCEO_ANALYSE.md) | Aufbau des iDoceo-Notenbuchs als Vorlage für L.E.O. |
+| [docs/RECHENLOGIK.md](docs/RECHENLOGIK.md) | Rechenregeln des Notenbuchs mit Testfällen (Entwurf) |
 | [docs/BEWERTUNGSBOEGEN.md](docs/BEWERTUNGSBOEGEN.md) | Selbst- und Fremdeinschätzung, Bibliothek, Entwurf Mitarbeit Englisch |
 | [docs/IDEEN.md](docs/IDEEN.md) | Ideensammlung: Features, Design, QoL, Onboarding |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | alle Ideen und Wünsche mit Herkunft und Priorität |
