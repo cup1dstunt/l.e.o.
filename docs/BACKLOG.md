@@ -224,6 +224,16 @@ Beschreibung in [IDEEN](IDEEN.md) Abschnitt 7. Herkunft C.
 | I44 | Abwesend bei der **Klassenarbeit** (nicht Test) → automatisch Nachschreiberliste | 1 | S |
 | I45 | Kursstart-Assistent fürs neue Halbjahr | 1 | M |
 
+## Themen zum Planen (08.11.2026, Herkunft C, von Konstantin ins Backlog)
+
+| # | Punkt | Prio | Aufwand |
+|---|---|---|---|
+| T-1 | **„Heute“-Bildschirm**: Stunden, Nachschreiber, Fristen, Erinnerungen, offene Vorbehalte | 2 | M |
+| T-2 | **Ausbildungsbetriebe**: Ansprechpartner je Azubi, Fehlzeitenmeldung an den Betrieb per Vorlage | 2 | M |
+| T-3 | **Kammerprüfungen**: Termine der Zwischen- und Abschlussprüfung je Klasse, Warnung bei Klassenarbeiten in Prüfungswochen | 3 | S |
+| T-4 | **Klassenleitung**: Vorbereitung der Zeugniskonferenz, Fehlzeiten-Mahnstufen, NTA-Pflege | 2 | M |
+| T-5 | **Notenbuch-Bedienung** wird gerade geplant: [NOTENBUCH_BEDIENUNG](NOTENBUCH_BEDIENUNG.md) | 1 | — |
+
 ## Kleine Helfer (Quality of Life)
 
 Konstantin: „Das sind genau die QoL-Features, die mir in iDoceo fehlen, davon gibt es sicher noch zig mehr.“ Sammlung:

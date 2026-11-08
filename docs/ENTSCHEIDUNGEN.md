@@ -6,6 +6,11 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E43 | 08.11.2026 | **Abiturprüfung** zählt nicht im Notenbaum, sie wird in die Excel-Tabellen der Schule eingetragen; deren eigene Gewichtung ist noch unbekannt. Excel-Dateien folgen | Konstantin |
+| E42 | 08.11.2026 | **Vorbehalt mit Stern:** Einzelne Noten bekommen einen Stern mit kurzem Kommentar (z. B. Bedingung für eine bessere Note). Ändert die Rechnung nicht, wird bei der Endnote angezeigt | Konstantin |
+| E41 | 08.11.2026 | **Gewichte relativ** („10 %“ = ein Zehntel eines normalen Tests). Gewichtet werden kann eine ganze Spalte (Test, Präsentation) **und** eine einzelne Note eines Schülers | Konstantin |
+| E40 | 08.11.2026 | **Runden:** nur die Endnote, kaufmännisch. Bei genau ,50 entscheidet die Lehrkraft. Ein leerer Zweig (z. B. noch keine Klausur) wird übersprungen | Konstantin |
+| E39 | 08.11.2026 | **Eingetragene Noten sind ganz** (z. B. fest 10 Punkte), **berechnete Noten vorläufig** mit zwei Nachkommastellen; beides klar unterscheidbar. Jede Note trägt genau, was sie war (Spalte, Art, Datum); das Datum ist bei Bedarf sichtbar | Konstantin |
 | E38 | 08.11.2026 | **Viele Funktionen, aber nicht überladen.** Die App soll modern, schön, intuitiv und flüssig sein. Selten genutzte Funktionen liegen eine Ebene tiefer, die Hauptansichten zeigen nur das Nötige | Konstantin |
 | E37 | 08.11.2026 | **Der Notenrechner ist das Herzstück.** Er war die Stärke von iDoceo und wird gründlich nachgebaut (im Kern wie Excel), aber modern und flüssig bedienbar | Konstantin |
 | E36 | 08.11.2026 | **Nachteilsausgleich (NTA)** wird dezent mit einem kleinen Symbol am Schüler markiert. Welcher NTA genau gilt, zeigt Mouse-over (PC) oder Antippen (Tablet/Handy); er kann sich je Schüler unterscheiden. Eintragen dürfen die Klassenleitung (gilt für alle Lehrkräfte des Schülers) oder jede Lehrkraft für ihre eigenen Kurse. Für Konstantin keine Datenschutzbedenken, weil Lehrkräfte das wissen müssen | Konstantin |
