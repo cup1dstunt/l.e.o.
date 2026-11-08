@@ -25,9 +25,9 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | G11 | Vollständiger Datenexport als Notausstieg (je Lehrkraft und gesamt) | B | G | M |
 | G12 | Docker Compose für Unraid (Entwicklung) und Schulserver (Echtbetrieb) | C | G | S |
 | G14 | Aktives Teilen durch die Lehrkraft: Empfänger, Umfang, Frist, jederzeit zurücknehmbar (E29) | K | 2 | M |
-| G18 | **Verschlüsselung der Noten je Lehrkraft** (auch der Serverbetreiber kann nichts lesen). Bedingung: keine spürbaren Wartezeiten bei der Statistik. Einschätzung: Statistik über die eigenen Kurse rechnet das Gerät nach dem Entschlüsseln, das sind wenige tausend Werte und geht in Sekundenbruchteilen. Knifflig sind Doppelsteckung (gemeinsamer Schlüssel), Halbjahresnoten für alle (bleiben unverschlüsselt oder eigener Schlüssel) und Schlüsselverlust (Wiederherstellung) | K, C | 3 | L |
-| G19 | Doppelsteckung: zwei Lehrkräfte, ein Notenbuch, beide schreiben; jede Eingabe mit Kürzel (E31) | K | 1 | M |
-| G20 | Halbjahresnoten-Tabelle je Klasse für alle Lehrkräfte (E32) | K | 2 | M |
+| G18 | **Verschlüsselung der Noten je Lehrkraft** (auch der Serverbetreiber kann nichts lesen). Bedingung: keine spürbaren Wartezeiten bei der Statistik. Einschätzung: Statistik über die eigenen Kurse rechnet das Gerät nach dem Entschlüsseln, das sind wenige tausend Werte und geht in Sekundenbruchteilen. Knifflig sind Doppelsteckung (gemeinsamer Schlüssel), Halbjahresnoten bleiben lokal (E33), also kein Sonderfall und Schlüsselverlust (Wiederherstellung) | K, C | 3 | L |
+| G19 | Doppelsteckung: 2–3 Lehrkräfte im selben Fach und Kurs, ein Notenbuch, alle schreiben; jede Eingabe mit Kürzel (E31) | K | 1 | M |
+| G20 | Halbjahresnoten zum Übertragen in die Excel-Tabellen der Schule (Kopieren in passender Reihenfolge oder Export im Tabellenformat; Vorlage der Tabelle nötig) (E33) | K | 2 | S |
 | G15 | Pilot-Schutz: Passkey/2FA, optional nur über VPN, App-Sperre nach Inaktivität, Sichtschutz-Knopf, verschlüsselte Sicherungen | K, C | G | M |
 | G16 | Responsive für Smartphone, iPad, PC; eigene schmale Smartphone-Ansichten | K | G | M |
 | G17 | Windows: PWA über Edge installieren (eigenes Fenster, Startmenü). Echte EXE (z. B. mit Tauri) nur, falls die PWA nicht reicht | K | 3 | M |

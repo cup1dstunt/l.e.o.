@@ -2,7 +2,7 @@
 
 Grundlage: 15 Screenshots vom 08.11.2026 (iPad, erfundene Schüler). Kurse: „2FOS 25-1 Eng“ (1. Jahr), „2FOS 24-1 Eng“ (2. Jahr),
 „KA 22-m Englisch“ und die **Vorlagenklasse**, aus der neue Kurse kopiert werden.
-Offene Punkte stehen am Ende unter „Fragen“. Was hier steht, ist die Vorlage für L.E.O. (Entscheidung E5).
+Offene Punkte stehen am Ende unter „Fragen“. Was hier steht, ist die Vorlage für **Aufbau und Rechenlogik** von L.E.O. (Entscheidung E5). Farben und Gestaltung von iDoceo sind nur zur Beschreibung genannt und **kein Vorbild** (E34).
 
 ---
 

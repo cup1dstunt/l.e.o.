@@ -9,14 +9,9 @@
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
 6. ~~V1–V6, V3b~~ beantwortet.
 7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.
-8. Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
-9. ~~Kriterienraster Selbsteinschätzung~~ erhalten (08.11.2026), gekürzter Entwurf in BEWERTUNGSBOEGEN.md.
-10. Alt: Gibt es noch das Kriterienraster zur Selbsteinschätzung der mündlichen Leistung aus dem Referendariat? Sonst bauen wir ein neues.
-
-## Noch an Konstantin (Rechte)
-
-1. Halbjahresnoten „für alle Lehrkräfte“: wirklich alle an der Schule, oder alle, die in der Klasse unterrichten?
-2. Sieht die Schulleitung die Halbjahresnoten auch (wie heute)?
+8. Eine leere Vorlage der **Excel-Halbjahresnotentabelle** der Schule (für den Export, E33).
+9. Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
+10. ~~Kriterienraster Selbsteinschätzung~~ erhalten (08.11.2026), gekürzter Entwurf in BEWERTUNGSBOEGEN.md.
 
 ## An das MEDIAN-Team
 
