@@ -2,7 +2,7 @@
 
 > **L**eistung · **E**ntwicklung · **O**rganisation. Ein Werkzeug für Lehrkräfte der Leopold-Ullstein-Schule.
 >
-> Stand: 08.11.2026. Planungsskizze, noch kein Design und kein Code. Alles hier ist Vorschlag, bis es in
+> Stand: 08.11.2026 (zweite Fassung, nach Konstantins Antworten zu V1–V6 und den iDoceo-Screenshots). Planungsskizze, noch kein Design und kein Code. Alles hier ist Vorschlag, bis es in
 > [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) steht. Einzelne Wünsche und Ideen sammelt [BACKLOG.md](BACKLOG.md).
 
 ---
@@ -106,7 +106,8 @@ dafür braucht es weiterhin einen der Wege aus 6.2.
 | **Klassenleitung** | zusätzlich: Fehlzeiten der Klasse in **allen** Fächern, Konferenzansicht | WebUntis (Klassenlehrkraft) oder Schalter beim Import, Bestätigung durch Admin |
 | **Konferenzteilnahme** | in der Konferenzansicht die Endnoten der Klasse | zeitlich begrenzt freigegeben |
 | **Admin (technisch)** | Einrichtung, Importe, Sicherung. **Keine** Noten | lokal festgelegt |
-| *später:* Fachbereich, Schulleitung | nur zusammengefasste Statistik, keine Einzelnoten | offen |
+| **Schulleitung** | Endnoten aller Kurse, **keine Teilnoten** (wie heute) | IServ-Gruppe oder Admin |
+| *später:* Fachbereich | nur zusammengefasste Statistik, keine Einzelnoten | offen |
 
 Grundsätze:
 - **Daten gehören dem Kurs.** Noten, Mitarbeit und Notizen sieht nur, wer den Kurs unterrichtet (Co-Teaching: mehrere Lehrkräfte je Kurs).
@@ -115,30 +116,49 @@ Grundsätze:
 
 ### 4.3 Daten und Technik
 
+**Geräte:** Smartphone, iPad und PC sind gleich wichtig, aber für verschiedene Dinge:
+
+| Gerät | typische Nutzung |
+|---|---|
+| **Smartphone** | im Raum schnell: Anwesenheit, Mitarbeit-Smiley mit Baustein, Hausaufgabe abhaken, Zufall, Timer, Stundenplan, Notiz |
+| **iPad** | Unterricht: Sitzplan, Notenbuch, Beamer-Ansicht, Gruppen |
+| **PC** | Vor- und Nachbereitung: Notenbuch mit allen Spalten, Vorlagen, Importe, Auswertung, Konferenz |
+
+Die große Notentabelle wird auf dem Smartphone nicht gequetscht, sondern es gibt dort **eigene, schmale Ansichten**
+(ein Schüler oder eine Spalte zur Zeit, große Tipp-Flächen).
+
 | Punkt | Vorschlag | Warum |
 |---|---|---|
-| Datenbank | **PostgreSQL** statt SQLite | viele gleichzeitige Schreiber (ganze Schule in der 1. Stunde), Zeilenrechte, etablierte Sicherung |
-| Mandant | Spalte `schule_id` in allen Tabellen ab Tag 1 | kostet heute nichts, erlaubt später Testschule und echte Schule nebeneinander |
-| Backend | Python, FastAPI | bekannt aus EWH, gute OIDC-Bibliotheken |
-| Frontend | Web-App ohne Build-Schritt (Alpine.js), auf dem iPad als Homescreen-App | wie EWH, läuft auch in Firefox unter Windows |
-| Offline | Eingaben im Gerät puffern und nachsenden, Konflikte je **Zelle** (letzte Änderung gewinnt, mit Hinweis) | Klassenraum-WLAN |
+| Datenbank | **PostgreSQL** (E14) | viele gleichzeitige Schreiber, Zeilenrechte, etablierte Sicherung |
+| Mandant | `schule_id` in allen Tabellen ab Tag 1 (E13) | Testschule neben echter Schule, später andere Schulen |
+| Backend | **Python 3.13, FastAPI, SQLAlchemy 2, Alembic** (Migrationen), Authlib (OpenID Connect) | aktuell, verbreitet, bekannt aus EWH, gute Bibliotheken für Excel-Importe und Statistik |
+| Frontend | **SvelteKit (Svelte 5, TypeScript) als PWA**, Vite | ein Code für Smartphone, iPad und PC; installierbar auf dem Homescreen; schnell auf alten Geräten; klare Komponenten statt einer Riesendatei (Vorschlag V3b) |
+| Offline | **Service Worker + IndexedDB**: Kurs der aktuellen Stunde liegt im Gerät, Eingaben werden gepuffert und nachgesendet. Konflikte je **Zelle** (letzte Änderung gewinnt, mit Hinweis) | Klassenraum-WLAN |
 | Hintergrundjobs | eigener Prozess für WebUntis-Abgleich, Erinnerungen, Sicherung | Import blockiert nicht die Oberfläche |
-| Schnittstellen | Importe hinter austauschbaren Adaptern (`FehlzeitenQuelle`, `StundenplanQuelle`, `StammdatenQuelle`, `MailQuelle`) | Wechsel zwischen API, Export und Notlösung ohne Umbau |
+| Schnittstellen | Importe hinter austauschbaren Adaptern (`FehlzeitenQuelle`, `StundenplanQuelle`, `StammdatenQuelle`, `MailQuelle`) (E16) | Wechsel zwischen API, Export und Notlösung ohne Umbau |
 | Sicherung | nächtlich, verschlüsselt, vor jedem Update, Wiederherstellung getestet | Vorbild EWH |
 | Notausstieg | vollständiger Export je Lehrkraft (Noten als Excel/CSV, alles als JSON) | niemand ist eingesperrt |
-| Betrieb | Docker Compose, lauffähig auf deinem Unraid (Entwicklung, Testdaten) **und** auf einem Server der Schule (Echtbetrieb) | siehe 4.4 |
+| Betrieb | Docker Compose (App, Datenbank, Jobs), lauffähig auf dem Unraid-Server **und** auf einem Server der Schule | siehe 4.4 |
+| Tests | automatische Tests für Notenberechnung und Rechte, Browsertests auf Smartphone- und iPad-Größe | Berechnungen müssen stimmen, Rechte dürfen nicht lecken |
 
-### 4.4 Wo läuft L.E.O. im Echtbetrieb?
+**Ehrlich zum Unterschied zu EWH:** SvelteKit braucht einen Build-Schritt. Der passiert im Docker-Build, auf dem Server ändert sich
+für dich nichts. Dafür bleibt der Code bei dieser Größe übersichtlich.
 
-Sobald 100 Lehrkräfte echte Schülerdaten eintragen, ist die **Schule** verantwortlich, nicht du privat.
-Deshalb wird L.E.O. so gebaut, dass es auf jedem Server mit Docker läuft:
+### 4.4 Wo läuft L.E.O.?
 
-- **Entwicklung und Pilot mit Testdaten:** dein Unraid-Server, z. B. `leo.kolacloud.de`.
-- **Pilot mit echten Daten (du und ein paar Kollegen):** nur nach Absprache mit Schulleitung und Datenschutz.
+- **Entwicklung mit Testdaten:** Unraid-Server.
+- **Pilot mit echten Daten (E15):** Unraid-Server, du und evtl. eine Kollegin, parallel zu iDoceo.
 - **Schulweit:** Server der Schule oder des Trägers, Verzeichnis der Verarbeitungstätigkeiten, Löschkonzept.
 
-Die Fragen dazu stehen in [FRAGEN_SCHULE.md](FRAGEN_SCHULE.md). Rollen und Datenschutzkonzept waren im Brainstorm „nachrangig“.
-Für den schulweiten Betrieb schlage ich vor: **Fundament jetzt, Ausbau später** (siehe ENTSCHEIDUNGEN, Vorschlag V1).
+**Schutz im Pilot mit echten Daten:**
+- Anmeldung nur mit **Passkey** (Face ID / Touch ID) oder Passwort plus zweitem Faktor, bis IServ-SSO steht.
+- Nur **HTTPS**, sichere Cookies, Sperre nach Fehlversuchen.
+- Optional: L.E.O. nur über **VPN** erreichbar (dein iPad zeigt schon ein VPN), dann ist es aus dem Internet gar nicht sichtbar.
+- **Verschlüsselte Sicherungen** (auch die Datenbank-Dumps), Schlüssel nicht auf demselben Server.
+- **Sperrbildschirm in der App** nach einigen Minuten ohne Nutzung (Beamer!) und ein „Sichtschutz“-Knopf, der Namen und Noten ausblendet.
+- Offline-Daten im Gerät nur für die eigenen Kurse, Abmelden löscht sie.
+
+Die Fragen an die Schule stehen in [FRAGEN_SCHULE.md](FRAGEN_SCHULE.md).
 
 ---
 
@@ -157,16 +177,24 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 
 ### C Notenbuch
 - Wird **genau so aufgebaut, wie du es in iDoceo mit deinen eigenen Vorlagen nutzt**: Spalten, Kategorien, Berechnungen, Ansicht.
-  Grundlage sind deine Screenshots. Keine eigenen Erfindungen.
+  Der Aufbau ist in [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md) beschrieben. Kurz:
+  - Seiten je Kurs: **Noten**, **Mitarbeit**, **Anwesenheit** (in der Vorlage auch Orga und Hausaufgaben).
+  - Berechnungsbaum in Notenpunkten 0–15: Gesamtnote = Klausuren 50 % + Sonstige Leistungen 50 %;
+    Sonstige = Mitarbeit (Monatsnoten) 50 % + Tests und Sonstiges (Einzelgewichte) 50 %. Leere Zellen zählen nicht, 0 zählt.
+  - Rot unter 5 Punkten, Anmerkungen je Zelle, Zellfarben, Datum in der Zelle, Notenspiegel je Spalte.
+  - Neue Kurse entstehen aus einer **Vorlagenklasse**.
+- Neu gegenüber iDoceo: **Monatsnote der Mitarbeit wird aus den Smileys vorgeschlagen**, statt sie von Hand zu übertragen.
 - Weil andere Kollegen andere Vorlagen haben: **Vorlagen** sind Daten, nicht Code. Deine wird die erste. Später kann man sie teilen.
 - Die **UPZ-Dateien** der Kollegen (Excel-basierte Notenorganisation) zeigen, was andere brauchen.
   Sie werden zweite Grundlage für Vorlagen und vielleicht ein Import.
 - Projektbewertungen (z. B. aus der Projekt-Werkstatt) fließen als Spalten ein.
 
 ### D Anwesenheit & Mitarbeit
-- Wie bei dir in iDoceo als **Kategorien mit Smiley und Kommentar**, aber der Kommentar kommt aus **Textbausteinen zum Antippen**.
+- Wie bei dir in iDoceo als **Kategorien mit Smiley (fünf Stufen plus „nicht da“) und Kommentar**, aber der Kommentar kommt aus **Textbausteinen zum Antippen**.
 - Eigene Bausteine, Favoriten, Reihenfolge nach Häufigkeit. Freitext bleibt möglich.
-- Bewertung direkt im Sitzplan oder in der Liste.
+- Bewertung direkt im Sitzplan, in der Liste oder auf dem Smartphone.
+- **Eine Anmerkung für mehrere Schüler auf einmal** (heute wird derselbe Satz mehrfach getippt).
+- Anwesenheit (✓ / ✗ / verspätet) wird aus WebUntis vorbelegt, eigene Einträge ergänzen.
 - Aufrufe aus dem Zufallsgenerator können als Mitarbeitsgelegenheit mitlaufen.
 
 ### E Hausaufgaben

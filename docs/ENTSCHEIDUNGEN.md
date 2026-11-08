@@ -6,25 +6,37 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
-| E1 | 08.11.2026 | Name **L.E.O.** – Leistung, Entwicklung, Organisation (Anspielung auf die Leopold-Ullstein-Schule) | Wunsch Konstantin; ersetzt den Arbeitstitel „Pult“ und die Namensliste aus dem Brainstorm |
-| E2 | 08.11.2026 | Ausgelegt für **schulweiten Betrieb** mit ca. 100 Lehrkräften | Wunsch Konstantin |
-| E3 | 08.11.2026 | Ziel: Anmeldung per **IServ-SSO** | Wunsch Konstantin; technisch möglich über OpenID Connect |
-| E4 | 08.11.2026 | **Eigenständiges** Werkzeug. Von EWH nur Betriebs- und Sicherungskonzept (Docker, Backups, Offline-Cache), keine Inhalte | Brainstorm |
-| E5 | 08.11.2026 | Notenbuch **genau nach Konstantins iDoceo-Vorlagen**, keine eigenen Überlegungen | Brainstorm; Konstantin nutzt in iDoceo fast nur das Notenbuch mit selbst erstellten Vorlagen |
-| E6 | 08.11.2026 | Anwesenheit und Mitarbeit wie in iDoceo als Kategorien mit Smiley, aber mit **Textbausteinen** statt Tippen | Konstantin: Tippen ist zu umständlich |
-| E7 | 08.11.2026 | Sitzplan muss **einfach** sein | iDoceo-Sitzplan war so fummelig, dass er nicht genutzt wurde |
-| E8 | 08.11.2026 | Keine Gutachten und Zeugnistexte | Brainstorm |
-| E9 | 08.11.2026 | Brainstorm-Inhalte kommen vollständig ins Backlog, nichts davon ist verpflichtend | Konstantin |
-| E10 | 08.11.2026 | Keine Design-Vorschläge in der Planungsphase | Konstantin |
+| E17 | 08.11.2026 | **Rolle Schulleitung**: sieht Endnoten, aber keine Teilnoten (wie heute). Admin sieht keine Noten | Konstantin zu V6 |
+| E16 | 08.11.2026 | WebUntis-Weg wird **noch nicht** festgelegt. Gebaut wird hinter austauschbaren Adaptern, Start mit Datei-Export | Konstantin zu V5: zuerst ein Projekt für ihn allein, aber alles Spätere immer mitdenken |
+| E15 | 08.11.2026 | **Pilot mit echten Daten auf dem Unraid-Server**: Konstantin und evtl. eine Kollegin, parallel zu iDoceo. Daten müssen gut geschützt sein (siehe PLANUNG 4.4) | Konstantin zu V4; Noten auf Endgeräten sind heute schon üblich (iDoceo, Excel) |
+| E14 | 08.11.2026 | **PostgreSQL** | Konstantin zu V2 |
+| E13 | 08.11.2026 | **Mandantenfähig** mit `schule_id` ab Tag 1; Ausrollen an andere Schulen ist ein mögliches Ziel | Konstantin zu V1 |
+| E12 | 08.11.2026 | Rollen und Rechte als Fundament jetzt, Datenschutzkonzept später ausbauen | Konstantin zu V1 |
 | E11 | 08.11.2026 | Keine echten Schülerdaten im Repo, keine Schülernamen an KI-Dienste | wie EWH |
+| E10 | 08.11.2026 | Keine Design-Vorschläge in der Planungsphase | Konstantin |
+| E9 | 08.11.2026 | Brainstorm-Inhalte kommen vollständig ins Backlog, nichts davon ist verpflichtend | Konstantin |
+| E8 | 08.11.2026 | Keine Gutachten und Zeugnistexte | Brainstorm |
+| E7 | 08.11.2026 | Sitzplan muss **einfach** sein | iDoceo-Sitzplan war so fummelig, dass er nicht genutzt wurde |
+| E6 | 08.11.2026 | Anwesenheit und Mitarbeit wie in iDoceo als Kategorien mit Smiley, aber mit **Textbausteinen** statt Tippen | Konstantin: Tippen ist zu umständlich |
+| E5 | 08.11.2026 | Notenbuch **genau nach Konstantins iDoceo-Vorlagen** (Analyse in [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md)) | Brainstorm; Konstantin nutzt in iDoceo fast nur das Notenbuch mit selbst erstellten Vorlagen |
+| E4 | 08.11.2026 | **Eigenständiges** Werkzeug. Von EWH nur Betriebs- und Sicherungskonzept, keine Inhalte | Brainstorm |
+| E3 | 08.11.2026 | Ziel: Anmeldung per **IServ-SSO** | Konstantin; technisch möglich über OpenID Connect |
+| E2 | 08.11.2026 | Ausgelegt für **schulweiten Betrieb** mit ca. 100 Lehrkräften | Konstantin |
+| E1 | 08.11.2026 | Name **L.E.O.** – Leistung, Entwicklung, Organisation | Konstantin |
 
 ## Vorschläge (zu bestätigen)
 
 | # | Vorschlag | Begründung |
 |---|---|---|
-| V1 | Rollen, Rechte und Mandant (`schule_id`) **jetzt** als Fundament anlegen, Datenschutzkonzept später ausbauen | Im Brainstorm „nachrangig“, aber bei 100 Nutzern später kaum nachrüstbar |
-| V2 | **PostgreSQL** statt SQLite | viele gleichzeitige Schreiber, Zeilenrechte, Standard auf Schulservern |
-| V3 | Technik wie EWH: Python/FastAPI, Alpine.js ohne Build, Docker | bekannt, wartbar, iPad und Windows |
-| V4 | Entwicklung und Pilot mit Testdaten auf dem Unraid-Server, Echtbetrieb mit echten Daten auf einem Server der Schule | Verantwortung für Schülerdaten liegt bei der Schule |
-| V5 | WebUntis schulweit über **eine zentrale Verbindung** (Ziel: offizielle Platform-API), Start mit Datei-Export | 100 private Logins sind weder sicher noch wartbar |
-| V6 | Admin hat technischen Zugriff, aber **keinen Notenzugriff** in der Oberfläche | Vertrauen der Kollegen |
+| V3b | **Technik neu (ersetzt V3):** Backend Python/FastAPI mit PostgreSQL. Frontend **SvelteKit (Svelte 5, TypeScript) als PWA**, Offline-Speicher im Browser (IndexedDB), ein Code für Smartphone, Tablet und PC. Details in PLANUNG 4.3 | Konstantin: Smartphone muss mit rein. Der EWH-Ansatz (eine große Alpine-Datei ohne Build) trägt eine App dieser Größe mit Offline-Betrieb und drei Bildschirmgrößen nicht gut |
+
+## Erledigte Vorschläge
+
+| # | Ergebnis |
+|---|---|
+| V1 | angenommen → E12, E13 |
+| V2 | angenommen → E14 |
+| V3 | ersetzt durch V3b |
+| V4 | angenommen mit Änderung → E15 |
+| V5 | zurückgestellt → E16 |
+| V6 | angenommen mit Ergänzung → E17 |

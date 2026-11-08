@@ -2,12 +2,12 @@
 
 ## An Konstantin
 
-1. Screenshots der iDoceo-Notenbuch-Vorlagen: Ansicht, Spalten-Einstellungen, Formeln/Gewichtung, Kategorien Anwesenheit und Mitarbeit (Smileys).
+1. ~~Screenshots der iDoceo-Vorlagen~~ (erhalten 08.11.2026). Rückfragen dazu: [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md), Abschnitt 7.
 2. UPZ-Dateien: Beispiele (Namen geschwärzt oder Testklasse).
 3. Welche Exporte erlaubt dir WebUntis für Fehlzeiten und Stundenplan (Format, Felder)? Ein Beispiel-Export wäre ideal.
 4. Konzept der Dateiablage je Stunde.
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
-6. Sollen Vorschläge V1–V6 in ENTSCHEIDUNGEN.md so gelten?
+6. ~~V1–V6~~ beantwortet. Offen: **V3b** (SvelteKit-PWA statt Alpine).
 
 ## An Schulleitung / Datenschutz
 

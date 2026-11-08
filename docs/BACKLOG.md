@@ -24,6 +24,9 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | G10 | Sicherung nächtlich, vor Updates, verschlüsselt, Wiederherstellung (Vorbild EWH) | B | G | M |
 | G11 | Vollständiger Datenexport als Notausstieg (je Lehrkraft und gesamt) | B | G | M |
 | G12 | Docker Compose für Unraid (Entwicklung) und Schulserver (Echtbetrieb) | C | G | S |
+| G14 | Rolle Schulleitung: Endnoten ja, Teilnoten nein (E17) | K | G | S |
+| G15 | Pilot-Schutz: Passkey/2FA, optional nur über VPN, App-Sperre nach Inaktivität, Sichtschutz-Knopf, verschlüsselte Sicherungen | K, C | G | M |
+| G16 | Responsive für Smartphone, iPad, PC; eigene schmale Smartphone-Ansichten | K | G | M |
 | G13 | Rollen-, Datenschutz-, Lösch- und Aufbewahrungskonzept ausbauen | B | 2 | M |
 
 ## Stammdaten & Import
@@ -52,6 +55,15 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte) | K, C | 3 | S |
 | N5 | Rechenweg der Endnote anzeigen | C | 2 | S |
 | N6 | Was-wäre-wenn / Zielnote („was braucht er in der nächsten Klausur?“) | C | 3 | S |
+| N8 | Seiten je Kurs (Noten, Mitarbeit, Anwesenheit, frei ergänzbar wie Orga/Hausaufgaben) | K (Screenshots) | 1 | M |
+| N9 | Berechnungsbaum: Gruppen mit gewichtetem Durchschnitt (gleich oder Einzelgewichte), „leere Zellen überspringen“, 0 zählt | K (Screenshots) | 1 | M |
+| N10 | Notenarten (0–15 mit Bestehensgrenze 5, Rundung, Farben), rot unter Grenze | K (Screenshots) | 1 | S |
+| N11 | Anmerkung je Zelle, Zellfarbe, Datum in der Zelle | K (Screenshots) | 1 | S |
+| N12 | Überblick je Spalte: Notenspiegel, bestanden x/n, Durchschnitt | K (Screenshots) | 2 | S |
+| N13 | Vorlagenklasse → „Neuer Kurs aus Vorlage“ als eigene Funktion | K (Screenshots), C | 1 | S |
+| N14 | **Monatsnote Mitarbeit aus den Smileys vorschlagen**, übernehmen oder überschreiben | C | 1 | S |
+| N15 | Fehlzeiten-Spalten je Halbjahr automatisch aus WebUntis | C | 2 | S |
+| N16 | Alter in Jahren und Monaten an der Schülerzeile | K (Screenshots) | 1 | S |
 | N7 | Export der Endnoten für Zeugniskonferenz und WebUntis/LUSD | C | 2 | S |
 
 ## Anwesenheit, Mitarbeit, Hausaufgaben
@@ -59,6 +71,8 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
 | M1 | Anwesenheit und Mitarbeit als Kategorien mit Smiley, Kommentar aus **Textbausteinen** zum Antippen | K | 1 | M |
+| M8 | Eine Anmerkung für mehrere Schüler gleichzeitig | C | 1 | S |
+| M9 | Mitarbeit-Spalte mit Titel und Datum (z. B. „Jigsaw Reading“) | K (Screenshots) | 1 | S |
 | M2 | Eigene Bausteine, Favoriten, Sortierung nach Häufigkeit, Freitext | K, C | 1 | S |
 | M3 | Bewerten direkt im Sitzplan | C | 1 | S |
 | M4 | Zufallsaufrufe fließen optional in Mitarbeit ein | B | 2 | S |
