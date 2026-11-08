@@ -6,6 +6,8 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E32 | 08.11.2026 | **Halbjahresnoten (Zeugnisnoten) sind für alle Lehrkräfte einsehbar**, wie in den heutigen Halbjahresnotentabellen. Alle anderen Noten (Teilnoten, Mitarbeit, Bögen, Notizen) bleiben bei der Lehrkraft (E29) | Konstantin |
+| E31 | 08.11.2026 | **Doppelsteckung:** Unterrichten zwei Lehrkräfte dasselbe Fach im selben Kurs, sehen und ändern **beide** das Notenbuch | Konstantin: Doppelsteckungen gibt es, dort ist das sinnvoll |
 | E30 | 08.11.2026 | Ideen aus [IDEEN.md](IDEEN.md) übernommen, außer I33 („Wer sieht das?“), das durch E29 entfällt | Konstantin: „alles gute Ideen“ |
 | E29 | 08.11.2026 | **Noten sind vertraulich: nur die Lehrkraft sieht sie.** Keine Einsicht für Klassenleitung, Schulleitung oder Admin. Teilen nur aktiv durch die Lehrkraft (Noten oder Lernstands-/Entwicklungsberichte an Schüler, Endnoten an Klassenleitung). **Ersetzt E17** | Konstantin: „Lehrer sind die Herren über ihre eigenen Noten“ |
 | E28 | 08.11.2026 | **Bewertungsbögen** als eigenes Modul: klickbare Bögen für Selbst- und Fremdeinschätzung, übersichtlich, eigene erstellen oder hochladen, Bibliothek (z. B. aus MEDIAN). Konzept in [BEWERTUNGSBOEGEN.md](BEWERTUNGSBOEGEN.md) | Konstantin |

@@ -111,7 +111,7 @@ dafür braucht es weiterhin einen der Wege aus 6.2.
 | Rolle | sieht | Herkunft |
 |---|---|---|
 **Grundsatz (E29): Lehrkräfte sind Herren über ihre eigenen Noten.** Noten, Mitarbeit, Bewertungen und Notizen sieht **nur die Lehrkraft**,
-die sie vergeben hat. Niemand sonst hat Einblick: nicht die Klassenleitung, nicht die Schulleitung, nicht der Admin.
+die sie vergeben hat (Ausnahmen: Doppelsteckung E31, Halbjahresnoten E32). Niemand sonst hat Einblick: nicht die Klassenleitung, nicht die Schulleitung, nicht der Admin.
 Teilen geschieht nur aktiv durch die Lehrkraft selbst (z. B. Noten oder einen Lernstandsbericht an einen Schüler schicken,
 Endnoten für die Konferenz an die Klassenleitung geben).
 
@@ -123,7 +123,9 @@ Endnoten für die Konferenz an die Klassenleitung geben).
 | **Schulleitung** | **keine** Noten. Höchstens anonyme Zahlen, falls die Schule das will (z. B. Anzahl Nutzer) | offen |
 
 Weitere Punkte:
-- **Co-Teaching:** Unterrichten zwei Lehrkräfte einen Kurs, entscheiden sie gemeinsam, ob sie das Notenbuch teilen. Standard: nicht geteilt.
+- **Doppelsteckung (E31):** Unterrichten zwei Lehrkräfte dasselbe Fach im selben Kurs, sehen und ändern beide das Notenbuch.
+  Jede Eingabe zeigt, wer sie gemacht hat.
+- **Halbjahresnoten (E32)** sind für alle Lehrkräfte einsehbar, wie heute in den Halbjahresnotentabellen. Teilnoten nicht.
 - **Teilen ist eine bewusste Handlung** mit Empfänger und Umfang (z. B. „Endnoten 2FOS 25-1 an Klassenleitung, bis 30.01.“). Zurücknehmen geht jederzeit.
 - **Ehrlich zur Technik:** Die Oberfläche zeigt niemandem fremde Noten. Wer den Server betreibt, könnte technisch an die Datenbank.
   Deshalb: Betrieb nur durch eine vertrauenswürdige Stelle, verschlüsselte Sicherungen, und im Backlog die Prüfung einer
