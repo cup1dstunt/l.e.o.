@@ -18,7 +18,7 @@ mit Anmeldung über **IServ (Single-Sign-On)**.
 | [docs/RECHENLOGIK.md](docs/RECHENLOGIK.md) | Rechenregeln des Notenbuchs mit Testfällen (Entwurf) |
 | [docs/NOTENBUCH_BEDIENUNG.md](docs/NOTENBUCH_BEDIENUNG.md) | Vorschläge zur Bedienung des Notenbuchs (zu entscheiden) |
 | [docs/konzept/](docs/konzept/) | Konzeptbilder des Notenbuchs (PC, Tablet, Handy) und klickbare Skizze |
-| [docs/konzept/logo/](docs/konzept/logo/) | Logo-Entwürfe A–C mit dem Schullogo |
+| [docs/konzept/logo/](docs/konzept/logo/) | Logo: Entwürfe A–C und das gewählte Doppellogo (`doppellogo/`, E47) |
 | [docs/BEWERTUNGSBOEGEN.md](docs/BEWERTUNGSBOEGEN.md) | Selbst- und Fremdeinschätzung, Bibliothek, Entwurf Mitarbeit Englisch |
 | [docs/IDEEN.md](docs/IDEEN.md) | Ideensammlung: Features, Design, QoL, Onboarding |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | alle Ideen und Wünsche mit Herkunft und Priorität |

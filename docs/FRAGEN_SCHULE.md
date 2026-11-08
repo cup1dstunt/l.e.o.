@@ -26,7 +26,7 @@
 4. Aufbewahrungs- und Löschfristen für Noten, Fehlzeiten, Notizen.
 5. Dürfen private Mailadressen der Schüler gespeichert werden (Einwilligung)?
 6. Dürfen Schüler ohne eigenes Konto über einen persönlichen Einmal-Link eine Selbsteinschätzung abgeben?
-7. Darf L.E.O. das Schullogo (OSZ Wirtschaft) bzw. seine Formen und Farben im eigenen Logo verwenden? Entwürfe: `docs/konzept/logo/`.
+7. ~~Darf L.E.O. das Schullogo verwenden?~~ Ja, laut Konstantin (E47). Offen: Schullogo als Vektordatei (SVG/PDF/EPS) für scharfe Darstellung.
 
 ## An den Untis-/WebUntis-Admin
 
