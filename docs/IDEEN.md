@@ -1,7 +1,7 @@
 # Ideen: Features, Designelemente, QoL, Onboarding
 
 Stand: 08.11.2026. Ideensammlung von Claude auf Konstantins Frage „Hast du sonst noch gute Ideen?“.
-Nichts davon ist beschlossen. Was Konstantin gut findet, wandert mit Nummer ins [BACKLOG](BACKLOG.md).
+Am 08.11.2026 von Konstantin angenommen, außer I33 und I35 (E30). Die Punkte stehen im [BACKLOG](BACKLOG.md).
 ★ = meine Favoriten.
 
 ---
@@ -74,6 +74,6 @@ Konstantins Wunsch: MEDIAN soll in L.E.O. sichtbar sein, gerade bei der Planung.
 
 ## 6 Vertrauen und Datenschutz als Gefühl
 
-- **I33 „Wer sieht das?“** an jeder Notiz und Note: ein kleines Symbol zeigt, ob nur du, die Klassenleitung oder die Konferenz es sieht.
+- ~~**I33 „Wer sieht das?“**~~ entfällt (E29: Noten sieht nur die Lehrkraft).
 - **I34 Eigener Datenexport** jederzeit mit einem Tipp. Niemand fühlt sich eingesperrt.
-- **I35 Protokoll für mich**: „Wer hat meine Kurse angesehen?“ für jede Lehrkraft einsehbar.
+- ~~**I35 Protokoll für mich**~~ entfällt (E29).

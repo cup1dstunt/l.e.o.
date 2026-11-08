@@ -22,7 +22,7 @@
 
 1. Darf ein schulweites Werkzeug Noten, Fehlzeiten und Notizen verarbeiten? Wer ist verantwortlich, auf welchem Server läuft es?
 2. Darf ein Pilot mit echten Daten auf einem privat betriebenen Server laufen, oder nur auf einem Server der Schule/des Trägers?
-3. Wer darf was sehen? Insbesondere: Klassenleitung alle Fehlzeiten der Klasse, Konferenzteilnehmer alle Endnoten.
+3. Ist es ok, dass die Klassenleitung alle Fehlzeiten der Klasse sieht? (Noten sieht nur die jeweilige Lehrkraft, E29.)
 4. Aufbewahrungs- und Löschfristen für Noten, Fehlzeiten, Notizen.
 5. Dürfen private Mailadressen der Schüler gespeichert werden (Einwilligung)?
 6. Dürfen Schüler ohne eigenes Konto über einen persönlichen Einmal-Link eine Selbsteinschätzung abgeben?

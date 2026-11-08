@@ -16,15 +16,16 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | G2 | PostgreSQL, Migrationen, Testdaten-Generator (erfundene Schüler) | C | G | M |
 | G3 | Anmeldung lokal + Passkey als Notfall-Zugang | C | G | S |
 | G4 | **IServ-SSO** per OpenID Connect (Scopes `openid profile email iserv:uuid iserv:groups iserv:roles`), nur Lehrkräfte | K | G (vorbereiten), 2 (live) | M |
-| G5 | Rollen: Lehrkraft, Klassenleitung, Konferenzteilnahme, Admin ohne Notenzugriff | K, B, C | G | M |
+| G5 | Rollen: Lehrkraft, Klassenleitung (nur Fehlzeiten der Klasse), Admin ohne Notenzugriff; Noten nur für die eigene Lehrkraft (E29) | K, B, C | G | M |
 | G6 | Co-Teaching: mehrere Lehrkräfte je Kurs | C | G | S |
-| G7 | Zugriffsprotokoll für fremde Daten | C | G | S |
+| G7 | Protokoll technischer Admin-Zugriffe (Sicherung, Wiederherstellung) | C | G | S |
 | G8 | Austauschbare Import-Adapter (`FehlzeitenQuelle`, `StundenplanQuelle`, `StammdatenQuelle`, `MailQuelle`) | B | G | M |
 | G9 | Offline-Puffer mit Nachsenden, Konflikt je Zelle | B | G | M |
 | G10 | Sicherung nächtlich, vor Updates, verschlüsselt, Wiederherstellung (Vorbild EWH) | B | G | M |
 | G11 | Vollständiger Datenexport als Notausstieg (je Lehrkraft und gesamt) | B | G | M |
 | G12 | Docker Compose für Unraid (Entwicklung) und Schulserver (Echtbetrieb) | C | G | S |
-| G14 | Rolle Schulleitung: Endnoten ja, Teilnoten nein (E17) | K | G | S |
+| G14 | Aktives Teilen durch die Lehrkraft: Empfänger, Umfang, Frist, jederzeit zurücknehmbar (E29) | K | 2 | M |
+| G18 | Prüfen: Verschlüsselung der Noten je Lehrkraft, damit auch der Serverbetreiber nichts lesen kann (Aufwand gegen Nutzen, z. B. Suche/Statistik) | C | 3 | L |
 | G15 | Pilot-Schutz: Passkey/2FA, optional nur über VPN, App-Sperre nach Inaktivität, Sichtschutz-Knopf, verschlüsselte Sicherungen | K, C | G | M |
 | G16 | Responsive für Smartphone, iPad, PC; eigene schmale Smartphone-Ansichten | K | G | M |
 | G17 | Windows: PWA über Edge installieren (eigenes Fenster, Startmenü). Echte EXE (z. B. mit Tauri) nur, falls die PWA nicht reicht | K | 3 | M |
@@ -151,7 +152,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | A1 | Statistiken überall sammeln, übersichtlich darstellen | B | 2 | M |
 | A2 | Verlaufsdiagramme je Schüler, Kurs, Klasse (Noten, Mitarbeit, Fehlzeiten, Hausaufgaben) | B | 2 | M |
 | A3 | Konferenzansicht: ganze Klasse, alle Fehlzeiten aller Fächer, Kurzübersicht je Schüler | B | 2 | M |
-| A4 | Endnoten aller Fächer für die Klassenleitung sammeln (statt Zettel/Rundmail) | C | 2 | M |
+| A4 | Endnoten **aktiv** an die Klassenleitung schicken (statt Zettel/Rundmail), nur wer will (E29) | C | 2 | M |
 | A5 | Leistungsstand per Knopfdruck: Diktat → KI-Text, keine Klarnamen an KI | B | 3 | M |
 
 ## Bewertungsbögen
@@ -170,9 +171,39 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | B11 | **MEDIAN in der App**: Schulressourcen-Kachel und Verlinkung bei der Planung; Matrizen und Arbeitstechniken als Grundlage für Bögen und Kriterien (Link mit Schlüssel in den Schuleinstellungen, nicht im Code). Details: IDEEN I1–I6 | K | 2 | M |
 | B10 | Erster Bogen: Mitarbeit Englisch (Entwurf in BEWERTUNGSBOEGEN.md, Abschnitt 6) | K | 2 | S |
 
-## Ideensammlung
+## Aus der Ideensammlung übernommen (E30)
 
-Weitere 35 Vorschläge (Features, Design, QoL, Onboarding) stehen in [IDEEN.md](IDEEN.md) und kommen nach Auswahl hierher.
+Details in [IDEEN.md](IDEEN.md). Herkunft C, von Konstantin angenommen.
+
+| # | Punkt | Prio | Aufwand |
+|---|---|---|---|
+| I1 | Schulressourcen-Kachel (MEDIAN, Notenspiegel, Formulare), je Schule gepflegt | 2 | S |
+| I2 | Methode an die Stunde hängen (MEDIAN-Karte verlinkt) | 2 | S |
+| I3 | Methoden-Helfer: Gruppenpuzzle (Stamm-/Expertengruppen), Lerntempoduett, Placemat, Stationen-Laufzettel | 2 | M |
+| I4 | Bewertungsmatrix passend zum Projekt als Bogen und Notenspalte | 3 | M |
+| I5 | Exit Ticket digital per QR | 3 | M |
+| I6 | Kann-Liste je Einheit mit Klassenstand | 3 | M |
+| I7 | **Schülerkarte von überall** | 1 | M |
+| I8 | Verlaufslinien im Notenbuch über alle Halbjahre | 1 | S |
+| I9 | Trendpfeile neben der Gesamtnote | 2 | S |
+| I10 | **Aufmerksamkeitsradar** (lange nicht bewertet/aufgerufen) | 2 | S |
+| I11 | Halbjahresrückblick je Kurs | 3 | M |
+| I12 | **Wischgesten** in Listen | 1 | S |
+| I13 | **Notenschluss-Assistent** | 2 | M |
+| I14 | Klausurrückgabe mit Genehmigungshinweis (> 1/3 unter 5) | 2 | S |
+| I15 | Gesprächsvorbereitung je Schüler | 3 | S |
+| I16 | Vertretungsinfo: Lesezugang auf Zeit, keine Noten | 3 | M |
+| I17 | Wochenblick-Kachel | 2 | S |
+| I18 | Push-Erinnerungen | 2 | M |
+| I19 | Abgaben mit Frist und „fehlt noch“ | 2 | M |
+| I20–I26 | QoL: Mehrfachauswahl per Wischen, zuletzt bearbeitet, Kopieren für Excel/Word, Offline-Anzeige, Haptik, Diktat für Notizen, Spaltenarten als Vorlage | 1–3 | je S |
+| I27 | **Start in zehn Minuten** | 1 | M |
+| I28 | Umzugshilfe iDoceo/UPZ/Excel | 2 | M |
+| I29 | Spielwiese mit Demo-Kurs | 2 | S |
+| I30 | Tipps im Kontext, Trick der Woche | 3 | S |
+| I31 | Vorlagen von Kollegen per Link | 2 | S |
+| I32 | Fortbildungs-Kit für die Einführung | 3 | S |
+| I34 | Eigener Datenexport mit einem Tipp (→ G11) | G | — |
 
 ## Kleine Helfer (Quality of Life)
 
@@ -217,5 +248,8 @@ Konstantin: „Das sind genau die QoL-Features, die mir in iDoceo fehlen, davon 
 |---|---|
 | Gutachten und Zeugnistexte | nicht benötigt (Brainstorm) |
 | Monatsnoten als Pflicht | Rhythmus frei wählbar (E20) |
+| I33 „Wer sieht das?“-Symbol | Noten sieht ohnehin nur die Lehrkraft (E29) |
+| I35 „Wer hat meine Kurse angesehen?“ | entfällt, niemand außer der Lehrkraft sieht sie (E29) |
+| Schulleitung sieht Endnoten | ersetzt durch E29 |
 | EWH-Inhalte (Klausurarchiv, Bausteinkatalog für Klausuren) | L.E.O. ist eigenständig (Brainstorm) |
 | Design-Vorschläge in der Planung | nicht gewünscht |

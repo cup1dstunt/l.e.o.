@@ -110,17 +110,24 @@ dafür braucht es weiterhin einen der Wege aus 6.2.
 
 | Rolle | sieht | Herkunft |
 |---|---|---|
-| **Lehrkraft** | eigene Kurse: Noten, Mitarbeit, Notizen, Sitzpläne. Fehlzeiten ihrer Schüler in ihren Stunden | IServ-Rolle |
-| **Klassenleitung** | zusätzlich: Fehlzeiten der Klasse in **allen** Fächern, Konferenzansicht | WebUntis (Klassenlehrkraft) oder Schalter beim Import, Bestätigung durch Admin |
-| **Konferenzteilnahme** | in der Konferenzansicht die Endnoten der Klasse | zeitlich begrenzt freigegeben |
-| **Admin (technisch)** | Einrichtung, Importe, Sicherung. **Keine** Noten | lokal festgelegt |
-| **Schulleitung** | Endnoten aller Kurse, **keine Teilnoten** (wie heute) | IServ-Gruppe oder Admin |
-| *später:* Fachbereich | nur zusammengefasste Statistik, keine Einzelnoten | offen |
+**Grundsatz (E29): Lehrkräfte sind Herren über ihre eigenen Noten.** Noten, Mitarbeit, Bewertungen und Notizen sieht **nur die Lehrkraft**,
+die sie vergeben hat. Niemand sonst hat Einblick: nicht die Klassenleitung, nicht die Schulleitung, nicht der Admin.
+Teilen geschieht nur aktiv durch die Lehrkraft selbst (z. B. Noten oder einen Lernstandsbericht an einen Schüler schicken,
+Endnoten für die Konferenz an die Klassenleitung geben).
 
-Grundsätze:
-- **Daten gehören dem Kurs.** Noten, Mitarbeit und Notizen sieht nur, wer den Kurs unterrichtet (Co-Teaching: mehrere Lehrkräfte je Kurs).
-- **Notizen bleiben privat**, außer die Lehrkraft gibt sie ausdrücklich für die Klassenleitung frei.
-- **Zugriffe auf fremde Daten werden protokolliert** (z. B. Klassenleitung öffnet Konferenzansicht).
+| Rolle | sieht | Herkunft |
+|---|---|---|
+| **Lehrkraft** | eigene Kurse: Noten, Mitarbeit, Notizen, Sitzpläne, Bögen. Fehlzeiten ihrer Schüler | IServ-Rolle |
+| **Klassenleitung** | zusätzlich: **Fehlzeiten** der Klasse in allen Fächern (sind keine Noten, kommen aus WebUntis). Noten nur, wenn Kollegen sie aktiv teilen | WebUntis (Klassenlehrkraft) oder Schalter beim Import |
+| **Admin (technisch)** | Einrichtung, Importe, Sicherung. **Keine** Noten, keine Notizen | lokal festgelegt |
+| **Schulleitung** | **keine** Noten. Höchstens anonyme Zahlen, falls die Schule das will (z. B. Anzahl Nutzer) | offen |
+
+Weitere Punkte:
+- **Co-Teaching:** Unterrichten zwei Lehrkräfte einen Kurs, entscheiden sie gemeinsam, ob sie das Notenbuch teilen. Standard: nicht geteilt.
+- **Teilen ist eine bewusste Handlung** mit Empfänger und Umfang (z. B. „Endnoten 2FOS 25-1 an Klassenleitung, bis 30.01.“). Zurücknehmen geht jederzeit.
+- **Ehrlich zur Technik:** Die Oberfläche zeigt niemandem fremde Noten. Wer den Server betreibt, könnte technisch an die Datenbank.
+  Deshalb: Betrieb nur durch eine vertrauenswürdige Stelle, verschlüsselte Sicherungen, und im Backlog die Prüfung einer
+  Verschlüsselung je Lehrkraft (G18).
 
 ### 4.3 Daten und Technik
 
@@ -265,8 +272,8 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 
 ### L Konferenzansicht
 - Für die Klassenleitung: alle Fehlzeiten der ganzen Klasse aus allen Fächern.
-- Je Schüler eine Kurzübersicht: Noten, Mitarbeit, Fehlzeiten, Notizen (freigegebene), Entwicklung.
-- Schulweit stark: Jede Lehrkraft trägt ihre Endnote ein, die Klassenleitung sieht die ganze Liste. Das ersetzt Zettel und Rundmails vor der Konferenz.
+- Für die eigenen Kurse: je Schüler eine Kurzübersicht mit Noten, Mitarbeit, Fehlzeiten, Notizen, Entwicklung.
+- Optional: Kollegen **schicken** ihre Endnoten aktiv an die Klassenleitung (ein Tipp, statt Zettel oder Rundmail). Wer nicht schickt, bleibt unsichtbar (E29).
 
 ### M Auswertung & Entwicklung
 - Verlaufsdiagramme je Schüler, Kurs und Klasse: Noten, Mitarbeit, Fehlzeiten, Hausaufgaben.

@@ -6,6 +6,8 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E30 | 08.11.2026 | Ideen aus [IDEEN.md](IDEEN.md) übernommen, außer I33 („Wer sieht das?“), das durch E29 entfällt | Konstantin: „alles gute Ideen“ |
+| E29 | 08.11.2026 | **Noten sind vertraulich: nur die Lehrkraft sieht sie.** Keine Einsicht für Klassenleitung, Schulleitung oder Admin. Teilen nur aktiv durch die Lehrkraft (Noten oder Lernstands-/Entwicklungsberichte an Schüler, Endnoten an Klassenleitung). **Ersetzt E17** | Konstantin: „Lehrer sind die Herren über ihre eigenen Noten“ |
 | E28 | 08.11.2026 | **Bewertungsbögen** als eigenes Modul: klickbare Bögen für Selbst- und Fremdeinschätzung, übersichtlich, eigene erstellen oder hochladen, Bibliothek (z. B. aus MEDIAN). Konzept in [BEWERTUNGSBOEGEN.md](BEWERTUNGSBOEGEN.md) | Konstantin |
 | E27 | 08.11.2026 | Notenauswahl auf Touchgeräten: **ein Fenster mit allen Noten auf einen Blick** (z. B. 0–15 als Tastenfeld), ein Tipp setzt die Note und springt weiter. Ein Rad ist nur ok, wenn alle Werte ohne langes Scrollen erreichbar sind | Konstantin präzisiert E24 |
 | E26 | 08.11.2026 | Doku-Änderungen gehen **direkt auf `main`**, ohne Pull Request | Konstantin |
@@ -17,7 +19,7 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 | E20 | 08.11.2026 | **Mitarbeitsnoten frei im Rhythmus** (Stunde, Woche, Einheit, Monat, gar nicht) | Kollegen arbeiten unterschiedlich; Monatsnoten sind Konstantins Weg |
 | E19 | 08.11.2026 | **Notensystem je Bildungsgang**: Berufsschule vs. FOS/DQ, Punkte 0–15 oder ganze Noten, eigene Notenspiegel. Standard: 50 % schriftlich, 50 % AT. Bei 0–15 nicht bestanden unter 5 Punkten | Schulvorgabe; IBA und WK noch offen |
 | E18 | 08.11.2026 | Gewichtung **einzelner** Noten und Tests | Konstantin (z. B. Verspätungstests) |
-| E17 | 08.11.2026 | **Rolle Schulleitung**: sieht Endnoten, aber keine Teilnoten (wie heute). Admin sieht keine Noten | Konstantin zu V6 |
+| E17 | 08.11.2026 | ~~Rolle Schulleitung sieht Endnoten~~ → **ersetzt durch E29**. Admin sieht keine Noten (bleibt) | Konstantin zu V6 |
 | E16 | 08.11.2026 | WebUntis-Weg wird **noch nicht** festgelegt. Gebaut wird hinter austauschbaren Adaptern, Start mit Datei-Export | Konstantin zu V5: zuerst ein Projekt für ihn allein, aber alles Spätere immer mitdenken |
 | E15 | 08.11.2026 | **Pilot mit echten Daten auf dem Unraid-Server**: Konstantin und evtl. eine Kollegin, parallel zu iDoceo. Daten müssen gut geschützt sein (siehe PLANUNG 4.4) | Konstantin zu V4; Noten auf Endgeräten sind heute schon üblich (iDoceo, Excel) |
 | E14 | 08.11.2026 | **PostgreSQL** | Konstantin zu V2 |
