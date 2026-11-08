@@ -17,6 +17,7 @@ mit Anmeldung über **IServ (Single-Sign-On)**.
 | [docs/IDOCEO_ANALYSE.md](docs/IDOCEO_ANALYSE.md) | Aufbau des iDoceo-Notenbuchs als Vorlage für L.E.O. |
 | [docs/RECHENLOGIK.md](docs/RECHENLOGIK.md) | Rechenregeln des Notenbuchs mit Testfällen (Entwurf) |
 | [docs/NOTENBUCH_BEDIENUNG.md](docs/NOTENBUCH_BEDIENUNG.md) | Vorschläge zur Bedienung des Notenbuchs (zu entscheiden) |
+| [docs/konzept/](docs/konzept/) | Konzeptbilder des Notenbuchs (PC, Tablet, Handy) und klickbare Skizze |
 | [docs/BEWERTUNGSBOEGEN.md](docs/BEWERTUNGSBOEGEN.md) | Selbst- und Fremdeinschätzung, Bibliothek, Entwurf Mitarbeit Englisch |
 | [docs/IDEEN.md](docs/IDEEN.md) | Ideensammlung: Features, Design, QoL, Onboarding |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | alle Ideen und Wünsche mit Herkunft und Priorität |

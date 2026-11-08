@@ -1,6 +1,7 @@
 # Bedienung des Notenbuchs
 
-Stand: 08.11.2026, Vorschläge von Claude, noch nicht entschieden. Grundlage: [RECHENLOGIK](RECHENLOGIK.md), E24, E27, E34, E37–E42.
+Stand: 08.11.2026, Vorschläge von Claude. Entschieden: NB2 (E44), NB5 (E45), NB16 (E46); NB1 Tendenz ja.
+Konzeptbilder (kein endgültiges Design, eigene Farben, nicht iDoceo): [konzept/](konzept/), klickbare Skizze `konzept/notenbuch-skizze.html`. Grundlage: [RECHENLOGIK](RECHENLOGIK.md), E24, E27, E34, E37–E42.
 Kein Design (Farben, Formen), nur **wie man es bedient**. Das iDoceo-Notenbuch ist im Aufbau gut, deshalb bleibt die Idee
 „Spalten in aufklappbaren Gruppen“ erhalten. Neu ist, dass alles mit weniger Tipps geht und jede Zahl erklärt, woher sie kommt.
 Einiges hängt von den UPZ-Dateien ab (09.11.2026); das ist mit **(UPZ)** markiert.
@@ -20,7 +21,7 @@ Einiges hängt von den UPZ-Dateien ab (09.11.2026); das ist mit **(UPZ)** markie
 | # | Vorschlag |
 |---|---|
 | **NB4** | **Touch:** Spalte antippen → Notenleiste mit allen Werten 0–15 als Tasten (bei 1–6 entsprechend). Ein Tipp setzt die Note und springt zum nächsten Schüler, ohne „OK“ (E24, E27). Wer fehlt: Taste **E** oder **UE**. Überspringen: Wischen. |
-| **NB5** | **PC:** wie Excel. Zahl tippen, **Enter springt nach unten**, Tab nach rechts. „1“ und „15“ sind kein Problem, weil erst Enter bestätigt. `e` und `u` setzen E und UE, Entf leert. |
+| **NB5** | **PC:** wie Excel (E45). Zahl tippen, **Enter springt nach unten**, Tab nach rechts, Shift+Tab nach links, Pfeiltasten bewegen ohne zu speichern. „1“ und „15“ sind kein Problem, weil erst Enter bestätigt. `e` und `u` setzen E und UE, Entf leert. |
 | **NB6** | **Spalte füllen** (Q4): „alle 15“ und dann nur die Ausnahmen ändern, z. B. beim Verspätungstest. |
 | **NB7** | **Rückgängig** für jede Eingabe, als kurzer Hinweis unten statt Nachfrage-Dialog (Q3). |
 | **NB8** | **Warnung ohne Dialog** (Q6): Fällt jemand durch eine Eingabe unter 5, erscheint das klein neben der Zeile. |
@@ -43,7 +44,7 @@ Lange drücken (Touch) oder Rechtsklick (PC) öffnet ein kleines Zellmenü, kein
 |---|---|
 | **NB14** | **Eingetragen und berechnet sehen unterschiedlich aus** (E39): eingetragen ganz und kräftig, berechnet mit zwei Nachkommastellen und als „vorläufig“ erkennbar. |
 | **NB15** | **Rechenweg auf Antippen:** Eine berechnete Zelle zeigt, wie sie entsteht, z. B. „(0 × 1 + 15 × 1) / 2 = 7,50, Test 3 leer, übersprungen“. Damit ist jede Zahl nachvollziehbar, auch im Gespräch mit dem Schüler. |
-| **NB16** | **Endnote festlegen** (E40): Neben der berechneten Endnote steht der Vorschlag. Bei ,50 stehen beide Noten zur Wahl, und offene Vorbehalte (Sterne) werden daneben angezeigt. Ein Tipp legt fest. Kein Zwang, das sofort zu tun. |
+| **NB16** | **Endnote festlegen** (E40): Neben der berechneten Endnote steht der Vorschlag. Bei ,50 stehen beide Noten zur Wahl, und offene Vorbehalte (Sterne) werden daneben angezeigt. Ein Tipp legt fest. Kein Zwang, das sofort zu tun. Auch **zwischendurch** möglich, z. B. für ein Abgangszeugnis; die **Live-Gesamtnote bleibt immer sichtbar** (E46). |
 | **NB17** | **Was-wäre-wenn** (I36) direkt aus der Endnote: „Für eine 10 braucht es in Klausur 2 mindestens 11.“ |
 | **NB18** | **Überblick je Spalte** auf Antippen der Kopfzeile: Notenspiegel, bestanden x von n, Durchschnitt, fehlende Werte. |
 

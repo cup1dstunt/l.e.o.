@@ -6,6 +6,9 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E46 | 08.11.2026 | **Endnote auch zwischendurch festlegbar** (z. B. Abgangszeugnis). Die **Live-Gesamtnote ist immer sichtbar**, auch neben einer festgelegten Note | Konstantin |
+| E45 | 08.11.2026 | **Tastatur am PC wie Excel:** Enter nach unten, Tab nach rechts (Shift+Tab links), Pfeiltasten bewegen | Konstantin |
+| E44 | 08.11.2026 | **Handy zeigt Noten als Liste** mit Schülerkarte statt Tabelle (vorerst). Endnote rechts fest: Tendenz ja, Entscheidung nach den Konzeptbildern | Konstantin |
 | E43 | 08.11.2026 | **Abiturprüfung** zählt nicht im Notenbaum, sie wird in die Excel-Tabellen der Schule eingetragen; deren eigene Gewichtung ist noch unbekannt. Excel-Dateien folgen | Konstantin |
 | E42 | 08.11.2026 | **Vorbehalt mit Stern:** Einzelne Noten bekommen einen Stern mit kurzem Kommentar (z. B. Bedingung für eine bessere Note). Ändert die Rechnung nicht, wird bei der Endnote angezeigt | Konstantin |
 | E41 | 08.11.2026 | **Gewichte relativ** („10 %“ = ein Zehntel eines normalen Tests). Gewichtet werden kann eine ganze Spalte (Test, Präsentation) **und** eine einzelne Note eines Schülers | Konstantin |
