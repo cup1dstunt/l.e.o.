@@ -77,3 +77,27 @@ Konstantins Wunsch: MEDIAN soll in L.E.O. sichtbar sein, gerade bei der Planung.
 - ~~**I33 „Wer sieht das?“**~~ entfällt (E29: Noten sieht nur die Lehrkraft).
 - **I34 Eigener Datenexport** jederzeit mit einem Tipp. Niemand fühlt sich eingesperrt.
 - ~~**I35 Protokoll für mich**~~ entfällt (E29).
+
+## 7 Zweite Runde (08.11.2026, noch nicht angenommen)
+
+Auf Konstantins Frage „Hast du sonst noch gute Ideen?“ nach E33. Stehen im [BACKLOG](BACKLOG.md) unter „Vorschläge zweite Runde“.
+
+- **I36 Was-wäre-wenn-Rechner** ★: In der Schülerkarte ausrechnen, welche Note in der nächsten Klausur für eine 5 (oder eine 10) nötig ist.
+  Hilft im Gespräch und bei der eigenen Entscheidung, ohne dass sich etwas im Notenbuch ändert.
+- **I37 Frühwarnliste vor Fristen** ★: Rechtzeitig vor Notenschluss oder Gefährdungsmitteilung zeigt L.E.O. die Schüler, die gerade unter 5 liegen
+  oder knapp darüber, mit dem Grund (Klausuren, Mitarbeit, fehlende Leistungen). Nur für die eigene Lehrkraft (E29).
+- **I38 Blockunterricht verstehen**: Berufsschulklassen sind wochenweise im Betrieb. L.E.O. kennt die Blöcke (aus WebUntis),
+  pausiert Erinnerungen in der Betriebszeit und zeigt beim Wiedersehen „letzter Stand vor 4 Wochen“.
+- **I39 Notenstand zum Mitgeben** ★: Die Lehrkraft erzeugt mit einem Tipp einen Zettel oder QR-Code mit dem aktuellen Stand eines Schülers
+  (nur seine eigenen Werte). Teilen bleibt eine aktive Entscheidung der Lehrkraft (E29).
+- **I40 Mitarbeit-Schnellrunde**: Am Stundenende eine Karte je Schüler, nach rechts/links wischen oder Smiley tippen, die ganze Klasse in zwei Minuten.
+- **I41 Stoffprotokoll**: Was in der Stunde dran war, in einer Zeile. Daraus entsteht die Stoffverteilung, und die Zeile lässt sich ins
+  WebUntis-Klassenbuch kopieren. Im nächsten Halbjahr dient sie als Vorlage für den Parallelkurs.
+- **I42 Nachteilsausgleich sichtbar**: Ein Merkmal an der Schülerkarte (z. B. Zeitverlängerung), das bei Tests und Klausuren als Hinweis erscheint.
+  Sensible Daten: nur die eigene Lehrkraft, keine Diagnose, nur die Maßnahme. Datenschutz klären (FRAGEN_SCHULE).
+- **I43 Termine der Schule als Fristen**: Notenschluss, Zeugniskonferenz und Mahnfristen pflegt die Schule einmal zentral (wie I1).
+  L.E.O. erinnert jede Lehrkraft rechtzeitig, und I37 rechnet damit.
+- **I44 Fehlende Leistung erkennt L.E.O. selbst**: War ein Schüler am Tag eines Tests abwesend (Anwesenheit oder WebUntis), landet er
+  automatisch auf der Nachschreiberliste. Niemand muss das von Hand abgleichen.
+- **I45 Kursstart-Assistent fürs neue Halbjahr**: „Halbjahr 2 beginnt: Kurse übernehmen, Abgänger ausblenden, Vorlage behalten?“
+  in einem Schritt. Passt zu E21 (Kurse über Halbjahre).

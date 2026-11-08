@@ -207,6 +207,23 @@ Details in [IDEEN.md](IDEEN.md). Herkunft C, von Konstantin angenommen.
 | I32 | Fortbildungs-Kit für die Einführung | 3 | S |
 | I34 | Eigener Datenexport mit einem Tipp (→ G11) | G | — |
 
+## Vorschläge zweite Runde (08.11.2026, noch nicht angenommen)
+
+Beschreibung in [IDEEN](IDEEN.md) Abschnitt 7. Herkunft C.
+
+| # | Punkt | Prio | Aufwand |
+|---|---|---|---|
+| I36 | **Was-wäre-wenn-Rechner** (nötige Note für 5/10) | 1 | S |
+| I37 | **Frühwarnliste** vor Notenschluss und Mahnfristen | 1 | S |
+| I38 | Blockunterricht: Betriebsphasen kennen, Erinnerungen pausieren | 2 | M |
+| I39 | **Notenstand zum Mitgeben** (Zettel/QR, nur auf Tipp der Lehrkraft) | 2 | S |
+| I40 | Mitarbeit-Schnellrunde am Stundenende | 1 | S |
+| I41 | Stoffprotokoll je Stunde, kopierbar ins WebUntis-Klassenbuch | 2 | S |
+| I42 | Nachteilsausgleich als Hinweis bei Tests (Datenschutz klären) | 3 | S |
+| I43 | Schultermine als Fristen, zentral gepflegt | 2 | S |
+| I44 | Abwesend beim Test → automatisch Nachschreiberliste | 1 | S |
+| I45 | Kursstart-Assistent fürs neue Halbjahr | 1 | M |
+
 ## Kleine Helfer (Quality of Life)
 
 Konstantin: „Das sind genau die QoL-Features, die mir in iDoceo fehlen, davon gibt es sicher noch zig mehr.“ Sammlung:
