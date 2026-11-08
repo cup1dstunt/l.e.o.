@@ -6,6 +6,7 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E48 | 08.11.2026 | **Designsprache der Konzeptbilder wird Vorlage** für ganz L.E.O.: ruhiges Papier/Weiß, Petrol als einzige Bedienfarbe, Rot und Gold nur mit Bedeutung, Schulfarben nur im Logo. Beschrieben in `docs/DESIGN.md`, Werte in `design/tokens.css` | Konstantin |
 | E47 | 08.11.2026 | **Logo = Doppellogo:** Schullogo OSZ Wirtschaft unverändert links, rechts die L.E.O.-Wortmarke (O als roter Bogen, Punkte als graue Quadrate, Farben #868889 / #b10814). App-Symbol = Bogen mit Punkt. Schullogo darf genutzt werden. Dateien: `docs/konzept/logo/doppellogo/` | Konstantin |
 | E46 | 08.11.2026 | **Endnote auch zwischendurch festlegbar** (z. B. Abgangszeugnis). Die **Live-Gesamtnote ist immer sichtbar**, auch neben einer festgelegten Note | Konstantin |
 | E45 | 08.11.2026 | **Tastatur am PC wie Excel:** Enter nach unten, Tab nach rechts (Shift+Tab links), Pfeiltasten bewegen | Konstantin |

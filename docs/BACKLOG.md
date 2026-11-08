@@ -281,4 +281,4 @@ Konstantin: „Das sind genau die QoL-Features, die mir in iDoceo fehlen, davon 
 | I35 „Wer hat meine Kurse angesehen?“ | entfällt, niemand außer der Lehrkraft sieht sie (E29) |
 | Schulleitung sieht Endnoten | ersetzt durch E29 |
 | EWH-Inhalte (Klausurarchiv, Bausteinkatalog für Klausuren) | L.E.O. ist eigenständig (Brainstorm) |
-| Design-Vorschläge in der Planung | nicht gewünscht |
+| Design-Vorschläge in der Planung | anfangs nicht gewünscht; seit E48 gibt es eine Designsprache (docs/DESIGN.md) |

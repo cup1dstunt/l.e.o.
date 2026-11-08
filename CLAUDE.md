@@ -10,6 +10,7 @@ Vor jeder Arbeit lesen: `docs/PLANUNG.md`, `docs/ENTSCHEIDUNGEN.md`, `docs/BACKL
 - Ideen kommen ins Backlog (mit Herkunft K/B/C). Gebaut wird erst auf Ansage.
 - Neue Entscheidungen mit Datum in `docs/ENTSCHEIDUNGEN.md`.
 - Notenbuch: Aufbau und Rechenlogik nach Konstantins iDoceo-Vorlagen. Design und Farben auf keinen Fall an iDoceo orientieren (E34).
+- Gestaltung nach `docs/DESIGN.md` und `design/tokens.css` (E48), Logo nach E47. Keine neuen Farben ohne Grund.
 - Noten sieht nur die eigene Lehrkraft; einzige Ausnahme Doppelsteckung im selben Fach (E29, E31).
 - Keine EWH-Inhalte übernehmen, nur das Betriebs- und Sicherungskonzept.
 - Funktionen sollen Arbeit abnehmen: antippen statt eintippen, keine unterbrechenden Dialoge.

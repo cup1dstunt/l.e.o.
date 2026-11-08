@@ -1,0 +1,74 @@
+/* L.E.O. Design-Tokens (Stand 08.11.2026, E48)
+   Quelle der Wahrheit für Farben, Schrift, Abstände. Beschreibung: docs/DESIGN.md */
+
+:root {
+  /* Flächen */
+  --leo-papier: #f5f3ee;        /* Seitenhintergrund, warmes Papier */
+  --leo-karte: #ffffff;         /* Karten, Tabellen, Dialoge */
+  --leo-flaeche-leise: #fbfaf7; /* Kopfzeilen von Tabellen, berechnete Spalten */
+  --leo-taste: #f1efe9;         /* Notentasten, ruhige Knöpfe */
+
+  /* Text */
+  --leo-tinte: #1d2125;         /* Haupttext */
+  --leo-leise: #6b7074;         /* Nebentext, Beschriftungen */
+  --leo-berechnet: #4a5258;     /* berechnete (vorläufige) Werte */
+
+  /* Linien */
+  --leo-linie: #e3dfd6;
+  --leo-linie-fein: #ece9e2;
+
+  /* Akzent (Bedienung: aktiv, Auswahl, Hauptknopf) */
+  --leo-akzent: #2f5d62;        /* Petrol */
+  --leo-akzent-hell: #e3eeee;
+  --leo-auf-akzent: #ffffff;     /* Text auf Akzentfläche */
+
+  /* Bedeutung */
+  --leo-warnung: #b23a2a;       /* unter Bestehensgrenze, UE */
+  --leo-warnung-hell: #fbeae6;
+  --leo-stern: #c58b00;         /* Vorbehalt, Hinweis-Schritte */
+  --leo-stern-hell: #fff8e3;
+  --leo-auswahl: #fff6d6;       /* aktuelle Zeile / aktueller Schüler */
+
+  /* Marke (nur im Logo, nie in der Bedienung) */
+  --leo-marke-grau: #868889;
+  --leo-marke-rot: #b10814;
+
+  /* Schrift */
+  --leo-schrift: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --leo-schrift-mono: ui-monospace, Menlo, Consolas, monospace;
+  --leo-text-xs: 11px; --leo-text-s: 12px; --leo-text-m: 14px; --leo-text-l: 16px;
+  --leo-text-xl: 22px; --leo-text-note: 15px; --leo-text-endnote: 17px;
+
+  /* Abstände (4er-Raster) */
+  --leo-a1: 4px; --leo-a2: 8px; --leo-a3: 12px; --leo-a4: 16px; --leo-a5: 24px; --leo-a6: 32px;
+
+  /* Rundungen und Schatten */
+  --leo-r-s: 6px; --leo-r-m: 10px; --leo-r-l: 12px; --leo-r-xl: 16px; --leo-r-pill: 999px;
+  --leo-schatten-pop: 0 12px 32px rgba(0,0,0,.14);
+  --leo-schatten-dialog: 0 18px 44px rgba(0,0,0,.18);
+
+  /* Bedienung */
+  --leo-zeile: 44px;            /* Tabellenzeile PC */
+  --leo-ziel-touch: 44px;       /* kleinstes Tippziel */
+  --leo-notentaste: 58px;       /* Notenleiste Tablet; Handy 46px */
+}
+
+/* Dunkelmodus (Q15), noch nicht in Konzeptbildern geprüft */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="hell"]) {
+    --leo-papier: #15181b; --leo-karte: #1d2125; --leo-flaeche-leise: #22272b; --leo-taste: #2a3035;
+    --leo-tinte: #eceae4; --leo-leise: #9aa0a4; --leo-berechnet: #b9bfc3;
+    --leo-linie: #343a3f; --leo-linie-fein: #2b3035;
+    --leo-akzent: #6fa8ad; --leo-akzent-hell: #24393b; --leo-auf-akzent: #15181b;
+    --leo-warnung: #ef7d6b; --leo-warnung-hell: #3a2420;
+    --leo-stern: #e2b23c; --leo-stern-hell: #3a3220; --leo-auswahl: #3a3524;
+  }
+}
+:root[data-theme="dunkel"] {
+  --leo-papier: #15181b; --leo-karte: #1d2125; --leo-flaeche-leise: #22272b; --leo-taste: #2a3035;
+  --leo-tinte: #eceae4; --leo-leise: #9aa0a4; --leo-berechnet: #b9bfc3;
+  --leo-linie: #343a3f; --leo-linie-fein: #2b3035;
+  --leo-akzent: #6fa8ad; --leo-akzent-hell: #24393b; --leo-auf-akzent: #15181b;
+  --leo-warnung: #ef7d6b; --leo-warnung-hell: #3a2420;
+  --leo-stern: #e2b23c; --leo-stern-hell: #3a3220; --leo-auswahl: #3a3524;
+}
