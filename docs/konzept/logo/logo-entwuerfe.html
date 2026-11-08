@@ -1,0 +1,78 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><style>
+:root{--g:#868889;--r:#b10814;--ink:#1d2125;--paper:#f5f3ee;--acc:#2f5d62;--muted:#6b7074;--line:#e3dfd6}
+body{margin:0;background:#d9d6cf;font-family:"Inter","Segoe UI",system-ui,sans-serif;color:var(--ink)}
+.sheet{width:1440px;background:var(--paper);padding:36px 40px 40px;box-sizing:border-box}
+h1{margin:0 0 4px;font-size:22px}.sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.card h2{margin:0;font-size:15px}.card .d{font-size:12px;color:var(--muted);line-height:1.5}
+.stage{height:210px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#fbfaf7}
+.stage.dark{background:#1d2125}
+.icons{display:flex;gap:14px;align-items:flex-end}
+.bar{display:flex;align-items:center;gap:12px;height:52px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 14px;font-weight:600;font-size:14px}
+.bar small{color:var(--muted);font-weight:400}
+.tag{font-size:11px;font-weight:700;color:var(--acc);background:#e3eeee;border-radius:6px;padding:2px 8px;align-self:flex-start}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+ <!-- OSZ-artiges Quadrat mit weißem Bogen, Text als Parameter -->
+ <clipPath id="sq"><rect x="0" y="0" width="100" height="100"/></clipPath>
+ <symbol id="leoSquare" viewBox="0 0 100 100">
+   <rect width="100" height="100" fill="#868889"/>
+   <g clip-path="url(#sq)"><circle cx="-6" cy="112" r="88" fill="none" stroke="#fff" stroke-width="7"/></g>
+ </symbol>
+ <!-- Wortmarke: O als roter offener Bogen -->
+ <symbol id="arcO" viewBox="0 0 100 100"><path d="M 78 18 A 40 40 0 1 0 88 40" fill="none" stroke="#b10814" stroke-width="9" stroke-linecap="round"/></symbol>
+</defs></svg>
+
+<div class="sheet" id="sheet">
+ <h1>L.E.O. · Logo-Entwürfe mit dem Schullogo</h1>
+ <div class="sub">Farben aus dem Schullogo: Grau #868889, Rot #b10814. Drei Richtungen, jeweils als Logo, App-Symbol und in der Kopfzeile der App.</div>
+ <div class="row">
+
+  <!-- A -->
+  <div class="card"><span class="tag">A · Doppellogo</span><h2>Schullogo + L.E.O. nebeneinander</h2>
+   <div class="stage"><div style="display:flex;align-items:center;gap:22px">
+     <img src="osz.png" style="height:130px;mix-blend-mode:multiply">
+     <div style="width:1.5px;height:110px;background:#d0cdc6"></div>
+     <div><div style="font-size:54px;font-weight:800;letter-spacing:.04em;color:#1d2125;line-height:1">L.E.O.</div>
+       <div style="font-size:11.5px;color:#868889;margin-top:8px;letter-spacing:.06em">LEISTUNG · ENTWICKLUNG<br>ORGANISATION</div></div></div></div>
+   <div class="icons">
+     <svg width="72" height="72" viewBox="0 0 72 72"><rect width="72" height="72" rx="16" fill="#fff" stroke="#e3dfd6"/><text x="36" y="44" text-anchor="middle" font-size="22" font-weight="800" font-family="Inter,Segoe UI,sans-serif" fill="#1d2125">L.E.O.</text><rect x="16" y="52" width="40" height="3" rx="1.5" fill="#b10814"/></svg>
+     <span class="d">App-Symbol: nur Wortmarke, rote Linie als Bezug zur Schule</span></div>
+   <div class="bar"><img src="osz.png" style="height:38px"><span style="font-weight:800;letter-spacing:.04em">L.E.O.</span><small>2FOS 25-1 Englisch</small></div>
+   <div class="d">Am sichersten: Das Schullogo bleibt unverändert, L.E.O. steht daneben. Wirkt offiziell, ist aber breit.</div></div>
+
+  <!-- B -->
+  <div class="card"><span class="tag">B · Schulvariante</span><h2>L.E.O. im Aufbau des Schullogos</h2>
+   <div class="stage"><svg width="250" height="200" viewBox="40 10 290 260">
+     <defs><clipPath id="sqB"><rect x="155" y="25" width="150" height="150"/></clipPath></defs>
+     <path d="M 125.4 68.2 A 95 95 0 1 0 182.5 249.3" fill="none" stroke="#b10814" stroke-width="3"/>
+     <rect x="155" y="25" width="150" height="150" fill="#868889"/>
+     <g clip-path="url(#sqB)"><circle cx="150" cy="182" r="96" fill="none" stroke="#fff" stroke-width="8"/></g>
+     <text x="230" y="66" text-anchor="middle" font-size="44" font-weight="800" fill="#fff" font-family="Inter,Segoe UI,sans-serif">L.E.O.</text>
+     <text x="305" y="212" text-anchor="end" font-size="17" fill="#868889" font-family="Inter,Segoe UI,sans-serif">Leistung · Entwicklung</text>
+     <text x="305" y="234" text-anchor="end" font-size="17" fill="#868889" font-family="Inter,Segoe UI,sans-serif">Organisation</text></svg></div>
+   <div class="icons">
+     <svg width="72" height="72" viewBox="0 0 72 72"><defs><clipPath id="ic"><rect width="72" height="72" rx="16"/></clipPath></defs><g clip-path="url(#ic)"><rect width="72" height="72" fill="#868889"/><circle cx="-4" cy="84" r="52" fill="none" stroke="#fff" stroke-width="5"/><circle cx="-4" cy="84" r="64" fill="none" stroke="#b10814" stroke-width="3"/></g><text x="44" y="27" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="Inter,Segoe UI,sans-serif">LEO</text></svg>
+     <span class="d">App-Symbol: graues Quadrat mit weißem und rotem Bogen</span></div>
+   <div class="bar"><svg width="30" height="30" viewBox="0 0 72 72"><defs><clipPath id="ic2"><rect width="72" height="72" rx="14"/></clipPath></defs><g clip-path="url(#ic2)"><rect width="72" height="72" fill="#868889"/><circle cx="-4" cy="80" r="62" fill="none" stroke="#fff" stroke-width="6"/><circle cx="-4" cy="80" r="74" fill="none" stroke="#b10814" stroke-width="4"/></g></svg><span style="font-weight:800;letter-spacing:.04em">L.E.O.</span><small>2FOS 25-1 Englisch</small></div>
+   <div class="d">Sofort als „unsere Schule“ erkennbar, aber eigenständig. Das Schullogo selbst wird nicht verändert, nur seine Formensprache übernommen.</div></div>
+
+  <!-- C -->
+  <div class="card"><span class="tag">C · Wortmarke</span><h2>Das O als roter Bogen der Schule</h2>
+   <div class="stage"><svg width="360" height="150" viewBox="0 0 360 150">
+     <text x="20" y="96" font-size="88" font-weight="800" fill="#1d2125" font-family="Inter,Segoe UI,sans-serif">L</text>
+     <rect x="76" y="82" width="14" height="14" fill="#868889"/>
+     <text x="98" y="96" font-size="88" font-weight="800" fill="#1d2125" font-family="Inter,Segoe UI,sans-serif">E</text>
+     <rect x="158" y="82" width="14" height="14" fill="#868889"/>
+     <use href="#arcO" x="176" y="22" width="84" height="84"/>
+     <rect x="264" y="82" width="14" height="14" fill="#868889"/>
+     <text x="22" y="132" font-size="12" fill="#868889" font-family="Inter,Segoe UI,sans-serif" letter-spacing="1">LEISTUNG · ENTWICKLUNG · ORGANISATION</text></svg></div>
+   <div class="icons">
+     <svg width="72" height="72" viewBox="0 0 72 72"><rect width="72" height="72" rx="16" fill="#868889"/><path d="M 52 18 A 22 22 0 1 0 58 32" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><rect x="47" y="45" width="8" height="8" fill="#b10814"/></svg>
+     <svg width="72" height="72" viewBox="0 0 72 72"><rect width="72" height="72" rx="16" fill="#fff" stroke="#e3dfd6"/><path d="M 50 20 A 20 20 0 1 0 56 33" fill="none" stroke="#b10814" stroke-width="6" stroke-linecap="round"/><rect x="45" y="45" width="8" height="8" fill="#868889"/></svg>
+     <span class="d">App-Symbol: der Bogen allein, hell und dunkel</span></div>
+   <div class="bar"><svg width="28" height="28" viewBox="0 0 72 72"><path d="M 50 20 A 20 20 0 1 0 56 33" fill="none" stroke="#b10814" stroke-width="8" stroke-linecap="round"/><rect x="45" y="45" width="9" height="9" fill="#868889"/></svg><span style="font-weight:800;letter-spacing:.04em">L.E.O.</span><small>2FOS 25-1 Englisch</small></div>
+   <div class="d">Am modernsten und kompakt, funktioniert auch winzig. Der Bezug zur Schule ist dezenter (roter Bogen, graue Punkte).</div></div>
+ </div>
+</div></body></html>
