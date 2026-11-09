@@ -6,6 +6,9 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E64 | 09.11.2026 | **Rechenprofile OSZ und FOS** (ersetzt V7): Die UPZ-Berechnungen sind von der Schulleitung abgesegnete Vorgaben und werden **genau eingehalten**. Zur Auswahl stehen **OSZ (duale Berufsschulklassen)** und **FOS (Fachoberschule)**. Ein „L.E.O.-Standard“ entfällt (E40 war Konstantins eigene iDoceo-Regel, kein Schulstandard). Das IHK-Profil ist nur für IHK-Prüfungen gedacht und höchstens als unauffällige Zusatzoption vorgesehen. Gewichtungen (SL : Mitarbeit, KA : SL) sind frei einstellbar, auch je Einzelnote und je Schüler | Konstantin
+| E63 | 09.11.2026 | **Notenschlüssel als Daten** je Bildungsgang (V8 angenommen), von der Administration pflegbar | Konstantin (Antwort 1) |
+| E62 | 09.11.2026 | **Fehlzeiten über 30 %** in einem Fach: im Halbjahreszeugnis steht ein **„N“** in einer eigenen Spalte, das Halbjahr gilt eigentlich als nicht bestanden, die **Zeugniskonferenz entscheidet** über die Versetzung. Grundlage sind WebUntis-Berichte, egal ob entschuldigt oder nicht. Die 30 % sind feste Schulregel, vermutlich nur FOS (Konstantin fragt nach). 15/20 % sind ihm unbekannt | Konstantin |
 | E60 | 09.11.2026 | **Smiley-Farben:** die zarten Töne aus dem Mockup N2, erweitert auf fünf Stufen (Flächen dunkelgrün #d5e8da, hellgrün #e6efd9, gelb #faf0c4, orange #fbe0c6, rot #f9e3de). **Kontrast und Rot-Grün-Schwäche werden nicht weiter verfolgt.** Konkretisiert E52 | Konstantin |
 | E59 | 09.11.2026 | **Frontend-Prototyp ist geplant, gebaut wird erst auf Ansage.** Umfang, Technik (SvelteKit, E22), Meilensteine und Abnahmekriterien in [DESIGN_SYSTEM_PROTOTYP.md](DESIGN_SYSTEM_PROTOTYP.md) | Konstantin: „mach gerne Schritt 5“ |
 | E58 | 09.11.2026 | **Notenberechnung im Prototyp:** erst die UPZ-Dateien abwarten, der Prototyp rechnet nicht selbst (feste Beispielwerte). Falls doch, dann nach [RECHENLOGIK.md](RECHENLOGIK.md) | Konstantin |
@@ -69,12 +72,7 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 ## Vorschläge (zu bestätigen)
 
-Aus der UPZ-Analyse ([UPZ_ANALYSE.md](UPZ_ANALYSE.md), 09.11.2026), von Claude vorgeschlagen:
-
-| # | Vorschlag |
-|---|---|
-| **V7** | **Rechenprofile je Kurs:** „UPZ-OSZ“, „UPZ-IHK“, „UPZ-FOS“ und „L.E.O.-Standard“. Wer die UPZ-Datei nutzt, bekommt die gleichen Ergebnisse (Prozent auf 2 Stellen abgeschnitten, bei FOS in drei Stufen gerundet). Der Kern unterstützt dafür eine Prozent-Kette und eine Notenpunkte-Kette als Einstellung. Noch offen, ob E40 (nur Endnote runden) für alle gilt. |
-| **V8** | **Notenschlüssel als Daten** je Bildungsgang (Prozent ab → Note), von der Schul-Administration pflegbar. Startwerte aus der UPZ (OSZ, IHK, FOS). |
+Keine offenen Vorschläge. (V7 und V8 aus der UPZ-Analyse sind als E64 und E63 entschieden.)
 
 ## Erledigte Vorschläge (Details)
 
