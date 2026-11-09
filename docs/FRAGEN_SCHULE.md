@@ -19,6 +19,24 @@
 9. (teilweise beantwortet durch die UPZ-Schlüssel) Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
 10. ~~Kriterienraster Selbsteinschätzung~~ erhalten (08.11.2026), gekürzter Entwurf in BEWERTUNGSBOEGEN.md.
 
+## Notenbuch-Modulplanung (Fr 13.11.2026, 10:00)
+
+Offene Fragen aus dem Prototyp-Feedback vom 09.11.2026 ([prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Abschnitt 11). Sie werden bei der Planung des Moduls Notenbuch abgearbeitet. Antworten bitte als Entscheidungen in [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) eintragen.
+
+| # | Frage | Bezug |
+|---|---|---|
+| N1 | **Smiley-Artstyle:** Welche frühere, zurückhaltendere Version ist die Referenz? (Die Design-Dokumente geben Stufen und Farben vor, nicht die Gesichter.) | E52, E60, PF17 |
+| N2 | **Doppelklick am Touchgerät:** Doppeltipp, langer Druck oder der vorhandene Stift? | E66, PF7 |
+| N3 | **Monatsnote:** exakter Durchschnitt (z. B. 2,5) oder gerundet (2 oder 3)? | E68, E40, PF6 |
+| N4 | **Schülerkarte:** Rechenweg ganz entfernen oder hinter einem Info-Knopf behalten? | E69, PF3 |
+| N5 | **PDF-Report:** Welche Inhalte und welches Layout? Einseitig, mit Noten, Fehlzeiten und Notizen? | E69, PF15 |
+| N6 | **Historie:** Welche Halbjahre, wer darf entsperren, welche Warnung? | E71, PF16 |
+| N7 | **Kalender:** lokal, IServ oder ein anderer Kalender? (Frage 5 oben: IServ-iCal?) | E71, PF13 |
+| N8 | **Raumplan:** Tische, Reihen, Gang, Tafel, Tür, Anzahl der Plätze? | E71, PF14 |
+| N9 | **Altes Notenbuch:** exakt so übernehmen oder als Richtung? | E65, PF2 |
+| N10 | **Lernstoff:** Welche Felder (Thema, Aufgaben, Hausaufgabe, Material) und welche Vorlagen? | E70, PF9 |
+| N11 | **Übergang:** nur für dich sichtbar oder auch für die Klasse? Als Zeile in „Läuft gerade“ oder im Tagesplan? | E70, PF10 |
+
 ## An das MEDIAN-Team
 
 1. Dürfen die Bewertungs- und Reflexionsbögen aus MEDIAN in L.E.O. als klickbare Vorlagen nachgebaut werden?

@@ -306,6 +306,35 @@ Details: [UPZ_ANALYSE.md](UPZ_ANALYSE.md), Testwerte: [testfaelle/upz_referenzwe
 | UPZ-11 | **Halbjahresdurchschnitt** über alle Fächer | K | 3 | S |
 | UPZ-12 | **Mitarbeit:** L.E.O. bildet aus Monatsnoten eine Gesamtmitarbeit und reicht sie ins Profil weiter (die UPZ kennt nur eine Gesamtangabe), Gewichtung frei | K | 1 | S |
 
+## Aus dem Prototyp-Feedback (09.11.2026)
+
+Quelle: [prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Entscheidungen E65–E71, offene Fragen in [FRAGEN_SCHULE.md](FRAGEN_SCHULE.md). **Die Prioritäten folgen dem Vorschlag im PDF (P0 → 1, P1 → 2, P2 → 2/3) und sind nicht von Konstantin bestätigt.** Gebaut wird erst nach der Modulplanung (Notenbuch: Fr 13.11.2026, 10:00). Das Notenbuch ist ausdrücklich Teil dieser Planung, keine Umbauliste für den Prototyp.
+
+| # | Punkt | Herkunft | Prio | Aufwand |
+|---|---|---|---|---|
+| PF1 | **Notenbuch: Eingabe und Anzeige als Note (OSZ) oder Notenpunkte (FOS)**, Umrechnung aus Rohpunkten nur im Rechenkern, Baum-Aufbau nach Referenz (E65) | K | 1 | L |
+| PF2 | **Notenbuch-Aufbau nach altem Baum-Notenbuch:** Gruppen Klausuren / AT (Mitarbeit ½, Tests ½), Ø-Spalten, Live-Gesamtnote mit Vorschlag, „Profil & Gewichte“ bleibt (E65) | K | 1 | M |
+| PF3 | **Schülerkarte ohne Rechenweg und ohne Endnote-Kachel**, Notenübersicht mit fünf Werten (Klausur 1, 2 ganz; AT, Mitarbeit, Tests/Sonstiges dezimal) (E69) | K | 1 | S |
+| PF4 | **Smiley-Skala = Note** (Note = 6 − Stufe), Durchschnitte überall als Note, nicht als Stufe (E67) | K | 1 | S |
+| PF5 | **Mitarbeitsübersicht verdichten:** letzte 6–8 Stunden als Smileys, davor Monatsfeld (Durchschnitts-Smiley oder eingetragene Monatsnote), rechts Trendpfeil und Durchschnitt (E67) | K | 1 | M |
+| PF6 | **Monatsnote vorschlagen ausbauen:** Monatsauswahl, „Alle übernehmen“, Haken je Zeile, Stift je Zeile, übernommene Note erscheint im Monatsfeld (E68) | K | 1 | M |
+| PF7 | **Doppelklick aufs Smiley öffnet Textbausteine und Kommentar**, Einfachklick speichert ohne Verzögerung; Touch-Geste (Stift, Long-Press) offen (E66) | K | 1 | S |
+| PF8 | **Textbausteine mit Komma trennen**, pro Kategorie 1–2 Bausteine mehr (liefert Konstantin, E53) | K | 1 | S |
+| PF9 | **Lernstoff-Kachel** in der Live-Stunde (Thema, Aufgaben, Material, Hausaufgabe, Felder offen), pro Stunde gespeichert, in der Kurshistorie wiederfindbar (E70) | K | 2 | M |
+| PF10 | **Übergang in die nächste Stunde:** kurze Notiz am Kurs („Aufgabenblock A bis Nr. 4 verglichen“), nächste Stunde zeigt „Weiter bei: …“, nur für die Lehrkraft (E70) | K | 2 | M |
+| PF11 | **Spaltenkopf anklickbar:** Menü mit Name, Datum, Gewichtung, Typ (E71) | K | 2 | S |
+| PF12 | **„Neue Leistung“ als schnelles Interaktionsmenü** (Test, Präsentation, Abgabe, Klausur), auch für zukünftige Termine; verzahnt mit NB19 in [NOTENBUCH_BEDIENUNG.md](NOTENBUCH_BEDIENUNG.md) (E71) | K | 2 | M |
+| PF13 | **Kalender** (Klausurtermine, zukünftige Leistungen), Quelle offen: lokal, IServ oder anderer; Schnittstelle zu UPZ-6, F-Kalender, U1 (E71) | K | 2 | L |
+| PF14 | **Raumplan-Editor** für den Sitzplan (Tische, Reihen, Gang, Tafel, Tür, Plätze; Details offen), E7 „Sitzplan muss einfach sein“ beachten (E71) | K | 2 | M |
+| PF15 | **PDF-Report je Schüler**, eine Seite, per Mail versendbar; Inhalt und Layout offen, Datenschutz beachten (nur eigene Noten, E29), verzahnt mit UPZ-8 und E-Mail-Modul (E69) | K | 2 | M |
+| PF16 | **Historie in der Notenübersicht:** Halbjahr wählbar, alte Halbjahre fest und nur nach ausdrücklicher Warnung änderbar (mit Bestätigung und Eintrag im Verlauf), Halbjahr-ID im Datenmodell, passt zu E21 (E71) | K | 2 | M |
+| PF17 | **Ruhigerer Smiley-Artstyle** (weniger expressiv), Stufen und Farben bleiben (E52, E60), muss auch ohne Farbe unterscheidbar sein; frühere Referenz beschaffen | K | 2 | S |
+| PF18 | **Mobil-Test** auf iPad, iPhone und Schul-PC (Navigation, 44-px-Tippziele, Handy-Notenliste, Beamer); danach Entscheidung zur Navigation (E54) | K | 2 | S |
+| PF19 | **Firefox und echte 4K-Tafel testen** (E56), bisher nicht getestet | C | 3 | S |
+| PF20 | **Rechenpfad prüfen:** UPZ-Referenzwerte stammen aus LibreOffice, nicht aus Excel; Gegenprüfung mit Excel der Kollegen einplanen | C | 2 | S |
+| PF21 | **Schülersuche** bleibt (von Konstantin gelobt), bei Modulplanung als gemeinsame Funktion mitdenken | K | G | S |
+| PF22 | **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
+
 ## Offen
 
 | # | Punkt | Herkunft | Prio |
