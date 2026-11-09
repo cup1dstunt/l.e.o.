@@ -301,7 +301,7 @@ Details: [UPZ_ANALYSE.md](UPZ_ANALYSE.md), Testwerte: [testfaelle/upz_referenzwe
 | UPZ-6 | **Terminrechner**: G/U-Wochen, Berliner Ferien, Stunden je Termin | K | 2 | M |
 | UPZ-7 | **Unterrichtsplan / Stoffverteilung** je Termin, ohne dass Verschieben Einträge zerstört | K | 3 | M |
 | UPZ-8 | **Einreichen-PDFs** (KA und Klausur) mit Notenverteilung und Anteil 5/6 | K | 2 | M |
-| UPZ-9 | **Druckansichten** für Kollegen mit Papier-Notenbuch | K | 3 | S |
+| UPZ-9 | **Druckansichten**: Zeugnislisten für Fachlehrer (Ersatz der UPZ-Zensurenliste, Konstantin 09.11.2026) und für Kollegen mit Papier-Notenbuch | K | 3 | S |
 | UPZ-10 | **Allgemeiner Excel-Import-Assistent** für eigene Dateien | K | 3 | L |
 | UPZ-11 | **Halbjahresdurchschnitt** über alle Fächer | K | 3 | S |
 | UPZ-12 | **Mitarbeit:** L.E.O. bildet aus Monatsnoten eine Gesamtmitarbeit und reicht sie ins Profil weiter (die UPZ kennt nur eine Gesamtangabe), Gewichtung frei | K | 1 | S |

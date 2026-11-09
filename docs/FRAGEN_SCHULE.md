@@ -3,7 +3,7 @@
 ## An Konstantin
 
 1. ~~Screenshots der iDoceo-Vorlagen~~ (erhalten 08.11.2026). Rückfragen dazu: [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md), Abschnitt 7.
-2. ~~UPZ-Datei~~ erhalten (Fragen a–d beantwortet 09.11.2026, siehe E62–E64; offen: e Runden FOS, f Zensurenliste, ob 30 % nur FOS) (09.11.2026, Version 10.1), Analyse in [UPZ_ANALYSE.md](UPZ_ANALYSE.md). Rückfragen dazu:
+2. ~~UPZ-Datei~~ erhalten (Fragen a–d beantwortet 09.11.2026, siehe E62–E64; offen: e Runden FOS, ob 30 % nur FOS; f beantwortet: Zensurenliste = Druck der Zeugnislisten für Fachlehrer) (09.11.2026, Version 10.1), Analyse in [UPZ_ANALYSE.md](UPZ_ANALYSE.md). Rückfragen dazu:
    - a) Welcher Klassentyp (OSZ, IHK, FOS) wird am meisten genutzt, und stammen die OSZ-Grenzen von der Schule?
    - b) Was bedeutet das „N“ im Zeugnis bei über 30 % Fehlzeiten, und sind 15/20/30 % feste Regeln der Schule?
    - c) Wie kommen Kollegen auf den Prozentwert der mündlichen Mitarbeit? Sollen Prozent und Note möglich sein?
