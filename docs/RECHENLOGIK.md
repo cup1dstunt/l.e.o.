@@ -121,5 +121,9 @@ Alles berechnet, nichts von Hand gepflegt (Leitsatz 8):
 ## 7 Fragen an Konstantin
 
 1. ~~Runden~~ → E40. 2. ~~Ganzer Zweig leer~~ → übersprungen. 4. ~~Gewichte~~ → E41.
-3. **Noten 1–6 (Berufsschule):** Tendenzen oder Dezimalwerte, Endnote ganz gerundet? Konstantin klärt das, eventuell zeigen es die UPZ-Dateien.
+3. ~~Noten 1–6 (Berufsschule)~~ laut UPZ: ganze Noten über einen Prozentschlüssel, keine Tendenzen in der Rechnung (Konstantin bestätigt noch).
 5. **Abiturprüfung:** eigene Gewichtung in den Excel-Tabellen der Schule. Konstantin versucht, die Dateien am 09.11.2026 zu bekommen.
+
+## 8 Abgleich mit der UPZ-Datei (09.11.2026)
+
+Die UPZ-Datei rechnet anders als E40 vorsieht: OSZ/IHK rechnen in **Prozent, auf 2 Stellen abgeschnitten**, FOS in **Notenpunkten mit Rundung in drei Stufen**. Vorschlag V7: Der Rechenkern bekommt je Kurs ein **Rechenprofil** (UPZ-OSZ, UPZ-IHK, UPZ-FOS, L.E.O.-Standard). Testwerte stehen in [testfaelle/upz_referenzwerte.json](testfaelle/upz_referenzwerte.json) (nur mit LibreOffice nachgerechnet, nicht mit Excel). Einzelheiten und Rückfragen: [UPZ_ANALYSE.md](UPZ_ANALYSE.md).

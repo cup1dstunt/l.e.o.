@@ -15,6 +15,7 @@ mit Anmeldung über **IServ (Single-Sign-On)**.
 |---|---|
 | [docs/PLANUNG.md](docs/PLANUNG.md) | Zielbild, Module, Grundgerüst für den schulweiten Betrieb, Anbindungen, Fahrplan |
 | [docs/IDOCEO_ANALYSE.md](docs/IDOCEO_ANALYSE.md) | Aufbau des iDoceo-Notenbuchs als Vorlage für L.E.O. |
+| [docs/UPZ_ANALYSE.md](docs/UPZ_ANALYSE.md) | Analyse der UPZ-Excel-Datei (Schlüssel, Rechenwege, Testwerte in docs/testfaelle/) |
 | [docs/RECHENLOGIK.md](docs/RECHENLOGIK.md) | Rechenregeln des Notenbuchs mit Testfällen (Entwurf) |
 | [docs/NOTENBUCH_BEDIENUNG.md](docs/NOTENBUCH_BEDIENUNG.md) | Vorschläge zur Bedienung des Notenbuchs (zu entscheiden) |
 | [docs/konzept/](docs/konzept/) | Konzeptbilder des Notenbuchs (PC, Tablet, Handy) und klickbare Skizze |

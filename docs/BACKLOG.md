@@ -287,11 +287,31 @@ Details: [DESIGN_SYSTEM_PROTOTYP.md](DESIGN_SYSTEM_PROTOTYP.md), Entscheidungen 
 | U14 | **Schullogo als Vektordatei** beim Sekretariat oder auf der Schul-Webseite erfragen | K | 2 | S |
 | U15 | Eigene Marken im Zeitbalken (z. B. „Gruppenarbeit bis 09:15“), nur auf Wunsch, nie als feste Phasen | C | 3 | S |
 
+## Aus der UPZ-Analyse (09.11.2026)
+
+Details: [UPZ_ANALYSE.md](UPZ_ANALYSE.md), Testwerte: [testfaelle/upz_referenzwerte.json](testfaelle/upz_referenzwerte.json). Ziel: möglichst alle Kollegen mitnehmen (UPZ, Papier, iDoceo, eigenes Excel).
+
+| # | Punkt | Herkunft | Prio | Aufwand |
+|---|---|---|---|---|
+| UPZ-1 | **Rechenprofile** UPZ-OSZ/IHK/FOS und L.E.O.-Standard (V7) | K | 1 | M |
+| UPZ-2 | **Notenschlüssel als Daten** je Bildungsgang (V8) | K | 1 | S |
+| UPZ-3 | **UPZ-Import** (Namen, Noten, Fehlzeiten aus der Excel-Datei), siehe I28 | K | 2 | M |
+| UPZ-4 | **Teilpunkte je Aufgabe** mit Aufgabenanalyse, Notenspiegel und Schlüssel mit halben Punkten | K | 2 | M |
+| UPZ-5 | **Fehlzeiten-Logik** wie UPZ: „x“ = nicht angerechnet, Schwellen 15/20/30 %, Datum für Infobrief, Übertrag ins 2. Halbjahr automatisch | K | 1 | M |
+| UPZ-6 | **Terminrechner**: G/U-Wochen, Berliner Ferien, Stunden je Termin | K | 2 | M |
+| UPZ-7 | **Unterrichtsplan / Stoffverteilung** je Termin, ohne dass Verschieben Einträge zerstört | K | 3 | M |
+| UPZ-8 | **Einreichen-PDFs** (KA und Klausur) mit Notenverteilung und Anteil 5/6 | K | 2 | M |
+| UPZ-9 | **Druckansichten** für Kollegen mit Papier-Notenbuch | K | 3 | S |
+| UPZ-10 | **Allgemeiner Excel-Import-Assistent** für eigene Dateien | K | 3 | L |
+| UPZ-11 | **Halbjahresdurchschnitt** über alle Fächer | K | 3 | S |
+| UPZ-12 | **Mitarbeit als Prozent oder Note** wählbar | K | 1 | S |
+
 ## Offen
 
 | # | Punkt | Herkunft | Prio |
 |---|---|---|---|
 | O1 | Dateiablage je Stunde: Konzept legt Konstantin fest, EWH-Inhalte bleiben draußen | K, B | ? |
+| O2 | Abiturprüfung: Excel-Tabellen mit der Gewichtung schickt Konstantin später, nicht dringend | K | 3 |
 
 ## Verworfen
 

@@ -3,14 +3,20 @@
 ## An Konstantin
 
 1. ~~Screenshots der iDoceo-Vorlagen~~ (erhalten 08.11.2026). Rückfragen dazu: [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md), Abschnitt 7.
-2. UPZ-Dateien: Beispiele (Namen geschwärzt oder Testklasse).
+2. ~~UPZ-Datei~~ erhalten (09.11.2026, Version 10.1), Analyse in [UPZ_ANALYSE.md](UPZ_ANALYSE.md). Rückfragen dazu:
+   - a) Welcher Klassentyp (OSZ, IHK, FOS) wird am meisten genutzt, und stammen die OSZ-Grenzen von der Schule?
+   - b) Was bedeutet das „N“ im Zeugnis bei über 30 % Fehlzeiten, und sind 15/20/30 % feste Regeln der Schule?
+   - c) Wie kommen Kollegen auf den Prozentwert der mündlichen Mitarbeit? Sollen Prozent und Note möglich sein?
+   - d) Sind 40:60 (übrige SL : Mitarbeit) und 50:50 (KA : SL) Schulstandard oder nur Voreinstellung der Datei?
+   - e) FOS rundet in drei Stufen (Klausur-Ø, SL gesamt, Zeugnis): Regel oder nur Entscheidung der Datei? Willst du selbst so rechnen (V7)?
+   - f) Wofür nutzen Kollegen die Zensurenliste?
 3. Welche Exporte erlaubt dir WebUntis für Fehlzeiten und Stundenplan (Format, Felder)? Ein Beispiel-Export wäre ideal.
 4. Konzept der Dateiablage je Stunde.
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
 6. ~~V1–V6, V3b~~ beantwortet.
 7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.
 8. ~~Vorlage der Excel-Halbjahresnotentabelle~~ nicht nötig (E33).
-9. Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
+9. (teilweise beantwortet durch die UPZ-Schlüssel) Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
 10. ~~Kriterienraster Selbsteinschätzung~~ erhalten (08.11.2026), gekürzter Entwurf in BEWERTUNGSBOEGEN.md.
 
 ## An das MEDIAN-Team

@@ -69,7 +69,12 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 ## Vorschläge (zu bestätigen)
 
-Keine offenen Vorschläge.
+Aus der UPZ-Analyse ([UPZ_ANALYSE.md](UPZ_ANALYSE.md), 09.11.2026), von Claude vorgeschlagen:
+
+| # | Vorschlag |
+|---|---|
+| **V7** | **Rechenprofile je Kurs:** „UPZ-OSZ“, „UPZ-IHK“, „UPZ-FOS“ und „L.E.O.-Standard“. Wer die UPZ-Datei nutzt, bekommt die gleichen Ergebnisse (Prozent auf 2 Stellen abgeschnitten, bei FOS in drei Stufen gerundet). Der Kern unterstützt dafür eine Prozent-Kette und eine Notenpunkte-Kette als Einstellung. Noch offen, ob E40 (nur Endnote runden) für alle gilt. |
+| **V8** | **Notenschlüssel als Daten** je Bildungsgang (Prozent ab → Note), von der Schul-Administration pflegbar. Startwerte aus der UPZ (OSZ, IHK, FOS). |
 
 ## Erledigte Vorschläge (Details)
 

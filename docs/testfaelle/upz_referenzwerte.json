@@ -1,0 +1,1830 @@
+{
+ "hinweis": "Referenzwerte aus UpZ Version 10.1: Eingaben in eine Kopie geschrieben, mit LibreOffice neu berechnet. Erfundene Schüler S01..S14.",
+ "schluessel": {
+  "osz": {
+   "ab_prozent": [
+    0,
+    0.09,
+    0.45,
+    0.55,
+    0.7,
+    0.85
+   ],
+   "note": [
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+   ]
+  },
+  "ihk": {
+   "ab_prozent": [
+    0,
+    0.3,
+    0.5,
+    0.67,
+    0.81,
+    0.92
+   ],
+   "note": [
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+   ]
+  },
+  "fos": {
+   "ab_prozent": [
+    0,
+    0.09,
+    0.18,
+    0.27,
+    0.36,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95
+   ],
+   "notenpunkte": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "note": [
+    6,
+    5,
+    5,
+    5,
+    5,
+    4,
+    4,
+    3,
+    3,
+    3,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1
+   ]
+  }
+ },
+ "profile": {
+  "osz": {
+   "max_punkte": {
+    "ka1": 50,
+    "ka2": 40,
+    "sl1": 20,
+    "sl2": 10
+   },
+   "gewichte": {
+    "ka1": 0.5,
+    "ka2": 0.5,
+    "sl1": 0.2,
+    "sl2": 0.2,
+    "hausaufgabe": 0.1,
+    "uebung1": 0.1,
+    "punktekonto": 0.2,
+    "sl_gegen_mitarbeit": [
+     0.4,
+     0.6
+    ],
+    "ka_gegen_sl": [
+     0.5,
+     0.5
+    ]
+   },
+   "schueler": [
+    {
+     "schueler": "S01",
+     "ka1": {
+      "punkte": 0,
+      "status": null,
+      "prozent": 0,
+      "note": 6
+     },
+     "ka2": {
+      "punkte": 30,
+      "status": null,
+      "prozent": 0.75,
+      "note": 2
+     },
+     "sl1": {
+      "punkte": 20,
+      "prozent": 1,
+      "note": 1
+     },
+     "sl2": {
+      "punkte": 10,
+      "prozent": 1,
+      "note": 1
+     },
+     "hausaufgabe_prozent": 1,
+     "uebung1_prozent": null,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.85,
+      "note": 1
+     },
+     "mitarbeit_prozent": 1,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.37,
+      "sl_gesamt_prozent": 0.94,
+      "sl_gesamt_note": 1,
+      "zeugnis_prozent": 0.65,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S02",
+     "ka1": {
+      "punkte": 4,
+      "status": null,
+      "prozent": 0.08,
+      "note": 6
+     },
+     "ka2": {
+      "punkte": 20,
+      "status": null,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": 18,
+      "prozent": 0.9,
+      "note": 1
+     },
+     "sl2": {
+      "punkte": 5,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "hausaufgabe_prozent": 0.8,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.6,
+     "sl_zusammen": {
+      "prozent": 0.71,
+      "note": 2
+     },
+     "mitarbeit_prozent": 0.9,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.29,
+      "sl_gesamt_prozent": 0.82,
+      "sl_gesamt_note": 2,
+      "zeugnis_prozent": 0.55,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S03",
+     "ka1": {
+      "punkte": 4.5,
+      "status": null,
+      "prozent": 0.09,
+      "note": 5
+     },
+     "ka2": {
+      "punkte": null,
+      "status": "leer",
+      "prozent": null,
+      "note": null
+     },
+     "sl1": {
+      "punkte": 15,
+      "prozent": 0.75,
+      "note": 2
+     },
+     "sl2": {
+      "punkte": null,
+      "prozent": null,
+      "note": null
+     },
+     "hausaufgabe_prozent": 0.6,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.7,
+     "sl_zusammen": {
+      "prozent": 0.73,
+      "note": 2
+     },
+     "mitarbeit_prozent": 0.8,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.09,
+      "sl_gesamt_prozent": 0.77,
+      "sl_gesamt_note": 2,
+      "zeugnis_prozent": 0.43,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S04",
+     "ka1": {
+      "punkte": 22,
+      "status": null,
+      "prozent": 0.44,
+      "note": 5
+     },
+     "ka2": {
+      "punkte": 25,
+      "status": null,
+      "prozent": 0.62,
+      "note": 3
+     },
+     "sl1": {
+      "punkte": 10,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "sl2": {
+      "punkte": 3,
+      "prozent": 0.3,
+      "note": 5
+     },
+     "hausaufgabe_prozent": 0.5,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.8,
+     "sl_zusammen": {
+      "prozent": 0.57,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.7,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.53,
+      "sl_gesamt_prozent": 0.64,
+      "sl_gesamt_note": 3,
+      "zeugnis_prozent": 0.58,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S05",
+     "ka1": {
+      "punkte": 22.4,
+      "status": null,
+      "prozent": 0.44,
+      "note": 5
+     },
+     "ka2": {
+      "punkte": null,
+      "status": "ue",
+      "prozent": 0,
+      "note": 6
+     },
+     "sl1": {
+      "punkte": 9,
+      "prozent": 0.45,
+      "note": 4
+     },
+     "sl2": {
+      "punkte": 8,
+      "prozent": 0.8,
+      "note": 2
+     },
+     "hausaufgabe_prozent": 0.4,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.9,
+     "sl_zusammen": {
+      "prozent": 0.7,
+      "note": 2
+     },
+     "mitarbeit_prozent": 0.6,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.22,
+      "sl_gesamt_prozent": 0.64,
+      "sl_gesamt_note": 3,
+      "zeugnis_prozent": 0.43,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S06",
+     "ka1": {
+      "punkte": 22.5,
+      "status": null,
+      "prozent": 0.45,
+      "note": 4
+     },
+     "ka2": {
+      "punkte": 10,
+      "status": null,
+      "prozent": 0.25,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 8,
+      "prozent": 0.4,
+      "note": 5
+     },
+     "sl2": {
+      "punkte": null,
+      "prozent": null,
+      "note": null
+     },
+     "hausaufgabe_prozent": 0.3,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 1,
+     "sl_zusammen": {
+      "prozent": 0.66,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.5,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.35,
+      "sl_gesamt_prozent": 0.56,
+      "sl_gesamt_note": 3,
+      "zeugnis_prozent": 0.45,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S07",
+     "ka1": {
+      "punkte": 27,
+      "status": null,
+      "prozent": 0.54,
+      "note": 4
+     },
+     "ka2": {
+      "punkte": 36,
+      "status": null,
+      "prozent": 0.9,
+      "note": 1
+     },
+     "sl1": {
+      "punkte": 5,
+      "prozent": 0.25,
+      "note": 5
+     },
+     "sl2": {
+      "punkte": 9,
+      "prozent": 0.9,
+      "note": 1
+     },
+     "hausaufgabe_prozent": 0.2,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.4,
+     "sl_zusammen": {
+      "prozent": 0.52,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.4,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.72,
+      "sl_gesamt_prozent": 0.44,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.58,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S08",
+     "ka1": {
+      "punkte": 27.5,
+      "status": null,
+      "prozent": 0.55,
+      "note": 3
+     },
+     "ka2": {
+      "punkte": null,
+      "status": "krank",
+      "prozent": null,
+      "note": null
+     },
+     "sl1": {
+      "punkte": 4,
+      "prozent": 0.2,
+      "note": 5
+     },
+     "sl2": {
+      "punkte": 9,
+      "prozent": 0.9,
+      "note": 1
+     },
+     "hausaufgabe_prozent": 0.1,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.3,
+     "sl_zusammen": {
+      "prozent": 0.47,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.3,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.55,
+      "sl_gesamt_prozent": 0.36,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.45,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S09",
+     "ka1": {
+      "punkte": 34.5,
+      "status": null,
+      "prozent": 0.69,
+      "note": 3
+     },
+     "ka2": {
+      "punkte": 12,
+      "status": null,
+      "prozent": 0.3,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 3,
+      "prozent": 0.15,
+      "note": 5
+     },
+     "sl2": {
+      "punkte": 2,
+      "prozent": 0.2,
+      "note": 5
+     },
+     "hausaufgabe_prozent": 0,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.2,
+     "sl_zusammen": {
+      "prozent": 0.25,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.2,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.49,
+      "sl_gesamt_prozent": 0.22,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.35,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S10",
+     "ka1": {
+      "punkte": 35,
+      "status": null,
+      "prozent": 0.7,
+      "note": 2
+     },
+     "ka2": {
+      "punkte": 14,
+      "status": null,
+      "prozent": 0.35,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 0,
+      "prozent": 0,
+      "note": 6
+     },
+     "sl2": {
+      "punkte": 4,
+      "prozent": 0.4,
+      "note": 5
+     },
+     "hausaufgabe_prozent": null,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.1,
+     "sl_zusammen": {
+      "prozent": 0.27,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.1,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.52,
+      "sl_gesamt_prozent": 0.16,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.34,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S11",
+     "ka1": {
+      "punkte": 41.9,
+      "status": null,
+      "prozent": 0.83,
+      "note": 2
+     },
+     "ka2": {
+      "punkte": 16,
+      "status": null,
+      "prozent": 0.4,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 20,
+      "prozent": 1,
+      "note": 1
+     },
+     "sl2": {
+      "punkte": 6,
+      "prozent": 0.6,
+      "note": 3
+     },
+     "hausaufgabe_prozent": 0.9,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.7,
+      "note": 2
+     },
+     "mitarbeit_prozent": 0,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.61,
+      "sl_gesamt_prozent": 0.28,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.44,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S12",
+     "ka1": {
+      "punkte": 42.5,
+      "status": null,
+      "prozent": 0.85,
+      "note": 1
+     },
+     "ka2": {
+      "punkte": 18,
+      "status": null,
+      "prozent": 0.45,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": 12,
+      "prozent": 0.6,
+      "note": 3
+     },
+     "sl2": {
+      "punkte": 7,
+      "prozent": 0.7,
+      "note": 2
+     },
+     "hausaufgabe_prozent": 0.75,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.6,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.55,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.65,
+      "sl_gesamt_prozent": 0.57,
+      "sl_gesamt_note": 3,
+      "zeugnis_prozent": 0.61,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S13",
+     "ka1": {
+      "punkte": 50,
+      "status": null,
+      "prozent": 1,
+      "note": 1
+     },
+     "ka2": {
+      "punkte": 20,
+      "status": null,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": null,
+      "prozent": null,
+      "note": null
+     },
+     "sl2": {
+      "punkte": 8,
+      "prozent": 0.8,
+      "note": 2
+     },
+     "hausaufgabe_prozent": 0.5,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.6,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.45,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.75,
+      "sl_gesamt_prozent": 0.51,
+      "sl_gesamt_note": 4,
+      "zeugnis_prozent": 0.63,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S14",
+     "ka1": {
+      "punkte": 49.9,
+      "status": null,
+      "prozent": 0.99,
+      "note": 1
+     },
+     "ka2": {
+      "punkte": 22,
+      "status": null,
+      "prozent": 0.55,
+      "note": 3
+     },
+     "sl1": {
+      "punkte": 16,
+      "prozent": 0.8,
+      "note": 2
+     },
+     "sl2": {
+      "punkte": 1,
+      "prozent": 0.1,
+      "note": 5
+     },
+     "hausaufgabe_prozent": 0.25,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.44,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.35,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.77,
+      "sl_gesamt_prozent": 0.38,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.57,
+      "zeugnis_note": 3
+     }
+    }
+   ]
+  },
+  "ihk": {
+   "max_punkte": {
+    "ka1": 50,
+    "ka2": 40,
+    "sl1": 20,
+    "sl2": 10
+   },
+   "gewichte": {
+    "ka1": 0.5,
+    "ka2": 0.5,
+    "sl1": 0.2,
+    "sl2": 0.2,
+    "hausaufgabe": 0.1,
+    "uebung1": 0.1,
+    "punktekonto": 0.2,
+    "sl_gegen_mitarbeit": [
+     0.4,
+     0.6
+    ],
+    "ka_gegen_sl": [
+     0.5,
+     0.5
+    ]
+   },
+   "schueler": [
+    {
+     "schueler": "S01",
+     "ka1": {
+      "punkte": 0,
+      "status": null,
+      "prozent": 0,
+      "note": 6
+     },
+     "ka2": {
+      "punkte": 30,
+      "status": null,
+      "prozent": 0.75,
+      "note": 3
+     },
+     "sl1": {
+      "punkte": 20,
+      "prozent": 1,
+      "note": 1
+     },
+     "sl2": {
+      "punkte": 10,
+      "prozent": 1,
+      "note": 1
+     },
+     "hausaufgabe_prozent": 1,
+     "uebung1_prozent": null,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.85,
+      "note": 2
+     },
+     "mitarbeit_prozent": 1,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.37,
+      "sl_gesamt_prozent": 0.94,
+      "sl_gesamt_note": 1,
+      "zeugnis_prozent": 0.65,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S02",
+     "ka1": {
+      "punkte": 4,
+      "status": null,
+      "prozent": 0.08,
+      "note": 6
+     },
+     "ka2": {
+      "punkte": 20,
+      "status": null,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": 18,
+      "prozent": 0.9,
+      "note": 2
+     },
+     "sl2": {
+      "punkte": 5,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "hausaufgabe_prozent": 0.8,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.6,
+     "sl_zusammen": {
+      "prozent": 0.71,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.9,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.29,
+      "sl_gesamt_prozent": 0.82,
+      "sl_gesamt_note": 2,
+      "zeugnis_prozent": 0.55,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S03",
+     "ka1": {
+      "punkte": 4.5,
+      "status": null,
+      "prozent": 0.09,
+      "note": 6
+     },
+     "ka2": {
+      "punkte": null,
+      "status": "leer",
+      "prozent": null,
+      "note": null
+     },
+     "sl1": {
+      "punkte": 15,
+      "prozent": 0.75,
+      "note": 3
+     },
+     "sl2": {
+      "punkte": null,
+      "prozent": null,
+      "note": null
+     },
+     "hausaufgabe_prozent": 0.6,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.7,
+     "sl_zusammen": {
+      "prozent": 0.73,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.8,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.09,
+      "sl_gesamt_prozent": 0.77,
+      "sl_gesamt_note": 3,
+      "zeugnis_prozent": 0.43,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S04",
+     "ka1": {
+      "punkte": 22,
+      "status": null,
+      "prozent": 0.44,
+      "note": 5
+     },
+     "ka2": {
+      "punkte": 25,
+      "status": null,
+      "prozent": 0.62,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": 10,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "sl2": {
+      "punkte": 3,
+      "prozent": 0.3,
+      "note": 5
+     },
+     "hausaufgabe_prozent": 0.5,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.8,
+     "sl_zusammen": {
+      "prozent": 0.57,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.7,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.53,
+      "sl_gesamt_prozent": 0.64,
+      "sl_gesamt_note": 4,
+      "zeugnis_prozent": 0.58,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S05",
+     "ka1": {
+      "punkte": 22.4,
+      "status": null,
+      "prozent": 0.44,
+      "note": 5
+     },
+     "ka2": {
+      "punkte": null,
+      "status": "ue",
+      "prozent": 0,
+      "note": 6
+     },
+     "sl1": {
+      "punkte": 9,
+      "prozent": 0.45,
+      "note": 5
+     },
+     "sl2": {
+      "punkte": 8,
+      "prozent": 0.8,
+      "note": 3
+     },
+     "hausaufgabe_prozent": 0.4,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.9,
+     "sl_zusammen": {
+      "prozent": 0.7,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.6,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.22,
+      "sl_gesamt_prozent": 0.64,
+      "sl_gesamt_note": 4,
+      "zeugnis_prozent": 0.43,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S06",
+     "ka1": {
+      "punkte": 22.5,
+      "status": null,
+      "prozent": 0.45,
+      "note": 5
+     },
+     "ka2": {
+      "punkte": 10,
+      "status": null,
+      "prozent": 0.25,
+      "note": 6
+     },
+     "sl1": {
+      "punkte": 8,
+      "prozent": 0.4,
+      "note": 5
+     },
+     "sl2": {
+      "punkte": null,
+      "prozent": null,
+      "note": null
+     },
+     "hausaufgabe_prozent": 0.3,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 1,
+     "sl_zusammen": {
+      "prozent": 0.66,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.5,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.35,
+      "sl_gesamt_prozent": 0.56,
+      "sl_gesamt_note": 4,
+      "zeugnis_prozent": 0.45,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S07",
+     "ka1": {
+      "punkte": 27,
+      "status": null,
+      "prozent": 0.54,
+      "note": 4
+     },
+     "ka2": {
+      "punkte": 36,
+      "status": null,
+      "prozent": 0.9,
+      "note": 2
+     },
+     "sl1": {
+      "punkte": 5,
+      "prozent": 0.25,
+      "note": 6
+     },
+     "sl2": {
+      "punkte": 9,
+      "prozent": 0.9,
+      "note": 2
+     },
+     "hausaufgabe_prozent": 0.2,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.4,
+     "sl_zusammen": {
+      "prozent": 0.52,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.4,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.72,
+      "sl_gesamt_prozent": 0.44,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.58,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S08",
+     "ka1": {
+      "punkte": 27.5,
+      "status": null,
+      "prozent": 0.55,
+      "note": 4
+     },
+     "ka2": {
+      "punkte": null,
+      "status": "krank",
+      "prozent": null,
+      "note": null
+     },
+     "sl1": {
+      "punkte": 4,
+      "prozent": 0.2,
+      "note": 6
+     },
+     "sl2": {
+      "punkte": 9,
+      "prozent": 0.9,
+      "note": 2
+     },
+     "hausaufgabe_prozent": 0.1,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.3,
+     "sl_zusammen": {
+      "prozent": 0.47,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.3,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.55,
+      "sl_gesamt_prozent": 0.36,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.45,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S09",
+     "ka1": {
+      "punkte": 34.5,
+      "status": null,
+      "prozent": 0.69,
+      "note": 3
+     },
+     "ka2": {
+      "punkte": 12,
+      "status": null,
+      "prozent": 0.3,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 3,
+      "prozent": 0.15,
+      "note": 6
+     },
+     "sl2": {
+      "punkte": 2,
+      "prozent": 0.2,
+      "note": 6
+     },
+     "hausaufgabe_prozent": 0,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.2,
+     "sl_zusammen": {
+      "prozent": 0.25,
+      "note": 6
+     },
+     "mitarbeit_prozent": 0.2,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.49,
+      "sl_gesamt_prozent": 0.22,
+      "sl_gesamt_note": 6,
+      "zeugnis_prozent": 0.35,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S10",
+     "ka1": {
+      "punkte": 35,
+      "status": null,
+      "prozent": 0.7,
+      "note": 3
+     },
+     "ka2": {
+      "punkte": 14,
+      "status": null,
+      "prozent": 0.35,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 0,
+      "prozent": 0,
+      "note": 6
+     },
+     "sl2": {
+      "punkte": 4,
+      "prozent": 0.4,
+      "note": 5
+     },
+     "hausaufgabe_prozent": null,
+     "uebung1_prozent": 0.9,
+     "punktekonto_prozent": 0.1,
+     "sl_zusammen": {
+      "prozent": 0.27,
+      "note": 6
+     },
+     "mitarbeit_prozent": 0.1,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.52,
+      "sl_gesamt_prozent": 0.16,
+      "sl_gesamt_note": 6,
+      "zeugnis_prozent": 0.34,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S11",
+     "ka1": {
+      "punkte": 41.9,
+      "status": null,
+      "prozent": 0.83,
+      "note": 2
+     },
+     "ka2": {
+      "punkte": 16,
+      "status": null,
+      "prozent": 0.4,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 20,
+      "prozent": 1,
+      "note": 1
+     },
+     "sl2": {
+      "punkte": 6,
+      "prozent": 0.6,
+      "note": 4
+     },
+     "hausaufgabe_prozent": 0.9,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.7,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.61,
+      "sl_gesamt_prozent": 0.28,
+      "sl_gesamt_note": 6,
+      "zeugnis_prozent": 0.44,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S12",
+     "ka1": {
+      "punkte": 42.5,
+      "status": null,
+      "prozent": 0.85,
+      "note": 2
+     },
+     "ka2": {
+      "punkte": 18,
+      "status": null,
+      "prozent": 0.45,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 12,
+      "prozent": 0.6,
+      "note": 4
+     },
+     "sl2": {
+      "punkte": 7,
+      "prozent": 0.7,
+      "note": 3
+     },
+     "hausaufgabe_prozent": 0.75,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.6,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.55,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.65,
+      "sl_gesamt_prozent": 0.57,
+      "sl_gesamt_note": 4,
+      "zeugnis_prozent": 0.61,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S13",
+     "ka1": {
+      "punkte": 50,
+      "status": null,
+      "prozent": 1,
+      "note": 1
+     },
+     "ka2": {
+      "punkte": 20,
+      "status": null,
+      "prozent": 0.5,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": null,
+      "prozent": null,
+      "note": null
+     },
+     "sl2": {
+      "punkte": 8,
+      "prozent": 0.8,
+      "note": 3
+     },
+     "hausaufgabe_prozent": 0.5,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.6,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.45,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.75,
+      "sl_gesamt_prozent": 0.51,
+      "sl_gesamt_note": 4,
+      "zeugnis_prozent": 0.63,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S14",
+     "ka1": {
+      "punkte": 49.9,
+      "status": null,
+      "prozent": 0.99,
+      "note": 1
+     },
+     "ka2": {
+      "punkte": 22,
+      "status": null,
+      "prozent": 0.55,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": 16,
+      "prozent": 0.8,
+      "note": 3
+     },
+     "sl2": {
+      "punkte": 1,
+      "prozent": 0.1,
+      "note": 6
+     },
+     "hausaufgabe_prozent": 0.25,
+     "uebung1_prozent": 0.5,
+     "punktekonto_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.44,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.35,
+     "zeugnis": {
+      "ka_schnitt_prozent": 0.77,
+      "sl_gesamt_prozent": 0.38,
+      "sl_gesamt_note": 5,
+      "zeugnis_prozent": 0.57,
+      "zeugnis_note": 4
+     }
+    }
+   ]
+  },
+  "fos": {
+   "max_punkte": {
+    "klausur1": 60,
+    "klausur2": 50,
+    "sl1": 20
+   },
+   "gewichte": {
+    "klausur1": 0.5,
+    "klausur2": 0.5,
+    "sl1": 0.2,
+    "hausaufgabe": 0.1,
+    "uebung1": 0.1,
+    "punktekonto": 0.2,
+    "sl_gegen_mitarbeit": [
+     0.4,
+     0.6
+    ],
+    "klausuren_gegen_sl": [
+     0.5,
+     0.5
+    ]
+   },
+   "schueler": [
+    {
+     "schueler": "S01",
+     "klausur1": {
+      "punkte": 0,
+      "status": null,
+      "prozent": 0,
+      "notenpunkte": 0,
+      "note": 6
+     },
+     "klausur2": {
+      "punkte": 40,
+      "status": null,
+      "prozent": 0.8,
+      "notenpunkte": 12,
+      "note": 2
+     },
+     "sl1": {
+      "punkte": 20,
+      "prozent": 1,
+      "notenpunkte": 15
+     },
+     "hausaufgabe_prozent": 1,
+     "sl_zusammen": {
+      "prozent": 1,
+      "notenpunkte": 15,
+      "note": 1
+     },
+     "mitarbeit_prozent": 1,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 6,
+      "ka_schnitt_note": 4,
+      "mitarbeit_notenpunkte": 15,
+      "sl_gesamt_notenpunkte": 15,
+      "sl_gesamt_note": 1,
+      "zeugnis_notenpunkte": 11,
+      "zeugnis_note": 2
+     }
+    },
+    {
+     "schueler": "S02",
+     "klausur1": {
+      "punkte": 10,
+      "status": null,
+      "prozent": 0.16,
+      "notenpunkte": 1,
+      "note": 5
+     },
+     "klausur2": {
+      "punkte": 25,
+      "status": null,
+      "prozent": 0.5,
+      "notenpunkte": 6,
+      "note": 4
+     },
+     "sl1": {
+      "punkte": 18,
+      "prozent": 0.9,
+      "notenpunkte": 14
+     },
+     "hausaufgabe_prozent": 0.8,
+     "sl_zusammen": {
+      "prozent": 0.86,
+      "notenpunkte": 13,
+      "note": 1
+     },
+     "mitarbeit_prozent": 0.9,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 4,
+      "ka_schnitt_note": 5,
+      "mitarbeit_notenpunkte": 14,
+      "sl_gesamt_notenpunkte": 14,
+      "sl_gesamt_note": 1,
+      "zeugnis_notenpunkte": 9,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S03",
+     "klausur1": {
+      "punkte": 20,
+      "status": null,
+      "prozent": 0.33,
+      "notenpunkte": 3,
+      "note": 5
+     },
+     "klausur2": {
+      "punkte": null,
+      "status": "leer",
+      "prozent": null,
+      "notenpunkte": null,
+      "note": null
+     },
+     "sl1": {
+      "punkte": 15,
+      "prozent": 0.75,
+      "notenpunkte": 11
+     },
+     "hausaufgabe_prozent": 0.6,
+     "sl_zusammen": {
+      "prozent": 0.7,
+      "notenpunkte": 10,
+      "note": 2
+     },
+     "mitarbeit_prozent": 0.8,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 3,
+      "ka_schnitt_note": 5,
+      "mitarbeit_notenpunkte": 12,
+      "sl_gesamt_notenpunkte": 11,
+      "sl_gesamt_note": 2,
+      "zeugnis_notenpunkte": 7,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S04",
+     "klausur1": {
+      "punkte": 27,
+      "status": null,
+      "prozent": 0.45,
+      "notenpunkte": 5,
+      "note": 4
+     },
+     "klausur2": {
+      "punkte": 30,
+      "status": null,
+      "prozent": 0.6,
+      "notenpunkte": 8,
+      "note": 3
+     },
+     "sl1": {
+      "punkte": 10,
+      "prozent": 0.5,
+      "notenpunkte": 6
+     },
+     "hausaufgabe_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.5,
+      "notenpunkte": 6,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.7,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 7,
+      "ka_schnitt_note": 3,
+      "mitarbeit_notenpunkte": 10,
+      "sl_gesamt_notenpunkte": 8,
+      "sl_gesamt_note": 3,
+      "zeugnis_notenpunkte": 8,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S05",
+     "klausur1": {
+      "punkte": 30,
+      "status": null,
+      "prozent": 0.5,
+      "notenpunkte": 6,
+      "note": 4
+     },
+     "klausur2": {
+      "punkte": null,
+      "status": "krank",
+      "prozent": null,
+      "notenpunkte": null,
+      "note": null
+     },
+     "sl1": {
+      "punkte": 9,
+      "prozent": 0.45,
+      "notenpunkte": 5
+     },
+     "hausaufgabe_prozent": 0.4,
+     "sl_zusammen": {
+      "prozent": 0.43,
+      "notenpunkte": 4,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.6,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 6,
+      "ka_schnitt_note": 4,
+      "mitarbeit_notenpunkte": 8,
+      "sl_gesamt_notenpunkte": 6,
+      "sl_gesamt_note": 4,
+      "zeugnis_notenpunkte": 6,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S06",
+     "klausur1": {
+      "punkte": 30.5,
+      "status": null,
+      "prozent": 0.5,
+      "notenpunkte": 6,
+      "note": 4
+     },
+     "klausur2": {
+      "punkte": null,
+      "status": "ue",
+      "prozent": 0,
+      "notenpunkte": 0,
+      "note": 6
+     },
+     "sl1": {
+      "punkte": 8,
+      "prozent": 0.4,
+      "notenpunkte": 4
+     },
+     "hausaufgabe_prozent": 0.3,
+     "sl_zusammen": {
+      "prozent": 0.36,
+      "notenpunkte": 4,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.5,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 3,
+      "ka_schnitt_note": 5,
+      "mitarbeit_notenpunkte": 6,
+      "sl_gesamt_notenpunkte": 5,
+      "sl_gesamt_note": 4,
+      "zeugnis_notenpunkte": 4,
+      "zeugnis_note": 5
+     }
+    },
+    {
+     "schueler": "S07",
+     "klausur1": {
+      "punkte": 35,
+      "status": null,
+      "prozent": 0.58,
+      "notenpunkte": 7,
+      "note": 3
+     },
+     "klausur2": {
+      "punkte": 36,
+      "status": null,
+      "prozent": 0.72,
+      "notenpunkte": 10,
+      "note": 2
+     },
+     "sl1": {
+      "punkte": 5,
+      "prozent": 0.25,
+      "notenpunkte": 2
+     },
+     "hausaufgabe_prozent": 0.2,
+     "sl_zusammen": {
+      "prozent": 0.23,
+      "notenpunkte": 2,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.4,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 9,
+      "ka_schnitt_note": 3,
+      "mitarbeit_notenpunkte": 4,
+      "sl_gesamt_notenpunkte": 3,
+      "sl_gesamt_note": 5,
+      "zeugnis_notenpunkte": 6,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S08",
+     "klausur1": {
+      "punkte": 40,
+      "status": null,
+      "prozent": 0.66,
+      "notenpunkte": 9,
+      "note": 3
+     },
+     "klausur2": {
+      "punkte": 40,
+      "status": null,
+      "prozent": 0.8,
+      "notenpunkte": 12,
+      "note": 2
+     },
+     "sl1": {
+      "punkte": 4,
+      "prozent": 0.2,
+      "notenpunkte": 2
+     },
+     "hausaufgabe_prozent": 0.1,
+     "sl_zusammen": {
+      "prozent": 0.16,
+      "notenpunkte": 1,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.3,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 11,
+      "ka_schnitt_note": 2,
+      "mitarbeit_notenpunkte": 3,
+      "sl_gesamt_notenpunkte": 2,
+      "sl_gesamt_note": 5,
+      "zeugnis_notenpunkte": 7,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S09",
+     "klausur1": {
+      "punkte": 45,
+      "status": null,
+      "prozent": 0.75,
+      "notenpunkte": 11,
+      "note": 2
+     },
+     "klausur2": {
+      "punkte": 12,
+      "status": null,
+      "prozent": 0.24,
+      "notenpunkte": 2,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 3,
+      "prozent": 0.15,
+      "notenpunkte": 1
+     },
+     "hausaufgabe_prozent": 0,
+     "sl_zusammen": {
+      "prozent": 0.1,
+      "notenpunkte": 1,
+      "note": 5
+     },
+     "mitarbeit_prozent": 0.2,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 7,
+      "ka_schnitt_note": 3,
+      "mitarbeit_notenpunkte": 2,
+      "sl_gesamt_notenpunkte": 2,
+      "sl_gesamt_note": 5,
+      "zeugnis_notenpunkte": 5,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S10",
+     "klausur1": {
+      "punkte": 50,
+      "status": null,
+      "prozent": 0.83,
+      "notenpunkte": 12,
+      "note": 2
+     },
+     "klausur2": {
+      "punkte": 14,
+      "status": null,
+      "prozent": 0.28,
+      "notenpunkte": 3,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 0,
+      "prozent": 0,
+      "notenpunkte": 0
+     },
+     "hausaufgabe_prozent": null,
+     "sl_zusammen": {
+      "prozent": 0,
+      "notenpunkte": 0,
+      "note": 6
+     },
+     "mitarbeit_prozent": 0.1,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 8,
+      "ka_schnitt_note": 3,
+      "mitarbeit_notenpunkte": 1,
+      "sl_gesamt_notenpunkte": 1,
+      "sl_gesamt_note": 5,
+      "zeugnis_notenpunkte": 5,
+      "zeugnis_note": 4
+     }
+    },
+    {
+     "schueler": "S11",
+     "klausur1": {
+      "punkte": 54,
+      "status": null,
+      "prozent": 0.9,
+      "notenpunkte": 14,
+      "note": 1
+     },
+     "klausur2": {
+      "punkte": 16,
+      "status": null,
+      "prozent": 0.32,
+      "notenpunkte": 3,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 20,
+      "prozent": 1,
+      "notenpunkte": 15
+     },
+     "hausaufgabe_prozent": 0.9,
+     "sl_zusammen": {
+      "prozent": 0.96,
+      "notenpunkte": 15,
+      "note": 1
+     },
+     "mitarbeit_prozent": 0,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 9,
+      "ka_schnitt_note": 3,
+      "mitarbeit_notenpunkte": 0,
+      "sl_gesamt_notenpunkte": 6,
+      "sl_gesamt_note": 4,
+      "zeugnis_notenpunkte": 8,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S12",
+     "klausur1": {
+      "punkte": 57,
+      "status": null,
+      "prozent": 0.95,
+      "notenpunkte": 15,
+      "note": 1
+     },
+     "klausur2": {
+      "punkte": 18,
+      "status": null,
+      "prozent": 0.36,
+      "notenpunkte": 4,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 12,
+      "prozent": 0.6,
+      "notenpunkte": 8
+     },
+     "hausaufgabe_prozent": 0.75,
+     "sl_zusammen": {
+      "prozent": 0.65,
+      "notenpunkte": 9,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.55,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 10,
+      "ka_schnitt_note": 2,
+      "mitarbeit_notenpunkte": 7,
+      "sl_gesamt_notenpunkte": 8,
+      "sl_gesamt_note": 3,
+      "zeugnis_notenpunkte": 9,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S13",
+     "klausur1": {
+      "punkte": 60,
+      "status": null,
+      "prozent": 1,
+      "notenpunkte": 15,
+      "note": 1
+     },
+     "klausur2": {
+      "punkte": 20,
+      "status": null,
+      "prozent": 0.4,
+      "notenpunkte": 4,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": null,
+      "prozent": null,
+      "notenpunkte": null
+     },
+     "hausaufgabe_prozent": 0.5,
+     "sl_zusammen": {
+      "prozent": 0.5,
+      "notenpunkte": 6,
+      "note": 4
+     },
+     "mitarbeit_prozent": 0.45,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 10,
+      "ka_schnitt_note": 2,
+      "mitarbeit_notenpunkte": 5,
+      "sl_gesamt_notenpunkte": 5,
+      "sl_gesamt_note": 4,
+      "zeugnis_notenpunkte": 8,
+      "zeugnis_note": 3
+     }
+    },
+    {
+     "schueler": "S14",
+     "klausur1": {
+      "punkte": 59,
+      "status": null,
+      "prozent": 0.98,
+      "notenpunkte": 15,
+      "note": 1
+     },
+     "klausur2": {
+      "punkte": 22,
+      "status": null,
+      "prozent": 0.44,
+      "notenpunkte": 4,
+      "note": 5
+     },
+     "sl1": {
+      "punkte": 16,
+      "prozent": 0.8,
+      "notenpunkte": 12
+     },
+     "hausaufgabe_prozent": 0.25,
+     "sl_zusammen": {
+      "prozent": 0.61,
+      "notenpunkte": 8,
+      "note": 3
+     },
+     "mitarbeit_prozent": 0.35,
+     "zeugnis": {
+      "ka_schnitt_notenpunkte": 10,
+      "ka_schnitt_note": 2,
+      "mitarbeit_notenpunkte": 3,
+      "sl_gesamt_notenpunkte": 5,
+      "sl_gesamt_note": 4,
+      "zeugnis_notenpunkte": 8,
+      "zeugnis_note": 3
+     }
+    }
+   ]
+  }
+ }
+}
