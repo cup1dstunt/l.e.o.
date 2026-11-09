@@ -354,3 +354,19 @@ Hinweise:
 ## 10 Entscheidung zu den Smiley-Farben (09.11.2026, E60)
 
 Konstantin nimmt die **zarten Töne aus dem Mockup N2** und behält **fünf Stufen** (Option „Fünf Stufen, N2-Töne erweitert“). Damit ist 9.1 so zu lesen: dunkelgrün #d5e8da, hellgrün #e6efd9, gelb #faf0c4, orange #fbe0c6, rot #f9e3de als Flächen, Balken #8fc4a0, #c5dcae, #e9cf6a, #eba461, #e6a99d. **Kontrast und Rot-Grün-Schwäche** werden nicht weiter verfolgt (Konstantin). Die Tokens `--leo-mit-*` in 2.2 sind entsprechend fünf, nicht vier: sehr gut, gut, mittel (gelb), schwach (orange), sehr schwach (rot). Die Gesichtsform bleibt zusätzlich bestehen.
+
+---
+
+## 11 Textbausteine und Schullogo (09.11.2026)
+
+**Textbausteine:** Konstantin erstellt die Bausteine selbst (als Admin). Die Liste in 9.2 war nur ein Platzhalter und gilt nicht. Grundlage sind seine Beispiele, ohne die Farben:
+
+- stört, schläft, Handy
+- abgelenkt, langsam, keine hochwertigen Beiträge, quatscht manchmal, hatte keine Arbeitsmaterialien am Anfang der Stunde draußen
+- unauffällig und ruhig, kaum Beteiligung, Beitragsqualität schwankt
+- engagiert, phasenweise gute Beteiligung, Beitragsqualität meistens gut
+- hilft anderen, sehr engagiert, sehr gute Beteiligung, top vorbereitet, schnell fertig
+
+Für den Prototyp werden diese Formulierungen als Bausteine übernommen und je Stufe vorsortiert. Sie sind Vorschläge zur Stufe, keine Pflicht. Der eigene Kommentar je Eintrag bleibt (E53).
+
+**Schullogo als Vektordatei:** Liegt im Repo nur als PNG vor (`docs/konzept/logo/doppellogo/osz.png`, im Doppellogo als Bild eingebettet). Eine Vektordatei kann nur die Schule liefern. Nachzeichnen würde das Logo verändern, E47 sagt „unverändert“. Das ist **kein Hindernis**: Bis dahin bleibt das PNG, nur nicht für sehr große Flächen. Backlog U14.
