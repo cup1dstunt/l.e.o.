@@ -298,13 +298,13 @@ Konstantin legt die Skala über **fünf Farben** fest, keine Namen nötig. Seine
 **Gestaltung dazu (Vorschlag):**
 - Fünf runde Smiley-Flächen in genau diesen fünf Farben, jeweils **zarte Fläche** für Chips, Sitzplatz und Listen, **kräftigerer Ton** für den Anteilsbalken im Verlauf.
 - Gesichter: lachend breit, lachend, neutral, Mund nach unten, Stirn gerunzelt. Die **Form trägt die Bedeutung zusätzlich zur Farbe**, damit Rot-Grün-Schwäche nichts kaputt macht (bei Ampelfarben besonders wichtig).
-- Richtwerte der Flächen (noch nicht auf Kontrast und Farbsehschwäche gemessen): dunkelgrün #cfe5d6, hellgrün #e3efd3, gelb #faf0c4, orange #fbe0c6, rot #f8d9d3. Balken: #5fa87a, #a9cf86, #e9cf6a, #eba461, #dc7a6c.
+- **Endgültige Töne (E60):** Flächen dunkelgrün #d5e8da, hellgrün #e6efd9, gelb #faf0c4, orange #fbe0c6, rot #f9e3de (dunkelgrün, hellgrün und rot genau wie im Mockup N2). Balken im Verlauf: #8fc4a0, #c5dcae, #e9cf6a, #eba461, #e6a99d.
 
 **Ehrlicher Zielkonflikt mit E48:** In der Designsprache bedeutet **Rot = unter der Grenze oder UE** und **Gold = Hinweis oder Vorbehalt**. Die Mitarbeitsfarben Gelb, Orange und Rot sind diesen beiden ähnlich. Lösung, die ich vorschlage:
 1. Die Mitarbeitsfarben gibt es **nur auf dem Smiley-Gesicht und im Mitarbeitsverlauf**, nie als Textfarbe, Rand, Kachel oder Knopf.
 2. Sie sind **blasser** als Warnrot und Gold-Hinweis und stehen immer mit Gesicht.
 3. Ein Schüler mit „rot“ in der Mitarbeit bekommt **keine** Warnmarkierung in der Namenszeile. Warnrot bleibt für Noten unter der Grenze und UE.
-Ob das im Alltag gut zu unterscheiden ist, zeigt erst der Prototyp (Meilenstein 1 und 3). Das ist ein Prüfpunkt, kein Selbstläufer.
+Konstantin hat die zarten Töne aus dem Mockup N2 bestätigt und Kontrast sowie Rot-Grün-Schwäche als erledigt erklärt (09.11.2026, E60). Es gibt dafür keinen eigenen Prüfpunkt mehr. Die Regel, dass die Mitarbeitsfarben nur auf Gesicht und Verlauf stehen, gilt weiter.
 
 ### 9.2 Textbausteine (Entwurf, abgeleitet aus deinen Beispielen)
 
@@ -345,7 +345,12 @@ Hinweise:
 - **Stundenende-Hinweis** vorerst an, später eventuell aus. Schalter von Anfang an.
 
 ### 9.5 Auswirkung auf den Plan
-- **Meilenstein 1:** Smiley-Satz mit **fünf** Gesichtern in den fünf Farben, Test auf Rot-Grün-Schwäche (Simulation) und Kontrast.
+- **Meilenstein 1:** Smiley-Satz mit **fünf** Gesichtern in den fünf Farben aus E60.
 - **Meilenstein 3:** Mitarbeit-Fenster mit fünf Smileys und zwölf bis vierzehn Bausteinen, Eingabe des eigenen Kommentars im Textfeld.
-- **Abnahmekriterium neu:** Auch in der Simulation von Rot-Grün-Schwäche sind alle fünf Stufen an der Gesichtsform unterscheidbar.
-- **Offen nur noch:** ob dir die vorgeschlagenen Textbausteine passen und ob die Farbregel aus 9.1 (Mitarbeitsfarben nur auf Gesichtern) für dich in Ordnung ist.
+- **Offen nur noch:** ob dir die vorgeschlagenen Textbausteine (9.2) passen.
+
+---
+
+## 10 Entscheidung zu den Smiley-Farben (09.11.2026, E60)
+
+Konstantin nimmt die **zarten Töne aus dem Mockup N2** und behält **fünf Stufen** (Option „Fünf Stufen, N2-Töne erweitert“). Damit ist 9.1 so zu lesen: dunkelgrün #d5e8da, hellgrün #e6efd9, gelb #faf0c4, orange #fbe0c6, rot #f9e3de als Flächen, Balken #8fc4a0, #c5dcae, #e9cf6a, #eba461, #e6a99d. **Kontrast und Rot-Grün-Schwäche** werden nicht weiter verfolgt (Konstantin). Die Tokens `--leo-mit-*` in 2.2 sind entsprechend fünf, nicht vier: sehr gut, gut, mittel (gelb), schwach (orange), sehr schwach (rot). Die Gesichtsform bleibt zusätzlich bestehen.

@@ -283,7 +283,7 @@ Details: [DESIGN_SYSTEM_PROTOTYP.md](DESIGN_SYSTEM_PROTOTYP.md), Entscheidungen 
 | U10 | **Beamer-Ansicht** mit großen Schriften für Live-Stunde, Gruppen, Zufall, Countdown | C | 2 | M |
 | U11 | **Freihandzeichnen** mit dem Apple Pencil (Skizze im Sitzplan, handschriftliche Randnotiz als Bild) | K | 3 | L |
 | U12 | Touch auf den 4K-Tafeln nur für Timer o. ä. | K | 3 | S |
-| U13 | **Dunkelmodus** der neuen Farben messen (Kontrast, Rot-Grün-Schwäche) | C | 1 | S |
+| U13 | **Dunkelmodus** der neuen Mitarbeitsfarben ableiten (Kontrast und Rot-Grün-Schwäche sind laut Konstantin erledigt, E60) | C | 2 | S |
 | U14 | **Schullogo als Vektordatei** beim Sekretariat oder auf der Schul-Webseite erfragen | K | 2 | S |
 | U15 | Eigene Marken im Zeitbalken (z. B. „Gruppenarbeit bis 09:15“), nur auf Wunsch, nie als feste Phasen | C | 3 | S |
 
