@@ -315,24 +315,27 @@ Quelle: [prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Ents
 | PF1 | **Notenbuch: Eingabe und Anzeige als Note (OSZ) oder Notenpunkte (FOS)**, Umrechnung aus Rohpunkten nur im Rechenkern, Baum-Aufbau nach Referenz (E65) | K | 1 | L |
 | PF2 | **Notenbuch-Aufbau nach altem Baum-Notenbuch:** Gruppen Klausuren / AT (Mitarbeit ½, Tests ½), Ø-Spalten, Live-Gesamtnote mit Vorschlag, „Profil & Gewichte“ bleibt (E65) | K | 1 | M |
 | PF3 | **Schülerkarte ohne Rechenweg und ohne Endnote-Kachel**, Notenübersicht mit fünf Werten (Klausur 1, 2 ganz; AT, Mitarbeit, Tests/Sonstiges dezimal) (E69) | K | 1 | S |
-| PF4 | **Smiley-Skala = Note** (Note = 6 − Stufe), Durchschnitte überall als Note, nicht als Stufe (E67) | K | 1 | S |
+| PF4 | **Fünf Smileys = Noten 1 bis 5** (Smiley 1 = Note 1, kein „6 − Stufe“), Durchschnitte überall als Note, Prototyp-Zählung umdrehen (E72) | K | 1 | S |
 | PF5 | **Mitarbeitsübersicht verdichten:** letzte 6–8 Stunden als Smileys, davor Monatsfeld (Durchschnitts-Smiley oder eingetragene Monatsnote), rechts Trendpfeil und Durchschnitt (E67) | K | 1 | M |
-| PF6 | **Monatsnote vorschlagen ausbauen:** Monatsauswahl, „Alle übernehmen“, Haken je Zeile, Stift je Zeile, übernommene Note erscheint im Monatsfeld (E68) | K | 1 | M |
-| PF7 | **Doppelklick aufs Smiley öffnet Textbausteine und Kommentar**, Einfachklick speichert ohne Verzögerung; Touch-Geste (Stift, Long-Press) offen (E66) | K | 1 | S |
+| PF6 | **Monatsnote vorschlagen ausbauen** (exakter Durchschnitt als Vorschlag, Lehrkraft entscheidet, E73): Monatsauswahl, „Alle übernehmen“, Haken je Zeile, Stift je Zeile, übernommene Note erscheint im Monatsfeld (E68) | K | 1 | M |
+| PF7 | **Doppelklick aufs Smiley öffnet Textbausteine und Kommentar**, Einfachklick speichert ohne Verzögerung; am Touch langer Druck statt Doppeltipp (E66, E73) | K | 1 | S |
 | PF8 | **Textbausteine mit Komma trennen**, pro Kategorie 1–2 Bausteine mehr (liefert Konstantin, E53) | K | 1 | S |
-| PF9 | **Lernstoff-Kachel** in der Live-Stunde (Thema, Aufgaben, Material, Hausaufgabe, Felder offen), pro Stunde gespeichert, in der Kurshistorie wiederfindbar (E70) | K | 2 | M |
-| PF10 | **Übergang in die nächste Stunde:** kurze Notiz am Kurs („Aufgabenblock A bis Nr. 4 verglichen“), nächste Stunde zeigt „Weiter bei: …“, nur für die Lehrkraft (E70) | K | 2 | M |
+| PF9 | **Lernstoff-Kachel** in der Live-Stunde: Textfeld oder Diktat, dazu wählbar Hausaufgabe (E78), pro Stunde gespeichert, in der Kurshistorie wiederfindbar (E70) | K | 2 | M |
+| PF10 | **Übergang in die nächste Stunde:** kurze Notiz am Kurs („Aufgabenblock A bis Nr. 4 verglichen“), nächste Stunde zeigt „Weiter bei: …“, nur für die Lehrkraft (E70, E78); Ort der Anzeige (Kachel oder Tagesplan) noch offen | K | 2 | M |
 | PF11 | **Spaltenkopf anklickbar:** Menü mit Name, Datum, Gewichtung, Typ (E71) | K | 2 | S |
 | PF12 | **„Neue Leistung“ als schnelles Interaktionsmenü** (Test, Präsentation, Abgabe, Klausur), auch für zukünftige Termine; verzahnt mit NB19 in [NOTENBUCH_BEDIENUNG.md](NOTENBUCH_BEDIENUNG.md) (E71) | K | 2 | M |
-| PF13 | **Kalender** (Klausurtermine, zukünftige Leistungen), Quelle offen: lokal, IServ oder anderer; Schnittstelle zu UPZ-6, F-Kalender, U1 (E71) | K | 2 | L |
-| PF14 | **Raumplan-Editor** für den Sitzplan (Tische, Reihen, Gang, Tafel, Tür, Plätze; Details offen), E7 „Sitzplan muss einfach sein“ beachten (E71) | K | 2 | M |
-| PF15 | **PDF-Report je Schüler**, eine Seite, per Mail versendbar; Inhalt und Layout offen, Datenschutz beachten (nur eigene Noten, E29), verzahnt mit UPZ-8 und E-Mail-Modul (E69) | K | 2 | M |
-| PF16 | **Historie in der Notenübersicht:** Halbjahr wählbar, alte Halbjahre fest und nur nach ausdrücklicher Warnung änderbar (mit Bestätigung und Eintrag im Verlauf), Halbjahr-ID im Datenmodell, passt zu E21 (E71) | K | 2 | M |
-| PF17 | **Ruhigerer Smiley-Artstyle** (weniger expressiv), Stufen und Farben bleiben (E52, E60), muss auch ohne Farbe unterscheidbar sein; frühere Referenz beschaffen | K | 2 | S |
+| PF13 | **Kalender** (Klausurtermine, zukünftige Leistungen), **viel später, nach dem Notenbuch (E76)**, Quelle offen: lokal, IServ oder anderer; Schnittstelle zu UPZ-6, F-Kalender, U1 (E71) | K | 2 | L |
+| PF14 | **Raumplan-Editor** für den Sitzplan (Tische, Reihen, Gang, Tafel, Tür, Plätze; Details offen), E7 „Sitzplan muss einfach sein“ beachten, System muss intuitiv und einfach sein, noch zu entwerfen (E71, E76) | K | 3 | M |
+| PF15 | **PDF-Report je Schüler**, eine Seite, per Mail versendbar; **3–4 Designvorschläge erstellen (E74)**, Inhalt offen, Datenschutz beachten (nur eigene Noten, E29), verzahnt mit UPZ-8 und E-Mail-Modul (E69) | K | 2 | M |
+| PF16 | **Historie in der Notenübersicht:** Halbjahr und Vorjahr wählbar, nur eigene Noten (E75), alte Halbjahre fest und nur nach ausdrücklicher Warnung änderbar (mit Bestätigung und Eintrag im Verlauf), Halbjahr-ID im Datenmodell, passt zu E21 (E71) | K | 2 | M |
+| PF17 | **Ruhigerer Smiley-Artstyle:** **fünf Stilvarianten entwickeln, beste wählen (E73)**, weniger expressiv, Stufen und Farben bleiben (E52, E60), auch ohne Farbe unterscheidbar | K | 2 | S |
 | PF18 | **Mobil-Test** auf iPad, iPhone und Schul-PC (Navigation, 44-px-Tippziele, Handy-Notenliste, Beamer); danach Entscheidung zur Navigation (E54) | K | 2 | S |
 | PF19 | **Firefox und echte 4K-Tafel testen** (E56), bisher nicht getestet | C | 3 | S |
 | PF20 | **Rechenpfad prüfen:** UPZ-Referenzwerte stammen aus LibreOffice, nicht aus Excel; Gegenprüfung mit Excel der Kollegen einplanen | C | 2 | S |
 | PF21 | **Schülersuche** bleibt (von Konstantin gelobt), bei Modulplanung als gemeinsame Funktion mitdenken | K | G | S |
+| PF23 | **Rechenweg hinter Info-Knopf** in der Schülerkarte, freiwerdenden Platz sinnvoll nutzen (E74) | K | 1 | S |
+| PF24 | **Platzhalter Startseite** mit Kachel „Kalender folgt später“ (V9, zu bestätigen) | C | 2 | S |
+| PF25 | **Beamer-Modus** nur mit Gruppenauslosung, zufälligem Namenziehen (gern als Rad) und Timer (E78); verzahnt mit U10 | K | 2 | M |
 | PF22 | **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
 
 ## Offen

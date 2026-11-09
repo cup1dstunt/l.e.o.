@@ -23,19 +23,19 @@
 
 Offene Fragen aus dem Prototyp-Feedback vom 09.11.2026 ([prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Abschnitt 11). Sie werden bei der Planung des Moduls Notenbuch abgearbeitet. Antworten bitte als Entscheidungen in [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) eintragen.
 
-| # | Frage | Bezug |
-|---|---|---|
-| N1 | **Smiley-Artstyle:** Welche frühere, zurückhaltendere Version ist die Referenz? (Die Design-Dokumente geben Stufen und Farben vor, nicht die Gesichter.) | E52, E60, PF17 |
-| N2 | **Doppelklick am Touchgerät:** Doppeltipp, langer Druck oder der vorhandene Stift? | E66, PF7 |
-| N3 | **Monatsnote:** exakter Durchschnitt (z. B. 2,5) oder gerundet (2 oder 3)? | E68, E40, PF6 |
-| N4 | **Schülerkarte:** Rechenweg ganz entfernen oder hinter einem Info-Knopf behalten? | E69, PF3 |
-| N5 | **PDF-Report:** Welche Inhalte und welches Layout? Einseitig, mit Noten, Fehlzeiten und Notizen? | E69, PF15 |
-| N6 | **Historie:** Welche Halbjahre, wer darf entsperren, welche Warnung? | E71, PF16 |
-| N7 | **Kalender:** lokal, IServ oder ein anderer Kalender? (Frage 5 oben: IServ-iCal?) | E71, PF13 |
-| N8 | **Raumplan:** Tische, Reihen, Gang, Tafel, Tür, Anzahl der Plätze? | E71, PF14 |
-| N9 | **Altes Notenbuch:** exakt so übernehmen oder als Richtung? | E65, PF2 |
-| N10 | **Lernstoff:** Welche Felder (Thema, Aufgaben, Hausaufgabe, Material) und welche Vorlagen? | E70, PF9 |
-| N11 | **Übergang:** nur für dich sichtbar oder auch für die Klasse? Als Zeile in „Läuft gerade“ oder im Tagesplan? | E70, PF10 |
+| # | Frage / Antwort | Bezug | Stand |
+|---|---|---|---|
+| N1 | ~~Smiley-Artstyle~~ → **fünf Stilvarianten entwickeln, beste wählen** | E73, PF17 | erledigt (Auftrag) |
+| N2 | ~~Doppelklick am Touchgerät~~ → **Doppelklick am PC, langer Touch am Touchgerät**, Tipp bewertet sofort | E73, PF7 | beantwortet |
+| N3 | ~~Monatsnote exakt oder gerundet~~ → **exakter Durchschnitt als Vorschlag, Lehrkraft entscheidet** | E73, PF6 | beantwortet |
+| N4 | ~~Rechenweg~~ → **hinter Info-Knopf**, nicht offen auf der Karte | E74, PF23 | beantwortet |
+| N5 | **PDF-Report:** 3–4 Designvorschläge, Inhalt noch offen | E74, PF15 | Designvorschläge ausstehend |
+| N6 | ~~Historie~~ → **nur eigene Noten, Sprung in früheres Halbjahr und Vorjahr** (Entsperren und Warnung noch offen) | E75, PF16 | teilweise beantwortet |
+| N7 | ~~Kalender~~ → **viel später**, Quelle offen; Platzhalter Startseite als V9 | E76, PF13 | beantwortet, V9 offen |
+| N8 | **Raumplan:** intuitives, einfaches System, Konzept steht aus (Tische, Reihen, Tafel, Tür …) | E76, PF14 | offen |
+| N9 | ~~Altes Notenbuch~~ → **zu großen Teilen so übernehmen**, nur sinnvolle Verbesserungen | E77, PF2 | beantwortet |
+| N10 | ~~Lernstoff~~ → **Textfeld oder Diktat, dazu wählbar Hausaufgabe** | E78, PF9 | beantwortet |
+| N11 | ~~Übergang~~ → **nur Lehrkraft**; Beamer-Modus nur Gruppenauslosung, Namenziehen (Rad), Timer. Anzeigeort (Kachel oder Tagesplan) offen | E78, PF10, PF25 | teilweise beantwortet |
 
 ## An das MEDIAN-Team
 
