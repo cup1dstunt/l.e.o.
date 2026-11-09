@@ -1,0 +1,112 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><title>A</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{--paper:#f5f3ee;--card:#fff;--soft:#fbfaf7;--taste:#f1efe9;--ink:#1d2125;--muted:#6b7074;--calc:#4a5258;--line:#e3dfd6;--line2:#ece9e2;--acc:#2f5d62;--acc-soft:#e3eeee;--warn:#b23a2a;--warn-soft:#fbeae6;--star:#c58b00;--sel:#fff6d6}
+*{box-sizing:border-box}
+body{margin:0;background:#d9d6cf;font-family:Inter,system-ui,sans-serif;color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+.shot{background:var(--paper);position:relative;overflow:hidden;margin:0 0 30px}
+.pc{width:1440px;height:880px}
+.top{display:flex;align-items:center;gap:16px;height:60px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line)}
+.logo{font-weight:800;letter-spacing:.06em;color:var(--acc)}
+.crumb{font-weight:600;font-size:16px}.crumb small{font-weight:400;color:var(--muted);margin-left:8px;font-size:13px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-left:8px}.seg span{padding:6px 12px;font-size:13px;color:var(--muted)}.seg .on{background:var(--acc);color:#fff}
+.sp{flex:1}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted);background:#fff}.pill b{color:var(--ink)}
+.tabs{display:flex;gap:6px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line)}
+.tabs span{padding:12px 14px;font-size:14px;color:var(--muted);border-bottom:2px solid transparent}.tabs .on{color:var(--ink);font-weight:700;border-color:var(--acc)}
+.body{padding:20px 24px}
+table.g{border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;width:100%}
+.g th{background:var(--soft);font-weight:600;font-size:12px;color:var(--ink);border-bottom:1px solid var(--line);border-left:1px solid var(--line2);padding:6px 4px;text-align:center}
+.g th small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+.g th.grp{text-align:left;padding:8px 12px;font-size:13px}.g th.grp i{float:right;font-style:normal;color:var(--muted);font-weight:500}
+.g td{height:50px;text-align:center;border-top:1px solid var(--line2);border-left:1px solid var(--line2);font-size:15px;font-weight:700;position:relative}
+.g td.nm{text-align:left;padding:0 14px;font-weight:500;border-left:0;font-size:14px}.g td.nm small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+.g td.c{font-weight:500;font-size:13px;color:var(--calc);background:var(--soft)}.g td.c span{border-bottom:1px dotted #9aa}
+.g td.low{color:var(--warn)}
+.g td.end{background:#eef5f5;border-left:2px solid var(--acc);width:130px;font-size:17px;font-weight:800;line-height:1.1}.g td.end small{display:block;font-size:11px;color:var(--calc);font-weight:500;margin-top:2px}
+.g th.end{background:#eef5f5;border-left:2px solid var(--acc);color:var(--acc);font-size:13px}
+.N{display:inline-flex;width:18px;height:18px;border:1.5px solid var(--acc);color:var(--acc);border-radius:50%;font-size:10px;font-weight:700;align-items:center;justify-content:center;margin-left:6px;vertical-align:1px}
+.E{background:#e8e6e0;color:#555;border-radius:6px;padding:2px 7px;font-size:12px}.UE{background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:2px 7px;font-size:12px}
+.st{position:absolute;top:4px;right:10px;color:var(--star);font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card h3{margin:0 0 4px;font-size:15px;font-weight:700}.card .sub{color:var(--muted);font-size:12px}
+.big{font-size:34px;font-weight:800;letter-spacing:-.02em}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.tile{height:196px;display:flex;flex-direction:column}.tile .sub{margin-bottom:auto}
+.tile.acc{background:var(--acc-soft);border-color:#c8dcdc}
+.legend{display:flex;gap:22px;font-size:13px;color:var(--muted);margin:14px 2px}
+.phone{width:390px;height:800px;background:var(--paper);border-radius:46px;border:10px solid #1d2125;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.pair{display:flex;gap:40px;padding:50px 60px;background:#d9d6cf;width:960px;height:900px}
+.ph-h{background:#fff;padding:46px 20px 12px;border-bottom:1px solid var(--line)}.ph-h h1{margin:0;font-size:22px}.ph-h .s{color:var(--muted);font-size:13px}
+.chips{display:flex;gap:8px;padding:12px 16px;background:var(--paper)}.chips span{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:7px 11px;font-size:12.5px;color:var(--muted);background:#fff}.chips .on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.li{display:flex;align-items:center;padding:0 18px;height:62px;background:#fff;border-bottom:1px solid var(--line2)}.li div{flex:1}.li b{font-weight:500;font-size:15px}.li small{display:block;color:var(--muted);font-size:12px}.li .n{flex:0;font-size:22px;font-weight:800;margin-right:10px}.li .ar{flex:0;color:var(--calc)}
+.nav{margin-top:auto;display:flex;height:68px;background:#fff;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.nav span{flex:1;text-align:center;padding-top:14px}.nav .on{color:var(--acc);font-weight:700}
+.row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line2);font-size:15px}.row.h{font-weight:700}.row.i{padding-left:22px;font-weight:400}.row b{font-weight:700}
+.toast{background:#1d2125;color:#fff;border-radius:12px;padding:12px 14px;font-size:13px}.toast b{color:#ffd966}
+</style></head><body>
+
+<!-- A1 -->
+<div class="shot pc" id="A1">
+ <div class="top"><span class="logo">L.E.O.</span><span class="crumb">2FOS 25-1 Englisch<small>24 Schüler · Raum 2.14</small></span><div class="seg"><span>1. Hj</span><span class="on">2. Hj</span><span>Schuljahr</span></div><div class="sp"></div><span class="pill">Suchen <b>Strg K</b></span><span class="pill">Sortiert: <b>Name</b></span><span class="pill">Filter: <b>alle</b></span></div>
+ <div class="tabs"><span>Übersicht</span><span class="on">Noten</span><span>Mitarbeit</span><span>Anwesenheit</span><span>Sitzplan</span><span>Notizen</span></div>
+ <div class="body"><table class="g" id="t1"></table>
+ <div class="legend"><span><b style="color:var(--ink);font-size:17px">12</b> eingetragen (ganz)</span><span><u style="text-decoration:underline dotted">9,47</u> berechnet, vorläufig</span><span><span style="color:var(--star)">★</span> Vorbehalt</span><span><span class="E">E</span> <span class="UE">UE</span> Status</span><span><span class="N" style="margin:0">N</span> Nachteilsausgleich</span><span><b style="color:var(--warn)">4</b> unter 5</span></div>
+ <div style="display:flex;gap:16px"><div class="card" style="flex:1"><h3>Ruhe als Prinzip</h3><div class="sub" style="line-height:1.5">Papier, weiße Karten, feine Linien. Farbe nur, wo sie etwas bedeutet: Petrol = Bedienung, Rot = unter 5 oder UE, Gold = Vorbehalt.</div></div><div class="card" style="flex:1"><h3>Zahlen zuerst</h3><div class="sub" style="line-height:1.5">Eingetragene Noten fett in Tinte, berechnete leichter und grau. Gleich breite Ziffern, Spalten stehen sauber untereinander.</div></div><div class="card" style="flex:1"><h3>Tastatur wie Excel</h3><div class="sub" style="line-height:1.5">Zahl tippen, Enter = nächster Schüler, Tab = nächste Spalte. Namen links und Gesamtnote rechts bleiben beim Scrollen stehen.</div></div></div></div>
+</div>
+
+<!-- A2 -->
+<div class="shot pc" id="A2" style="height:640px">
+ <div class="top"><span class="logo">L.E.O.</span><span class="crumb">2FOS 25-1 Englisch<small>24 Schüler · Raum 2.14</small></span><div class="seg"><span>1. Hj</span><span class="on">2. Hj</span><span>Schuljahr</span></div><div class="sp"></div><span class="pill">Suchen <b>Strg K</b></span><span class="pill">Sichtschutz</span></div>
+ <div class="tabs"><span class="on">Übersicht</span><span>Noten</span><span>Mitarbeit</span><span>Anwesenheit</span><span>Sitzplan</span><span>Notizen</span></div>
+ <div class="body">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px"><div><div style="font-size:22px;font-weight:700">Übersicht</div><div class="sub" style="color:var(--muted);font-size:13px">Nächste Stunde: Do 08:00 · Raum 2.14 · letzter Stand: „Unit 6, Seite 84“</div></div><span class="pill">Stunde starten</span></div>
+  <div class="tiles">
+   <div class="card tile acc"><h3>Noten</h3><div class="sub">Durchschnitt live</div><div class="big" style="color:var(--acc)">9,47</div><div class="sub">4 Schüler unter 5 · 1 Vorbehalt</div></div>
+   <div class="card tile"><h3>Mitarbeit</h3><div class="sub">Heute eingetragen</div><div style="font-size:26px;letter-spacing:4px;margin:6px 0">🙂🙂🙂😐🙂🙁</div><div class="sub">Monatsnote Mai fehlt bei 24</div></div>
+   <div class="card tile"><h3>Anwesenheit</h3><div class="sub">Heute</div><div class="big">22 <span style="font-size:18px;color:var(--muted);font-weight:500">von 24</span></div><div class="sub">Ben H. UE · Chiara L. E (aus WebUntis)</div></div>
+   <div class="card tile"><h3>Sitzplan</h3><div class="sub">Raumvorlage 2.14</div><svg viewBox="0 0 220 70" width="100%" height="70"><g fill="#e3eeee" stroke="#2f5d62" stroke-width="1"><rect x="4" y="4" width="40" height="18" rx="4"/><rect x="52" y="4" width="40" height="18" rx="4"/><rect x="128" y="4" width="40" height="18" rx="4"/><rect x="176" y="4" width="40" height="18" rx="4"/><rect x="4" y="28" width="40" height="18" rx="4"/><rect x="52" y="28" width="40" height="18" rx="4"/><rect x="128" y="28" width="40" height="18" rx="4"/><rect x="176" y="28" width="40" height="18" rx="4"/><rect x="4" y="52" width="40" height="14" rx="4"/><rect x="52" y="52" width="40" height="14" rx="4"/><rect x="128" y="52" width="40" height="14" rx="4"/></g></svg><div class="sub" style="margin-top:6px">2 Minuten zum Ändern</div></div>
+   <div class="card tile"><h3>Hausaufgaben</h3><div class="sub">Zu Do 12.11.</div><div class="big">19 <span style="font-size:18px;color:var(--muted);font-weight:500">von 24</span></div><div class="sub">5 offen · 2× in Folge: Felix B.</div></div>
+   <div class="card tile"><h3>Notizen</h3><div class="sub">Zuletzt</div><div style="font-size:13px;line-height:1.45;margin-top:4px">„Elternsprechtag: Hoffmann, Vertrag zur Nachprüfung klären.“</div><div class="sub" style="margin-top:auto">3 Wiedervorlagen</div></div>
+   <div class="card tile"><h3>Material</h3><div class="sub">Zur nächsten Stunde</div><div style="font-size:13px;line-height:1.7;margin-top:2px">📄 Unit6_Reading.pdf<br>📄 Worksheet_Modals.docx<br>🔗 Video: Job interview</div></div>
+   <div class="card tile acc"><h3>Entwicklung</h3><div class="sub">Kurs über 4 Halbjahre</div><svg viewBox="0 0 220 70" width="100%" height="70"><polyline points="8,48 76,40 146,30 212,24" fill="none" stroke="#2f5d62" stroke-width="2.5"/><g fill="#2f5d62"><circle cx="8" cy="48" r="4"/><circle cx="76" cy="40" r="4"/><circle cx="146" cy="30" r="4"/><circle cx="212" cy="24" r="4"/></g></svg><div class="sub">Schnitt 8,1 → 9,5</div></div>
+  </div>
+  <div class="legend" style="margin-top:20px"><span>Jede Kachel zeigt nur das Wichtigste, ein Tipp führt zur Ansicht. Selten Gebrauchtes liegt eine Ebene tiefer.</span></div>
+ </div>
+</div>
+
+<!-- A3 -->
+<div class="shot pair" id="A3" style="margin:0">
+ <div class="phone"><div class="ph-h"><h1>2FOS 25-1 Englisch</h1><div class="s">Noten · 2. Halbjahr · live</div></div><div class="chips"><span class="on">Alle</span><span>gefährdet</span><span>fehlt noch</span><span>★ Vorbehalt</span></div><div id="plist"></div><div class="nav"><span>Heute</span><span class="on">Kurse</span><span>Schüler</span><span>Mehr</span></div></div>
+ <div class="phone"><div class="ph-h" style="padding-bottom:14px"><div class="s">‹ 2FOS 25-1 Englisch</div><h1>Deniz Yilmaz</h1><div class="s">18 Jahre · 2. Hj</div></div>
+  <div style="padding:16px 20px;flex:1;overflow:hidden"><div class="s" style="color:var(--muted);font-size:13px">Gesamtnote live</div><div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:52px;font-weight:800;letter-spacing:-.03em">8,26</span><span style="font-size:13px;color:var(--muted)">Vorschlag 8 · <span style="color:var(--star)">★</span> 1 Vorbehalt</span></div>
+  <div class="card" style="margin:8px 0 10px;padding:12px 14px"><div style="font-size:12px;color:var(--muted)">Verlauf über die Halbjahre</div><svg viewBox="0 0 300 60" width="100%" height="60"><line x1="6" y1="44" x2="294" y2="44" stroke="#e3dfd6" stroke-dasharray="4 3"/><polyline points="10,40 100,36 200,30 290,32" fill="none" stroke="#2f5d62" stroke-width="2.5"/><g fill="#2f5d62"><circle cx="10" cy="40" r="4"/><circle cx="100" cy="36" r="4"/><circle cx="200" cy="30" r="4"/><circle cx="290" cy="32" r="4"/></g></svg></div>
+  <div class="row h"><span>Klausuren <small style="color:var(--muted);font-weight:500">50 %</small></span><b style="font-weight:500">7,50</b></div><div class="row i"><span>Klausur 1 <span style="color:var(--star)">★</span></span><b>7</b></div><div class="row i"><span>Klausur 2</span><b>8</b></div>
+  <div class="row h"><span>Sonstige Leistungen <small style="color:var(--muted);font-weight:500">50 %</small></span><b style="font-weight:500">9,02</b></div><div class="row i"><span>Mitarbeit ½</span><span>9,00</span></div><div class="row i"><span>Tests und Sonstiges ½</span><span>9,05</span></div></div>
+  <div style="padding:0 14px 10px"><div class="toast">Was-wäre-wenn Klausur 3: <b>für eine 9 reicht eine 9, für eine 10 braucht Deniz 15.</b></div></div>
+  <div class="nav"><span>Heute</span><span class="on">Kurse</span><span>Schüler</span><span>Mehr</span></div></div>
+</div>
+
+<!-- A4 -->
+<div class="shot pc" id="A4" style="height:700px">
+ <div class="top"><span class="logo">L.E.O.</span><span class="crumb">Schüler<small>‹ 2FOS 25-1 Englisch</small></span><div class="sp"></div><span class="pill">Suchen <b>Strg K</b></span><span class="pill">Sichtschutz</span></div>
+ <div class="body" style="display:grid;grid-template-columns:360px 1fr;gap:18px">
+  <div><div class="card"><div style="font-size:24px;font-weight:700">Deniz Yilmaz <span class="N">N</span></div><div class="sub" style="font-size:13px;margin:4px 0 14px">18 Jahre · männlich · 2FOS 25-1</div><div style="font-size:13px;line-height:1.9;color:var(--calc)">d.yilmaz@schule.example (dienstlich)<br>privat nicht hinterlegt<br><span style="color:var(--acc)">Zeitverlängerung 25 %</span> · von Klassenleitung</div></div>
+   <div class="card" style="margin-top:14px"><h3>Fehlzeiten 2. Hj</h3><div class="sub">aus WebUntis, automatisch</div><div style="display:flex;gap:26px;margin-top:10px"><div><div class="big" style="font-size:30px">6</div><div class="sub">Tage entschuldigt</div></div><div><div class="big" style="font-size:30px;color:var(--warn)">2</div><div class="sub">Tage unentschuldigt</div></div></div><div class="sub" style="margin-top:12px">Auffällig: 3 von 8 Fehltagen sind Montage.</div></div>
+   <div class="card" style="margin-top:14px"><h3>Notizen</h3><div style="font-size:13px;line-height:1.5;margin-top:6px">12.10. Gespräch nach der Stunde: Praktikum ist stressig, Abgabe verschoben.<br><span style="color:var(--muted)">28.09. Mitarbeit stark bei Gruppenarbeit.</span></div></div></div>
+  <div><div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><div><h3>Entwicklung über die Halbjahre</h3><div class="sub">Gesamtnote je Halbjahr, Notenpunkte</div></div><div style="text-align:right"><div class="sub">Gesamtnote live</div><div class="big">8,26</div></div></div>
+   <svg viewBox="0 0 800 240" width="100%" height="240" style="margin-top:6px"><g stroke="#ece9e2"><line x1="40" y1="30" x2="780" y2="30"/><line x1="40" y1="90" x2="780" y2="90"/><line x1="40" y1="150" x2="780" y2="150"/><line x1="40" y1="210" x2="780" y2="210"/></g><line x1="40" y1="150" x2="780" y2="150" stroke="#b23a2a" stroke-dasharray="5 4" opacity=".6"/><text x="780" y="144" text-anchor="end" font-size="11" fill="#b23a2a">bestanden ab 5</text><g font-size="11" fill="#6b7074"><text x="8" y="34">15</text><text x="8" y="94">10</text><text x="14" y="154">5</text><text x="14" y="214">0</text></g><polyline points="110,126 310,114 510,102 710,111" fill="none" stroke="#2f5d62" stroke-width="3"/><g fill="#fff" stroke="#2f5d62" stroke-width="3"><circle cx="110" cy="126" r="6"/><circle cx="310" cy="114" r="6"/><circle cx="510" cy="102" r="6"/></g><circle cx="710" cy="111" r="7" fill="#2f5d62"/><g font-size="13" font-weight="700" fill="#1d2125" text-anchor="middle"><text x="110" y="110">7</text><text x="310" y="98">8</text><text x="510" y="86">9</text><text x="710" y="95">8,26</text></g><g font-size="12" fill="#6b7074" text-anchor="middle"><text x="110" y="232">1. Hj 25/26</text><text x="310" y="232">2. Hj 25/26</text><text x="510" y="232">1. Hj 26/27</text><text x="710" y="232">jetzt</text></g></svg></div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px"><div class="card"><h3>Klausuren <span class="sub">50 %</span></h3><div class="row i" style="padding-left:0"><span>Klausur 1 <span style="color:var(--star)">★</span></span><b>7</b></div><div class="row i" style="padding-left:0;border:0"><span>Klausur 2</span><b>8</b></div></div><div class="card"><h3>Sonstige Leistungen <span class="sub">50 %</span></h3><div class="row i" style="padding-left:0"><span>Mitarbeit (Feb–Apr)</span><span>9,00</span></div><div class="row i" style="padding-left:0;border:0"><span>Tests und Sonstiges</span><span>9,05</span></div></div></div>
+   <div class="toast" style="margin-top:14px;display:inline-block">★ Vorbehalt Klausur 1: <b>mit gutem Nachweis der Vorbereitung eine Note besser</b></div></div>
+ </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const f=(x,cls='')=>x==null?'<td class="'+cls+'"><span style="color:#c9c5ba;font-weight:400">·</span></td>':(x==='E'?'<td><span class="E">E</span></td>':x==='UE'?'<td><span class="UE">UE</span></td>':'<td class="'+(low(x)?'low ':'')+cls+'">'+x.replace('*','')+(x.includes('*')?'<span class="st">★</span>':'')+'</td>');
+const c=x=>'<td class="c"><span>'+x+'</span></td>';
+let h='<tr><th rowspan="3" style="width:220px;text-align:left;padding-left:14px;border-left:0">Schüler</th><th class="grp" colspan="3">▾ Klausuren<i>50 %</i></th><th class="grp" colspan="9">▾ Sonstige Leistungen (AT)<i>50 %</i></th><th class="end" rowspan="3">Gesamtnote<small style="color:#4a5258;font-weight:400">live · immer sichtbar</small></th></tr>';
+h+='<tr><th rowspan="2">Klausur 1<small>05.03.</small></th><th rowspan="2">Klausur 2<small>06.05.</small></th><th rowspan="2">Ø</th><th class="grp" colspan="5">▾ Mitarbeit<i>½</i></th><th class="grp" colspan="4">▾ Tests und Sonstiges<i>½</i></th></tr>';
+h+='<tr><th>Feb</th><th>Mär</th><th>Apr</th><th>Mai</th><th>Ø</th><th>Test 1<small>18.02.</small></th><th>Test 2<small>11.03.</small></th><th>Verspät.<small>×0,1</small></th><th>Ø</th></tr>';
+S.forEach(s=>{h+='<tr><td class="nm">'+s.n+(s.N?'<span class="N">N</span>':'')+'<small>'+s.a+' J.</small></td>'+f(s.k[0])+f(s.k[1])+c(s.ka)+s.m.map(x=>f(x)).join('')+c(s.ma)+s.t.map(x=>f(x)).join('')+c(s.ta)+'<td class="end"><span>'+s.g+'</span><small>'+(s.fix?'festgelegt '+s.fix:'Vorschlag '+s.v)+'</small></td></tr>'});
+document.getElementById('t1').innerHTML=h.replace(/(<td class="c"><span>[0-9,]+<\/span><\/td>)(<td class="end">)/,'$1$2');
+document.getElementById('plist').innerHTML=S.map(s=>'<div class="li"><div><b>'+s.n+(s.N?' <span class="N">N</span>':'')+'</b><small>Klausuren '+s.ka+' · AT '+s.at+'</small></div><span class="n">'+s.g+'</span><span class="ar">'+(parseFloat(s.g)<6?'↘':parseFloat(s.g)>10?'↗':'→')+'</span></div>').join('');
+</script></body></html>

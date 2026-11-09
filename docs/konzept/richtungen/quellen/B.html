@@ -1,0 +1,148 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><title>B</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{--paper:#f1ecdf;--page:#fffdf6;--ink:#1b2f5b;--pen:#5d6068;--text:#23262b;--rule:#d8d0bc;--rule2:#e8e2d1;--red:#b3261e;--mark:#fff1a8;--stamp:#8a1c17}
+*{box-sizing:border-box}
+body{margin:0;background:#cfc9b9;font-family:Inter,system-ui,sans-serif;color:var(--text);font-size:14px;font-variant-numeric:tabular-nums}
+.shot{background:var(--paper);position:relative;overflow:hidden;margin:0 0 30px}
+.pc{width:1440px;height:880px}
+.serif{font-family:"Source Serif 4",Georgia,serif}
+.hand{font-family:Caveat,cursive}
+.cover{display:flex;align-items:flex-end;gap:18px;padding:22px 36px 14px;border-bottom:3px double var(--ink);background:var(--page)}
+.cover .lg{font-weight:800;letter-spacing:.08em;color:var(--ink);font-size:13px;margin-bottom:8px}
+.cover h1{margin:0;font:600 32px "Source Serif 4",serif;color:var(--ink);letter-spacing:-.01em}
+.cover .m{font:italic 400 15px "Source Serif 4",serif;color:var(--pen);margin-bottom:5px}
+.cover .sp{flex:1}.cover .r{font-size:13px;color:var(--pen);margin-bottom:6px;display:flex;gap:18px}
+.cover .r b{color:var(--ink)}
+.tabs{display:flex;gap:2px;padding:0 36px;background:var(--paper);border-bottom:1px solid var(--rule)}
+.tabs span{padding:10px 16px;font:400 15px "Source Serif 4",serif;color:var(--pen);border:1px solid transparent;border-bottom:0;margin-bottom:-1px}
+.tabs .on{background:var(--page);color:var(--ink);font-weight:600;border-color:var(--rule);border-radius:6px 6px 0 0}
+.sheet{margin:0 36px;background:var(--page);border:1px solid var(--rule);border-top:0;padding:0 0 10px;position:relative}
+.sheet:before{content:"";position:absolute;left:236px;top:0;bottom:0;width:1px;background:#e7b9b4}
+table.g{border-collapse:collapse;width:100%}
+.g th{font:600 12px Inter;color:var(--ink);text-align:center;padding:7px 4px;border-bottom:1.5px solid var(--ink);letter-spacing:.02em}
+.g th small{display:block;font:italic 400 11px "Source Serif 4";color:var(--pen)}
+.g th.grp{text-align:left;font:600 14px "Source Serif 4";padding:8px 10px;border-bottom:1px solid var(--rule)}
+.g th.grp i{float:right;font:italic 400 13px "Source Serif 4";color:var(--pen)}
+.g td{height:50px;text-align:center;border-bottom:1px solid var(--rule2);font-size:16px;font-weight:600;color:var(--ink);position:relative}
+.g td.nm{text-align:left;padding-left:28px;color:var(--text);font:400 16px "Source Serif 4",serif;font-weight:500;width:236px}
+.g td.nm small{display:block;font:italic 400 12px "Source Serif 4";color:var(--pen)}
+.g td.c{font:italic 400 15px "Source Serif 4",serif;color:var(--pen)}
+.g td.low{color:var(--red)}
+.g td.low:after{content:"";position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-17px 0 0 -16px;border:1.6px solid var(--red);border-radius:50%;transform:rotate(-8deg)}
+.g td.end{width:150px;background:linear-gradient(90deg,#f6efd4,#fffdf6);border-left:1.5px solid var(--ink);font:italic 500 19px "Source Serif 4",serif;color:var(--pen)}
+.g td.end small{display:block;font:italic 400 11.5px "Source Serif 4";color:var(--pen)}
+.g td.end.fx{font:700 22px Inter;font-style:normal;color:var(--ink)}
+.stamp{white-space:nowrap;display:inline-block;border:2px solid var(--stamp);color:var(--stamp);font:700 10px Inter;letter-spacing:.12em;padding:2px 7px;border-radius:4px;transform:rotate(-5deg);margin-top:3px;opacity:.9}
+.mk{background:linear-gradient(transparent 40%,var(--mark) 40%)}
+.E,.UE{font:600 12px Inter;border:1.2px solid var(--pen);border-radius:50%;padding:3px 8px;color:var(--pen)}.UE{color:var(--red);border-color:var(--red)}
+.st{position:absolute;top:5px;right:12px;color:#b8860b;font-size:13px}
+.N{display:inline-block;font:600 10px Inter;border:1.3px solid var(--ink);color:var(--ink);border-radius:50%;width:17px;height:17px;text-align:center;line-height:15px;margin-left:6px;vertical-align:2px}
+.note{font:500 20px Caveat;color:var(--ink);line-height:1.15}
+.legend{display:flex;gap:26px;font:italic 400 13.5px "Source Serif 4";color:var(--pen);margin:14px 38px}
+.legend b{font:700 15px Inter;font-style:normal;color:var(--ink)}
+.card{background:var(--page);border:1px solid var(--rule);border-radius:3px;padding:18px 22px;box-shadow:0 1px 0 var(--rule)}
+.card h3{margin:0 0 6px;font:600 17px "Source Serif 4";color:var(--ink)}
+.phone{width:390px;height:800px;background:var(--paper);border-radius:46px;border:10px solid #23262b;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.pair{display:flex;gap:40px;padding:50px 60px;background:#cfc9b9;width:960px;height:900px}
+.ph-h{background:var(--page);padding:46px 20px 10px;border-bottom:3px double var(--ink)}.ph-h h1{margin:0;font:600 24px "Source Serif 4";color:var(--ink)}.ph-h .s{font:italic 400 13px "Source Serif 4";color:var(--pen)}
+.li{display:flex;align-items:center;padding:0 20px 0 26px;height:62px;background:var(--page);border-bottom:1px solid var(--rule2);position:relative}.li:before{content:"";position:absolute;left:14px;top:0;bottom:0;width:1px;background:#e7b9b4}
+.li div{flex:1}.li b{font:500 16px "Source Serif 4"}.li small{display:block;font:italic 400 12px "Source Serif 4";color:var(--pen)}
+.li .n{flex:0;font:italic 500 21px "Source Serif 4";color:var(--pen)}.li .n.i{font:700 22px Inter;font-style:normal;color:var(--ink)}
+.nav{margin-top:auto;display:flex;height:68px;background:var(--page);border-top:1px solid var(--rule);font:400 13px "Source Serif 4";color:var(--pen)}.nav span{flex:1;text-align:center;padding-top:14px}.nav .on{color:var(--ink);font-weight:700;text-decoration:underline;text-underline-offset:5px}
+.rule{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--rule2);font:400 16px "Source Serif 4"}.rule b{font:700 16px Inter;color:var(--ink)}.rule i{font:italic 400 16px "Source Serif 4";color:var(--pen)}
+.tally{display:inline-flex;gap:7px;align-items:center}.tally span{display:inline-block;width:22px;height:28px;position:relative}
+.tally span:before{content:"";position:absolute;left:3px;top:0;width:2px;height:28px;background:var(--ink);box-shadow:5px 0 var(--ink),10px 0 var(--ink),15px 0 var(--ink)}.tally span:after{content:"";position:absolute;left:-2px;top:12px;width:28px;height:2px;background:var(--ink);transform:rotate(-24deg)}
+.tally span.u:before{background:var(--red);box-shadow:5px 0 var(--red),10px 0 var(--red),15px 0 var(--red)}.tally span.u:after{background:var(--red)}
+.tally b.p{display:inline-block;width:2px;height:28px;background:var(--ink);box-shadow:5px 0 var(--ink)}
+</style></head><body>
+
+<!-- B1 -->
+<div class="shot pc" id="B1">
+ <div class="cover"><div><div class="lg">L.E.O.</div><h1>2FOS 25-1 · Englisch</h1></div><span class="m">24 Schüler · Raum 2.14 · 2. Halbjahr</span><div class="sp"></div><div class="r"><span>Sortiert: <b>Name</b></span><span>Suchen <b>Strg K</b></span><span>Sichtschutz</span></div></div>
+ <div class="tabs"><span>Übersicht</span><span class="on">Noten</span><span>Mitarbeit</span><span>Anwesenheit</span><span>Sitzplan</span><span>Notizen</span></div>
+ <div class="sheet" style="margin-top:0"><table class="g" id="t1"></table></div>
+ <div class="legend"><span><b>11</b> mit Tinte eingetragen, endgültig</span><span><i>9,47</i> mit Bleistift berechnet, vorläufig</span><span><span style="color:#b8860b">★</span> Vorbehalt</span><span><span class="E">E</span> <span class="UE">UE</span> Status</span><span><b style="color:var(--red)">4</b> unter 5, eingekreist</span></div>
+ <div style="display:flex;gap:18px;margin:0 36px"><div class="card" style="flex:1"><h3>Tinte und Bleistift</h3><div style="font:400 14px/1.5 'Source Serif 4';color:var(--pen)">Was du eingetragen hast, steht fest in Tinte. Was L.E.O. rechnet, steht vorläufig in Bleistift. Du siehst ohne Legende, was gilt und was nur ein Vorschlag ist.</div></div><div class="card" style="flex:1"><h3>Wie im Klassenbuch</h3><div style="font:400 14px/1.5 'Source Serif 4';color:var(--pen)">Zeilenlinien, Randspalte für Namen, Durchschnitte in der Randnotiz-Optik. Die festgelegte Endnote bekommt einen Stempel, mehr nicht.</div></div></div>
+</div>
+
+<!-- B2 -->
+<div class="shot pc" id="B2" style="height:760px">
+ <div class="cover"><div><div class="lg">L.E.O.</div><h1>Deniz Yilmaz · Rechenweg</h1></div><span class="m">2FOS 25-1 Englisch · Gesamtnote</span><div class="sp"></div><div class="r"><span>Schließen <b>Esc</b></span></div></div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;padding:28px 36px">
+  <div class="card" style="padding:26px 30px;background:#fffdf6">
+   <h3 style="font-size:20px">So kommt die Note zustande</h3>
+   <div class="rule"><span>Klausuren <i>× 50 %</i></span><i>7,50</i></div>
+   <div class="rule" style="padding-left:24px"><span>Klausur 1 <span style="color:#b8860b">★</span></span><b>7</b></div>
+   <div class="rule" style="padding-left:24px"><span>Klausur 2</span><b>8</b></div>
+   <div class="rule"><span>Sonstige Leistungen <i>× 50 %</i></span><i>9,02</i></div>
+   <div class="rule" style="padding-left:24px"><span>Mitarbeit <i>½</i></span><i>9,00</i></div>
+   <div class="rule" style="padding-left:24px"><span>Tests und Sonstiges <i>½</i></span><i>9,05</i></div>
+   <div style="margin-top:20px;font:italic 400 16px 'Source Serif 4';color:var(--pen)">7,50 × ½ + 9,02 × ½ = <span style="font:italic 600 24px 'Source Serif 4';color:var(--pen);border-bottom:2px dotted var(--pen)">8,26</span></div>
+   <div class="note" style="margin-top:16px;transform:rotate(-1.5deg)">Randnotiz: ★ Klausur 1 – mit gutem Nachweis der Vorbereitung eine Note besser.</div>
+  </div>
+  <div>
+   <div class="card" style="padding:26px 30px"><h3 style="font-size:20px">Endnote festlegen</h3>
+    <div style="display:flex;align-items:center;gap:26px;margin:18px 0 6px">
+     <div style="text-align:center"><div style="font:italic 500 46px 'Source Serif 4';color:var(--pen)">8,26</div><div style="font:italic 400 13px 'Source Serif 4';color:var(--pen)">Bleistift · Vorschlag 8</div></div>
+     <div style="font-size:30px;color:var(--pen)">→</div>
+     <div style="text-align:center"><div style="font:800 56px Inter;color:var(--ink);letter-spacing:-.02em">8</div><div class="stamp">FESTGELEGT · 09.11.</div></div>
+    </div>
+    <div style="font:400 14px/1.5 'Source Serif 4';color:var(--pen);margin-top:14px">Die Live-Note bleibt daneben sichtbar (E46). Kaufmännisch gerundet, bei genau ,50 entscheidest du.</div>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap"><span style="border:1.5px solid var(--ink);color:var(--ink);padding:9px 18px;border-radius:3px;font:600 14px Inter">Mit Tinte festlegen: 8</span><span style="border:1px solid var(--rule);padding:9px 18px;border-radius:3px;font:400 14px Inter;color:var(--pen)">9</span><span style="border:1px solid var(--rule);padding:9px 18px;border-radius:3px;font:400 14px Inter;color:var(--pen)">anderer Wert …</span></div>
+   </div>
+   <div class="card" style="margin-top:20px"><h3>Was wäre wenn · Klausur 3</h3><div style="font:400 15px/1.55 'Source Serif 4'">Für eine <b>9</b> reicht eine <span class="mk">9</span>. Für eine <b>10</b> braucht Deniz <span class="mk">15</span>.</div></div>
+  </div>
+ </div>
+</div>
+
+<!-- B3 -->
+<div class="shot pair" id="B3" style="margin:0">
+ <div class="phone"><div class="ph-h"><h1>2FOS 25-1 Englisch</h1><div class="s">Noten · 2. Halbjahr · Stand heute</div></div><div id="plist" style="background:var(--page)"></div><div style="padding:14px 20px;font:italic 400 13px 'Source Serif 4';color:var(--pen)">Tinte = eingetragen · Bleistift = vorläufig berechnet</div><div class="nav"><span>Heute</span><span class="on">Kurse</span><span>Schüler</span><span>Mehr</span></div></div>
+ <div class="phone" style="background:#e5decb"><div class="ph-h" style="padding-bottom:12px"><div class="s">‹ Karteikasten · 4 von 24</div><h1>Deniz Yilmaz</h1><div class="s">18 Jahre · 2. Hj</div></div>
+  <div style="padding:18px 16px;flex:1;position:relative">
+   <div style="position:absolute;left:24px;right:24px;top:24px;height:560px;background:#f7f2e4;border:1px solid var(--rule);border-radius:3px;transform:rotate(1.2deg)"></div>
+   <div style="position:relative;background:var(--page);border:1px solid var(--rule);border-radius:3px;padding:18px 20px;height:560px;background-image:repeating-linear-gradient(transparent 0 33px,var(--rule2) 33px 34px)">
+    <div style="font:italic 400 13px 'Source Serif 4';color:var(--pen)">Gesamtnote</div>
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font:italic 500 56px 'Source Serif 4';color:var(--pen);line-height:1.1">8,26</span><span class="stamp" style="transform:rotate(-6deg)">VORSCHLAG 8</span></div>
+    <div style="margin-top:14px"><svg viewBox="0 0 320 70" width="100%" height="70"><polyline points="12,50 110,44 210,36 305,40" fill="none" stroke="#5d6068" stroke-width="2" stroke-dasharray="1 0"/><g fill="#fffdf6" stroke="#5d6068" stroke-width="2"><circle cx="12" cy="50" r="4"/><circle cx="110" cy="44" r="4"/><circle cx="210" cy="36" r="4"/></g><circle cx="305" cy="40" r="5" fill="#5d6068"/></svg></div>
+    <div class="rule" style="padding:7px 0"><span>Klausur 1 <span style="color:#b8860b">★</span></span><b>7</b></div><div class="rule" style="padding:7px 0"><span>Klausur 2</span><b>8</b></div><div class="rule" style="padding:7px 0"><span>Mitarbeit</span><i>9,00</i></div><div class="rule" style="padding:7px 0"><span>Tests und Sonstiges</span><i>9,05</i></div>
+    <div class="note" style="margin-top:12px;transform:rotate(-2deg)">★ mit gutem Nachweis der Vorbereitung eine Note besser</div>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font:italic 400 13px 'Source Serif 4';color:var(--pen)"><span>‹ Aylin</span><span>Elif ›</span></div>
+   </div></div>
+  <div class="nav"><span>Heute</span><span class="on">Kurse</span><span>Schüler</span><span>Mehr</span></div></div>
+</div>
+
+<!-- B4 -->
+<div class="shot pc" id="B4" style="height:760px">
+ <div class="cover"><div><div class="lg">L.E.O.</div><h1>Deniz Yilmaz</h1></div><span class="m">18 Jahre · 2FOS 25-1 · Nachteilsausgleich <span class="N">N</span> Zeitverlängerung 25 %</span><div class="sp"></div><div class="r"><span>Sichtschutz</span></div></div>
+ <div style="display:grid;grid-template-columns:1fr 360px;gap:26px;padding:26px 36px">
+  <div class="card" style="position:relative;padding:22px 28px;background-image:repeating-linear-gradient(transparent 0 33px,var(--rule2) 33px 34px)">
+   <h3 style="background:var(--page);display:inline-block;padding-right:8px">Entwicklung über die Halbjahre</h3>
+   <svg viewBox="0 0 740 280" width="100%" height="280"><g font-family="Inter" font-size="11" fill="#5d6068"><text x="4" y="34">15</text><text x="4" y="94">10</text><text x="10" y="154">5</text><text x="10" y="214">0</text></g><line x1="36" y1="150" x2="730" y2="150" stroke="#b3261e" stroke-width="1.5" stroke-dasharray="2 5"/><text x="730" y="143" text-anchor="end" font-family="Caveat" font-size="19" fill="#b3261e">unter 5 = nicht bestanden</text>
+   <path d="M100,126 C180,120 230,116 290,114 S400,104 480,102 S590,110 650,111" fill="none" stroke="#5d6068" stroke-width="3" stroke-linecap="round"/><g fill="#fffdf6" stroke="#5d6068" stroke-width="3"><circle cx="100" cy="126" r="6"/><circle cx="290" cy="114" r="6"/><circle cx="480" cy="102" r="6"/></g><circle cx="650" cy="111" r="7" fill="#5d6068"/>
+   <g font-family="Caveat" font-size="24" font-weight="600" fill="#1b2f5b" text-anchor="middle"><text x="100" y="106">7</text><text x="290" y="94">8</text><text x="480" y="82">9</text><text x="650" y="90">8,26?</text></g>
+   <g font-family="Source Serif 4" font-style="italic" font-size="13" fill="#5d6068" text-anchor="middle"><text x="100" y="244">1. Hj 25/26</text><text x="290" y="244">2. Hj 25/26</text><text x="480" y="244">1. Hj 26/27</text><text x="650" y="244">jetzt (Bleistift)</text></g></svg>
+   <div class="note" style="position:absolute;right:60px;top:60px;transform:rotate(-3deg);font-size:23px">stetig besser seit<br>dem Praktikum</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:18px">
+   <div class="card"><h3>Fehlzeiten 2. Hj</h3><div style="font:italic 400 13px 'Source Serif 4';color:var(--pen);margin-bottom:10px">aus WebUntis, Strichliste</div>
+    <div style="display:flex;align-items:center;gap:12px"><span style="font:400 14px 'Source Serif 4';width:110px">entschuldigt</span><span class="tally"><span></span><b class="p"></b></span><b style="margin-left:auto;font:700 18px Inter;color:var(--ink)">6</b></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:10px"><span style="font:400 14px 'Source Serif 4';width:110px;color:var(--red)">unentschuldigt</span><span class="tally"><b class="p" style="background:var(--red);box-shadow:5px 0 var(--red)"></b></span><b style="margin-left:auto;font:700 18px Inter;color:var(--red)">2</b></div>
+    <div class="note" style="margin-top:12px">auffällig: 3 von 8 Fehltagen sind Montage</div></div>
+   <div class="card"><h3>Notizen</h3><div style="font:400 14px/1.55 'Source Serif 4'"><b style="font-family:Inter;font-size:12px;color:var(--ink)">12.10.</b> Gespräch nach der Stunde: Praktikum ist stressig, Abgabe verschoben.<br><b style="font-family:Inter;font-size:12px;color:var(--pen)">28.09.</b> <span style="color:var(--pen)">Mitarbeit stark bei Gruppenarbeit.</span></div></div>
+  </div>
+ </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const f=x=>x==null?'<td><span style="color:#c9c1aa">·</span></td>':(x==='E'?'<td><span class="E">E</span></td>':x==='UE'?'<td><span class="UE">UE</span></td>':'<td class="'+(low(x)?'low':'')+'">'+x.replace('*','')+(x.includes('*')?'<span class="st">★</span>':'')+'</td>');
+const c=x=>'<td class="c">'+x+'</td>';
+let h='<tr><th rowspan="3" style="width:236px;text-align:left;padding-left:28px;font:italic 400 13px \'Source Serif 4\'">Name</th><th class="grp" colspan="3">Klausuren<i>50 %</i></th><th class="grp" colspan="9">Sonstige Leistungen<i>50 %</i></th><th rowspan="3" style="border-left:1.5px solid #1b2f5b;font:600 14px \'Source Serif 4\'">Gesamtnote<small>laufend, mit Bleistift</small></th></tr>';
+h+='<tr><th rowspan="2">Klausur 1<small>05.03.</small></th><th rowspan="2">Klausur 2<small>06.05.</small></th><th rowspan="2">Ø</th><th class="grp" colspan="5" style="font-size:13px">Mitarbeit<i>½</i></th><th class="grp" colspan="4" style="font-size:13px">Tests und Sonstiges<i>½</i></th></tr>';
+h+='<tr><th>Feb</th><th>Mär</th><th>Apr</th><th>Mai</th><th>Ø</th><th>Test 1<small>18.02.</small></th><th>Test 2<small>11.03.</small></th><th>Verspät.<small>×0,1</small></th><th>Ø</th></tr>';
+S.forEach(s=>{h+='<tr><td class="nm">'+s.n+(s.N?'<span class="N">N</span>':'')+'<small>'+s.a+' Jahre</small></td>'+f(s.k[0])+f(s.k[1])+c(s.ka)+s.m.map(f).join('')+c(s.ma)+s.t.map(f).join('')+c(s.ta)+(s.fix?'<td class="end fx">'+s.fix+'<br><span class="stamp">FESTGELEGT</span></td>':'<td class="end">'+s.g+'<small>Vorschlag '+s.v+'</small></td>')+'</tr>'});
+document.getElementById('t1').innerHTML=h;
+document.getElementById('plist').innerHTML=S.map(s=>'<div class="li"><div><b>'+s.n+(s.N?' <span class="N">N</span>':'')+'</b><small>Klausuren '+s.ka+' · AT '+s.at+'</small></div>'+(s.fix?'<span class="n i">'+s.fix+'</span>':'<span class="n">'+s.g+'</span>')+'</div>').join('');
+</script></body></html>

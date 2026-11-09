@@ -88,3 +88,14 @@ Bildnummern = Dateien `docs/konzept/notenbuch-<Nr>-*.png`.
 5. Auf Handy prüfen: Liste statt Tabelle (E44), Tippziele ≥ 44 px.
 6. Tastatur am PC mitdenken (E45).
 7. Neue Bausteine hier eintragen, bevor sie zweimal gebaut werden.
+
+## 7 Ergänzungen vom 09.11.2026 (E49–E58)
+
+Nach der Auswahl von Richtung A. Vollständige Vorgaben, Bausteine und Prototyp-Plan: [DESIGN_SYSTEM_PROTOTYP.md](DESIGN_SYSTEM_PROTOTYP.md). Mockups: [konzept/mockups-v2/](konzept/mockups-v2/).
+
+- **Zeitbalken** statt Phasen, Kachel **„Läuft gerade“** (E50).
+- **Mitarbeit** ist überall einen Tipp entfernt, Sitzplan eine Ebene tiefer (E51).
+- **Mitarbeitsskala** mit fünf Farben (dunkelgrün, hellgrün, gelb, orange, rot) auf Smileys und im Verlauf, nie als Text-, Rand- oder Knopffarbe (E52).
+- **Navigation** wählbar: Seitenleiste, Reiterleiste, untere Leiste, links oder rechts (E54). Aktiv = Petrol, nicht Schulrot.
+- **Logo:** Doppellogo für große Flächen, Wortmarke in der Kopfzeile, App-Symbol in der Navigation (E47).
+- **Schülerübersicht** und **Notenbuch** nach den Mockups N3 und N4 sind Vorlage (E49).

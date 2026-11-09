@@ -265,6 +265,28 @@ Konstantin: „Das sind genau die QoL-Features, die mir in iDoceo fehlen, davon 
 | E2 | Mail nach verpasster Klausur je nach Status E/UE | K | 3 | S |
 | E3 | Schulweit: zentrales Absenderkonto mit Antwort an Lehrkraft oder eigenes Postfach | C | 3 | ? |
 
+## Aus der UX-Planung (09.11.2026)
+
+Details: [DESIGN_SYSTEM_PROTOTYP.md](DESIGN_SYSTEM_PROTOTYP.md), Entscheidungen E49–E59.
+
+| # | Punkt | Herkunft | Prio | Aufwand |
+|---|---|---|---|---|
+| U1 | Kachel **„Läuft gerade“** mit dynamischem Zeitbalken (Beginn bis Ende, „jetzt“-Marke, Restminuten), ohne Phasen (E50) | K | 1 | M |
+| U2 | **Mitarbeit überall einen Tipp entfernt**: Nebenknopf neben „Stunde öffnen“, Kachel, Sitzplatz, Schülerkarte, Handy-Kopfzeile (E51) | K | 1 | M |
+| U3 | **Mitarbeitsskala mit fünf Farben** und Smileys mit Hintergrund, eigener SVG-Satz, Gesichtsform trägt die Stufe mit (E52) | K | 1 | M |
+| U4 | **Textbaustein-Bibliothek**, vom Admin gepflegt, eigener Kommentar je Eintrag (E53). Startsatz: 14 Bausteine in [DESIGN_SYSTEM_PROTOTYP.md](DESIGN_SYSTEM_PROTOTYP.md), Abschnitt 9.2 | K | 1 | S |
+| U5 | **Mitarbeitsverlauf** in der Schülerübersicht: Anteilsbalken je Monat, häufigste Bausteine, letzte Einträge | K | 1 | M |
+| U6 | **Fehlzeiten-Analyse** in der Schülerübersicht: Kennzahlen, Wochentage, Monatsverlauf, Muster-Hinweis (z. B. Montage, vor Klassenarbeiten), Klassenarbeiten mit E/UE und Nachschreib-Stand | K | 1 | M |
+| U7 | **Navigation wählbar je Nutzer**: Seitenleiste, Reiterleiste, untere Leiste, links oder rechts (E54) | K | 1 | S |
+| U8 | **Stundenende-Hinweis** „n Schüler ohne Mitarbeitseintrag“, später abschaltbar (E55) | K | 2 | S |
+| U9 | Einstellung **Größe** (normal, groß) für Full-HD- und 4K-Bildschirme | C | 2 | S |
+| U10 | **Beamer-Ansicht** mit großen Schriften für Live-Stunde, Gruppen, Zufall, Countdown | C | 2 | M |
+| U11 | **Freihandzeichnen** mit dem Apple Pencil (Skizze im Sitzplan, handschriftliche Randnotiz als Bild) | K | 3 | L |
+| U12 | Touch auf den 4K-Tafeln nur für Timer o. ä. | K | 3 | S |
+| U13 | **Dunkelmodus** der neuen Farben messen (Kontrast, Rot-Grün-Schwäche) | C | 1 | S |
+| U14 | **Schullogo als Vektordatei** beim Sekretariat oder auf der Schul-Webseite erfragen | K | 2 | S |
+| U15 | Eigene Marken im Zeitbalken (z. B. „Gruppenarbeit bis 09:15“), nur auf Wunsch, nie als feste Phasen | C | 3 | S |
+
 ## Offen
 
 | # | Punkt | Herkunft | Prio |
