@@ -15,7 +15,7 @@ Erfundene Beispieldaten, kein WebUntis, kein IServ, keine Anmeldung.
 1. **Token anlegen** (einmalig, weil das Repo privat ist): GitHub › Settings › Developer settings › Personal access tokens › **Fine-grained tokens** › Generate new token. Repository access: **Only select repositories** › `l.e.o.`, Permissions: **Contents: Read-only**. Token kopieren.
 2. Unraid › Reiter **Docker** › ganz unten Bereich **Compose** › **Add New Stack**, Name `leo`.
 3. Beim neuen Stack auf das Zahnrad › **Edit Stack** › **Compose File**, den Inhalt unten einfügen, `DEIN_TOKEN` ersetzen, **Save Changes**.
-4. **Compose Up** klicken. Der erste Start baut die App (1–3 Minuten), danach `http://<Unraid-IP>:8088` öffnen.
+4. **Compose Up** klicken. Der erste Start baut die App (1–3 Minuten), danach `http://<Unraid-IP>:8128` öffnen.
 5. **Update:** einfach wieder **Compose Up** (durch `pull_policy: build` wird neu gebaut). Die Noten im Browser bleiben erhalten.
 
 ```yaml
@@ -28,7 +28,7 @@ services:
     pull_policy: build
     container_name: leo-prototyp
     ports:
-      - "8088:80"
+      - "8128:80"
     restart: unless-stopped
 ```
 
@@ -49,8 +49,8 @@ Voraussetzung: Unraid mit dem Plugin **Docker Compose Manager** (Community Apps)
    ```sh
    docker compose up -d --build
    ```
-3. Im Browser öffnen: `http://<IP-des-Unraid>:8088`
-   Port belegt? In `docker-compose.yml` links die `8088` ändern.
+3. Im Browser öffnen: `http://<IP-des-Unraid>:8128`
+   Port belegt? In `docker-compose.yml` links die `8128` ändern.
 
 Mit dem Compose Manager: neuen Stack „leo“ anlegen, als Pfad `/mnt/user/appdata/leo` wählen (dort liegt die `docker-compose.yml`), dann „Compose Up“.
 
@@ -67,10 +67,10 @@ Die Noten im Browser bleiben dabei erhalten. Falls der Browser noch die alte Ver
 ## Als App installieren (PWA) und offline nutzen
 
 Installieren („Zum Home-Bildschirm“ auf iPad/iPhone, „App installieren“ in Chrome/Edge) und der Offline-Betrieb funktionieren **nur über HTTPS**.
-Über `http://IP:8088` läuft die App normal im Browser, aber ohne Installation und ohne Offline-Speicher der App-Dateien (die Noten werden trotzdem lokal gespeichert).
+Über `http://IP:8128` läuft die App normal im Browser, aber ohne Installation und ohne Offline-Speicher der App-Dateien (die Noten werden trotzdem lokal gespeichert).
 
 Wege zu HTTPS, je nachdem, was auf dem Unraid schon läuft:
-- **Nginx Proxy Manager** oder **SWAG** mit eigener (Sub-)Domain und Let's-Encrypt-Zertifikat, Ziel `http://<IP>:8088`.
+- **Nginx Proxy Manager** oder **SWAG** mit eigener (Sub-)Domain und Let's-Encrypt-Zertifikat, Ziel `http://<IP>:8128`.
 - **Tailscale** (Unraid-Plugin): `tailscale serve` stellt die App mit gültigem Zertifikat im eigenen Tailnet bereit, ohne Port nach außen zu öffnen.
 
 Ungetestet: Ich konnte das fertige Image nicht komplett auf einem Unraid starten. Die Build-Stufe (Tests und App-Bau) läuft im Docker durch, das nginx-Image ließ sich in meiner Umgebung wegen einer Download-Sperre bei Docker Hub nicht laden.

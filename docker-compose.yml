@@ -7,5 +7,5 @@ services:
     image: leo-prototyp:latest
     container_name: leo-prototyp
     ports:
-      - "8088:80"   # links den freien Port auf dem Server wählen
+      - "8128:80"   # links den freien Port auf dem Server wählen
     restart: unless-stopped
