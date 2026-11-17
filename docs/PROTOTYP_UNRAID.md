@@ -12,27 +12,29 @@ Erfundene Beispieldaten, kein WebUntis, kein IServ, keine Anmeldung.
 
 ## Installation über die Unraid-Oberfläche (Compose Manager, ohne Terminal)
 
-1. **Token anlegen** (einmalig, weil das Repo privat ist): GitHub › Settings › Developer settings › Personal access tokens › **Fine-grained tokens** › Generate new token. Repository access: **Only select repositories** › `l.e.o.`, Permissions: **Contents: Read-only**. Token kopieren.
-2. Unraid › Reiter **Docker** › ganz unten Bereich **Compose** › **Add New Stack**, Name `leo`.
-3. Beim neuen Stack auf das Zahnrad › **Edit Stack** › **Compose File**, den Inhalt unten einfügen, `DEIN_TOKEN` ersetzen, **Save Changes**.
-4. **Compose Up** klicken. Der erste Start baut die App (1–3 Minuten), danach `http://<Unraid-IP>:8128` öffnen.
-5. **Update:** einfach wieder **Compose Up** (durch `pull_policy: build` wird neu gebaut). Die Noten im Browser bleiben erhalten.
+GitHub baut bei jedem Update auf `main` ein fertiges Image (`.github/workflows/image.yml`) und legt es unter `ghcr.io/cup1dstunt/leo-prototyp` ab. Unraid lädt nur dieses Image.
+
+1. **Einmalig: Paket öffentlich schalten.** GitHub › dein Profil › **Packages** › `leo-prototyp` › **Package settings** › ganz unten **Change visibility** › **Public**.
+   Das Image enthält nur die App mit erfundenen Beispieldaten, keine Noten (die liegen im Browser). Dann braucht Unraid keinen Token.
+2. Unraid › Reiter **Docker** › unten bei **Compose** › **Add New Stack**, Name `leo` (oder den bestehenden Stack bearbeiten).
+3. Zahnrad › **Edit Stack** › **Compose File**, Inhalt unten einfügen › **Save Changes**.
+4. **Compose Up**, danach `http://<Unraid-IP>:8128` öffnen.
+5. **Update:** wieder **Compose Up** (holt durch `pull_policy: always` das neueste Image).
 
 ```yaml
 services:
   leo:
-    build:
-      context: https://DEIN_TOKEN@github.com/cup1dstunt/l.e.o..git#main
-      dockerfile: app/Dockerfile
-    image: leo-prototyp:latest
-    pull_policy: build
+    image: ghcr.io/cup1dstunt/leo-prototyp:latest
+    pull_policy: always
     container_name: leo-prototyp
     ports:
       - "8128:80"
     restart: unless-stopped
 ```
 
-Der Token steht im Klartext in der Compose-Datei auf dem Unraid. Deshalb nur Leserecht auf dieses eine Repo vergeben. Ungetestet: Den Bau direkt aus der Git-Adresse konnte ich ohne Token und wegen der Docker-Hub-Sperre nicht selbst durchspielen.
+Soll das Paket privat bleiben, braucht der Unraid einmalig im Terminal `docker login ghcr.io -u cup1dstunt` mit einem Token (classic, Recht `read:packages`).
+
+Der Weg „bauen direkt aus der Git-Adresse“ funktioniert mit dem privaten Repo nicht zuverlässig (GitHub leitet um und verliert dabei den Token) und ist deshalb entfernt.
 
 ## Installation mit Terminal (Alternative)
 
