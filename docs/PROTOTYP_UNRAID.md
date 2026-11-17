@@ -10,7 +10,31 @@ Erfundene Beispieldaten, kein WebUntis, kein IServ, keine Anmeldung.
 - Unter **Mehr › Sicherung herunterladen** gibt es eine JSON-Datei. Damit lässt sich ein Stand sichern oder auf ein anderes Gerät bringen (**Sicherung einspielen** ersetzt alles auf dem Gerät).
 - **Browserdaten löschen löscht auch die Noten.** Für den Test egal, später kommt ein verschlüsselter Export bzw. Abgleich (PB12, PB18).
 
-## Installation (einmalig)
+## Installation über die Unraid-Oberfläche (Compose Manager, ohne Terminal)
+
+1. **Token anlegen** (einmalig, weil das Repo privat ist): GitHub › Settings › Developer settings › Personal access tokens › **Fine-grained tokens** › Generate new token. Repository access: **Only select repositories** › `l.e.o.`, Permissions: **Contents: Read-only**. Token kopieren.
+2. Unraid › Reiter **Docker** › ganz unten Bereich **Compose** › **Add New Stack**, Name `leo`.
+3. Beim neuen Stack auf das Zahnrad › **Edit Stack** › **Compose File**, den Inhalt unten einfügen, `DEIN_TOKEN` ersetzen, **Save Changes**.
+4. **Compose Up** klicken. Der erste Start baut die App (1–3 Minuten), danach `http://<Unraid-IP>:8088` öffnen.
+5. **Update:** einfach wieder **Compose Up** (durch `pull_policy: build` wird neu gebaut). Die Noten im Browser bleiben erhalten.
+
+```yaml
+services:
+  leo:
+    build:
+      context: https://DEIN_TOKEN@github.com/cup1dstunt/l.e.o..git#main
+      dockerfile: app/Dockerfile
+    image: leo-prototyp:latest
+    pull_policy: build
+    container_name: leo-prototyp
+    ports:
+      - "8088:80"
+    restart: unless-stopped
+```
+
+Der Token steht im Klartext in der Compose-Datei auf dem Unraid. Deshalb nur Leserecht auf dieses eine Repo vergeben. Ungetestet: Den Bau direkt aus der Git-Adresse konnte ich ohne Token und wegen der Docker-Hub-Sperre nicht selbst durchspielen.
+
+## Installation mit Terminal (Alternative)
 
 Voraussetzung: Unraid mit dem Plugin **Docker Compose Manager** (Community Apps), oder ein Terminal auf dem Server mit `docker compose`.
 
