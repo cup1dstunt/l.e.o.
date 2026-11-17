@@ -1,0 +1,311 @@
+<script lang="ts">
+  import { page } from '$app/state';
+  import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
+  import { schuelerVon, kurzname, name, heuteISO, minuten, stundenHeute, datumKurz } from '$lib/hilfen';
+  import { BAUSTEINE, STUFEN, bausteinStufe } from '$lib/bausteine';
+  import { druck } from '$lib/druck';
+  import Smiley from '$lib/ui/Smiley.svelte';
+  import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
+  import KursKopf from '$lib/ui/KursKopf.svelte';
+  import type { MitarbeitEintrag, Stufe, Schueler } from '$lib/typen';
+  import { rechne } from '$lib/rechnen';
+  import { onMount } from 'svelte';
+
+  const d = app.d!;
+  const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
+  const liste = $derived(kurs ? schuelerVon(d, kurs) : []);
+  const heute = heuteISO();
+
+  // Zeitbalken: laufende Stunde laut Plan, sonst 90 Minuten ab Öffnen (zum Testen)
+  let jetzt = $state(new Date());
+  const geoeffnet = new Date();
+  onMount(() => {
+    const t = setInterval(() => (jetzt = new Date()), 20_000);
+    return () => clearInterval(t);
+  });
+  const minJetzt = $derived(jetzt.getHours() * 60 + jetzt.getMinutes());
+  const slot = $derived.by(() => {
+    const p = stundenHeute(d, jetzt);
+    if (p.laeuft?.kursId === kurs.id) return { beginn: p.laeuft.beginn, ende: p.laeuft.ende, plan: true };
+    const b = geoeffnet.getHours() * 60 + geoeffnet.getMinutes();
+    const f = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    return { beginn: f(b), ende: f(b + 90), plan: false };
+  });
+
+  // Einträge dieser Stunde = heute in diesem Kurs
+  const heuteEintraege = $derived(d.mitarbeit.filter((e) => e.kursId === kurs.id && e.zeit.slice(0, 10) === heute));
+  const letzter = (sid: string) => heuteEintraege.filter((e) => e.schuelerId === sid).at(-1);
+  const fehlt = (sid: string) => d.fehlzeiten.find((f) => f.kursId === kurs.id && f.schuelerId === sid && f.datum === heute);
+  const anwesend = $derived(liste.filter((s) => !fehlt(s.id)));
+  const ohneEintrag = $derived(anwesend.filter((s) => !letzter(s.id)).length);
+
+  function bewerten(s: Schueler, stufe: Stufe) {
+    const alt = letzter(s.id);
+    if (alt) {
+      const vorher = alt.stufe;
+      alt.stufe = stufe;
+      speichern();
+      zeige(`${kurzname(s)}: ${STUFEN[stufe - 1].name}`, () => { alt.stufe = vorher; speichern(); });
+    } else {
+      const e: MitarbeitEintrag = { id: neueId(), kursId: kurs.id, schuelerId: s.id, zeit: new Date().toISOString(), stufe, bausteine: [] };
+      d.mitarbeit.push(e);
+      speichern();
+      zeige(`${kurzname(s)}: ${STUFEN[stufe - 1].name} gespeichert`, () => {
+        d.mitarbeit.splice(d.mitarbeit.findIndex((x) => x.id === e.id), 1);
+        speichern();
+      });
+    }
+  }
+
+  const ANW = ['da', 'E', 'UE'] as const;
+  function anwesenheit(s: Schueler, ziel?: 'da' | 'E' | 'UE') {
+    const f = fehlt(s.id);
+    const jetztStatus = f ? f.status : 'da';
+    const neu = ziel ?? ANW[(ANW.indexOf(jetztStatus) + 1) % 3];
+    if (f) d.fehlzeiten.splice(d.fehlzeiten.indexOf(f), 1);
+    if (neu !== 'da') d.fehlzeiten.push({ id: neueId(), kursId: kurs.id, schuelerId: s.id, datum: heute, stunden: 2, status: neu });
+    speichern();
+  }
+
+  // Fenster mit Textbausteinen und Kommentar
+  let fenster = $state<{ s: Schueler } | null>(null);
+  function oeffnen(s: Schueler, stufe?: Stufe) {
+    if (stufe && !fehlt(s.id)) {
+      const e = letzter(s.id);
+      if (!e) bewerten(s, stufe);
+      else if (e.stufe !== stufe) { e.stufe = stufe; speichern(); }
+    }
+    fenster = { s };
+  }
+  const fensterEintrag = $derived(fenster ? letzter(fenster.s.id) : undefined);
+  function fensterStufe(stufe: Stufe) {
+    if (!fenster) return;
+    const e = fensterEintrag;
+    if (e) { e.stufe = stufe; speichern(); } else bewerten(fenster.s, stufe);
+  }
+  function baustein(t: string) {
+    const e = fensterEintrag;
+    if (!e) return;
+    const i = e.bausteine.indexOf(t);
+    if (i >= 0) e.bausteine.splice(i, 1); else e.bausteine.push(t);
+    speichern();
+  }
+  const bausteineSortiert = $derived(
+    fensterEintrag ? [...BAUSTEINE].sort((a, b) => Math.abs(a.stufe - fensterEintrag.stufe) - Math.abs(b.stufe - fensterEintrag.stufe)) : BAUSTEINE
+  );
+  const chipArt = (t: string) => { const s = bausteinStufe(t) ?? 3; return s <= 2 ? 'pos' : s >= 4 ? 'neg' : 'neu'; };
+
+  // Zufall: nur Anwesende, niemand doppelt in dieser Stunde
+  let gezogen = $state<string[]>([]);
+  const zufallName = $derived(gezogen.length ? d.schueler.find((s) => s.id === gezogen.at(-1)) : undefined);
+  function ziehen() {
+    let pool = anwesend.filter((s) => !gezogen.includes(s.id));
+    if (pool.length === 0) { gezogen = []; pool = anwesend; }
+    if (pool.length) gezogen = [...gezogen, pool[Math.floor(Math.random() * pool.length)].id];
+  }
+
+  // Lernstoff und Übergang (E70, E78)
+  $effect.pre(() => {
+    if (kurs && !kurs.lernstoff[heute]) kurs.lernstoff[heute] = { text: '', hausaufgabe: '' };
+  });
+  const lernstoff = $derived(kurs?.lernstoff[heute]);
+  let uebergangNeu = $state('');
+  function abschliessen() {
+    if (uebergangNeu.trim()) { kurs.uebergang = { text: uebergangNeu.trim(), datum: heute }; uebergangNeu = ''; }
+    speichern();
+    zeige(ohneEintrag && d.einstellungen.stundenendeHinweis ? `Stunde gespeichert · ${ohneEintrag} ohne Mitarbeitseintrag` : 'Stunde gespeichert');
+  }
+  let nurMitarbeit = $state(page.url.searchParams.has('mitarbeit'));
+  let nurOhne = $state(false);
+
+  // Schnellgruppen: zufällig oder leistungsgemischt (nach Gesamtnote reihum verteilt), nur Anwesende
+  let groesse = $state(4);
+  let gemischt = $state(false);
+  let gruppen = $state<Schueler[][]>([]);
+  function gruppenBilden() {
+    let pool = [...anwesend];
+    if (gemischt) {
+      const w = (x: Schueler) => rechne(kurs, x.id).gesamtExakt ?? 0;
+      pool.sort((a, b) => (kurs.profil === 'FOS' ? w(b) - w(a) : w(a) - w(b)));
+    } else pool.sort(() => Math.random() - 0.5);
+    const anzahl = Math.max(1, Math.round(pool.length / groesse));
+    const g: Schueler[][] = Array.from({ length: anzahl }, () => []);
+    // Schlangenreihenfolge, damit jede Gruppe starke und schwächere Schüler bekommt
+    pool.forEach((x, i) => { const runde = Math.floor(i / anzahl); const j = i % anzahl; g[runde % 2 ? anzahl - 1 - j : j].push(x); });
+    gruppen = g;
+  }
+</script>
+
+<svelte:head><title>{kurs?.name} · Stunde</title></svelte:head>
+
+{#if kurs}
+  <KursKopf {kurs} aktiv="stunde" info="Live-Stunde · Raum {kurs.raum} · {anwesend.length} von {liste.length} da">
+    {#snippet rechts()}
+      <button class="pille" aria-pressed={nurOhne} onclick={() => (nurOhne = !nurOhne)}>Noch nicht bewertet <b>{ohneEintrag}</b></button>
+      <button class="pille" aria-pressed={nurMitarbeit} onclick={() => (nurMitarbeit = !nurMitarbeit)}>Nur Mitarbeit</button>
+      <button class="knopf haupt" onclick={abschliessen}>Stunde abschließen</button>
+    {/snippet}
+  </KursKopf>
+
+  <div class="seite">
+    <div class="balken karte">
+      <Zeitbalken beginn={slot.beginn} ende={slot.ende} jetzt={minJetzt} />
+      {#if !slot.plan}<span class="klein leise">Keine Stunde laut Plan, Zeitbalken zum Testen ab Öffnen.</span>{/if}
+    </div>
+    {#if kurs.uebergang && kurs.uebergang.datum !== heute}
+      <div class="stehen"><b>Wo wir stehengeblieben sind</b> <span class="leise klein">({datumKurz(kurs.uebergang.datum)})</span><p>{kurs.uebergang.text}</p></div>
+    {/if}
+
+    <div class="bereich" class:breit={nurMitarbeit}>
+      <section class="karte schueler">
+        <div class="raster">
+          {#each (nurOhne ? liste.filter((x) => !letzter(x.id) && !fehlt(x.id)) : liste) as s (s.id)}
+            {@const f = fehlt(s.id)}
+            {@const e = letzter(s.id)}
+            <div class="sk" class:fehlt={!!f} class:gewaehlt={zufallName?.id === s.id}>
+              <div class="zeile">
+                <button class="nm" onclick={() => oeffnen(s)} title="Bausteine, Kommentar, Anwesenheit">{kurzname(s)}</button>
+                <button class="anw" class:e={f?.status === 'E'} class:ue={f?.status === 'UE'} onclick={() => anwesenheit(s)} aria-label="Anwesenheit {name(s)}: {f ? f.status : 'da'}">{f ? f.status : 'da'}</button>
+              </div>
+              {#if f}
+                <div class="klein leise fehltext">{f.status === 'E' ? 'entschuldigt' : 'unentschuldigt'} · Tipp auf „{f.status}“ ändert</div>
+              {:else}
+                <div class="smileys" role="group" aria-label="Mitarbeit {name(s)}">
+                  {#each STUFEN as st}
+                    <button class="sm" class:an={e?.stufe === st.stufe} aria-pressed={e?.stufe === st.stufe} aria-label={st.name}
+                      use:druck={{ kurz: () => bewerten(s, st.stufe), lang: () => oeffnen(s, st.stufe) }}>
+                      <Smiley stufe={st.stufe} groesse={34} leer={!!e && e.stufe !== st.stufe} />
+                    </button>
+                  {/each}
+                </div>
+                {#if e && (e.bausteine.length || e.kommentar)}
+                  <div class="klein leise bs">{[...e.bausteine, e.kommentar].filter(Boolean).join(', ')}</div>
+                {/if}
+              {/if}
+            </div>
+          {/each}
+        </div>
+        <p class="klein leise hilfe">
+          Tipp auf ein Smiley speichert sofort. Doppelklick oder langes Drücken öffnet Textbausteine und Kommentar. „da“ antippen wechselt zu E und UE.
+          {#if d.einstellungen.stundenendeHinweis && ohneEintrag}<br /><b>{ohneEintrag} Anwesende noch ohne Mitarbeitseintrag.</b>{/if}
+        </p>
+      </section>
+
+      {#if !nurMitarbeit}
+        <aside>
+          <section class="karte">
+            <h2>Zufall</h2>
+            <p class="klein leise">nur Anwesende, niemand doppelt</p>
+            <p class="zufall">{zufallName ? kurzname(zufallName) : '…'}</p>
+            <p class="klein leise">{gezogen.length} von {anwesend.length} waren dran</p>
+            <button class="knopf haupt" onclick={ziehen}>{gezogen.length ? 'Nächster' : 'Ziehen'}</button>
+          </section>
+          <section class="karte">
+            <h2>Gruppen</h2>
+            <div class="zeile gz">
+              <label class="klein">je <select class="eingabe kl" bind:value={groesse}>{#each [2, 3, 4, 5, 6] as n}<option value={n}>{n}</option>{/each}</select></label>
+              <button class="pille" aria-pressed={gemischt} onclick={() => (gemischt = !gemischt)}>leistungsgemischt</button>
+            </div>
+            <button class="knopf" onclick={gruppenBilden}>Gruppen bilden</button>
+            {#if gruppen.length}
+              <ol class="gl">{#each gruppen as gr}<li>{gr.map(kurzname).join(', ')}</li>{/each}</ol>
+            {/if}
+          </section>
+          {#if lernstoff}
+          <section class="karte stapel">
+            <h2>Lernstoff</h2>
+            <label class="feld"><span>Inhalt der Stunde</span><textarea rows="3" bind:value={lernstoff.text} oninput={speichern} placeholder="Tippen oder diktieren"></textarea></label>
+            <label class="feld"><span>Hausaufgabe</span><input bind:value={lernstoff.hausaufgabe} oninput={speichern} /></label>
+          </section>
+          {/if}
+          <section class="karte stapel">
+            <h2>Übergang</h2>
+            {#if kurs.uebergang}<p class="klein"><span class="leise">Letztes Mal ({datumKurz(kurs.uebergang.datum)}):</span> {kurs.uebergang.text}</p>{/if}
+            <label class="feld"><span>Für die nächste Stunde (nur für dich)</span><textarea rows="2" bind:value={uebergangNeu} placeholder="Wo seid ihr stehengeblieben?"></textarea></label>
+            <span class="klein leise">Wird mit „Stunde abschließen“ gespeichert.</span>
+          </section>
+        </aside>
+      {/if}
+    </div>
+  </div>
+
+  {#if fenster}
+    {@const s = fenster.s}
+    {@const f = fehlt(s.id)}
+    <div class="hintergrund" role="presentation" onclick={(ev) => ev.target === ev.currentTarget && (fenster = null)}>
+      <div class="schweben dialog" role="dialog" aria-modal="true" aria-label="Mitarbeit {name(s)}">
+        <div class="zeile"><h2 class="raum">{name(s)}</h2><a class="klein" href="/schueler/{s.id}?kurs={kurs.id}">Schülerkarte</a></div>
+        <div class="anwzeile">
+          {#each ANW as a}
+            <button class="pille" aria-pressed={(f?.status ?? 'da') === a} onclick={() => anwesenheit(s, a)}>{a === 'da' ? 'anwesend' : a === 'E' ? 'E entschuldigt' : 'UE unentschuldigt'}</button>
+          {/each}
+        </div>
+        {#if !f}
+          <p class="klein leise">Mitarbeit heute</p>
+          <div class="grosse">
+            {#each STUFEN as st}
+              <button class="sm gross" class:an={fensterEintrag?.stufe === st.stufe} aria-pressed={fensterEintrag?.stufe === st.stufe} aria-label={st.name} onclick={() => fensterStufe(st.stufe)}>
+                <Smiley stufe={st.stufe} groesse={54} leer={!!fensterEintrag && fensterEintrag.stufe !== st.stufe} />
+              </button>
+            {/each}
+          </div>
+          {#if fensterEintrag}
+            <p class="klein leise">Textbausteine (optional, mehrere möglich)</p>
+            <div class="chips">
+              {#each bausteineSortiert as b}
+                <button class="chip {chipArt(b.text)}" aria-pressed={fensterEintrag.bausteine.includes(b.text)} onclick={() => baustein(b.text)}>{b.text}</button>
+              {/each}
+            </div>
+            <label class="feld"><span>Eigener Kommentar (nur dieser Eintrag)</span>
+              <input bind:value={fensterEintrag.kommentar} oninput={speichern} placeholder="z. B. Vortrag gut strukturiert" />
+            </label>
+          {:else}
+            <p class="klein leise">Erst ein Smiley wählen, dann Bausteine.</p>
+          {/if}
+        {/if}
+        <div class="zeile ende"><button class="knopf haupt" onclick={() => (fenster = null)}>Fertig</button></div>
+      </div>
+    </div>
+  {/if}
+{/if}
+
+<style>
+  .seite { padding: 18px 32px 40px; display: flex; flex-direction: column; gap: 16px; }
+  .balken { padding: 14px 20px; }
+  .bereich { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
+  .bereich.breit { grid-template-columns: 1fr; }
+  .schueler { padding: 16px; }
+  .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 10px; }
+  .sk { border: 1px solid var(--leo-linie); border-radius: var(--leo-r-l); padding: 8px 10px 10px; background: var(--leo-karte); display: flex; flex-direction: column; gap: 6px; }
+  .sk.fehlt { background: var(--leo-taste); }
+  .sk.fehlt .nm { color: var(--leo-leise); }
+  .sk.gewaehlt { background: var(--leo-auswahl); border: 2px solid var(--leo-akzent); }
+  .nm { flex: 1; text-align: left; background: none; border: 0; font-weight: 650; font-size: 15px; padding: 6px 0; min-height: 36px; }
+  .anw { min-width: 44px; min-height: 32px; border-radius: var(--leo-r-s); border: 1px solid var(--leo-linie); background: var(--leo-karte); color: var(--leo-leise); font-size: 12px; font-weight: 700; }
+  .anw.e { background: var(--leo-taste); color: var(--leo-tinte); }
+  .anw.ue { background: var(--leo-warnung-hell); color: var(--leo-warnung); border-color: transparent; }
+  .smileys { display: flex; justify-content: space-between; }
+  .sm { border: 0; background: none; padding: 3px; border-radius: 50%; line-height: 0; -webkit-touch-callout: none; user-select: none; touch-action: manipulation; }
+  .sm.an { box-shadow: 0 0 0 2px var(--leo-akzent); }
+  .bs { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fehltext { padding: 8px 0; }
+  .hilfe { margin: 14px 4px 0; }
+  aside { display: flex; flex-direction: column; gap: 16px; }
+  .stehen { background: var(--leo-stern-hell); border: 1px solid #ecd28a; border-radius: var(--leo-r-l); padding: 12px 18px; }
+  .stehen p { margin: 4px 0 0; font-size: 15px; }
+  .gz { margin: 10px 0; flex-wrap: wrap; }
+  .kl { min-height: 34px; padding: 4px 8px; }
+  .gl { margin: 12px 0 0; padding-left: 20px; line-height: 1.6; font-size: 13px; }
+  .zufall { font-size: 34px; font-weight: 800; margin: 10px 0 2px; }
+  .stapel { display: flex; flex-direction: column; gap: 10px; }
+  .stapel h2 { margin-bottom: 2px; }
+  .anwzeile { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 6px; }
+  .grosse { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sm.gross { padding: 4px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { cursor: pointer; }
+  .ende { justify-content: flex-end; margin-top: 18px; }
+  .dialog p { margin: 14px 0 8px; }
+  @media (max-width: 1000px) { .bereich { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .seite { padding: 12px; } .raster { grid-template-columns: 1fr; } }
+</style>

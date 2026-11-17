@@ -1,0 +1,473 @@
+<script lang="ts">
+  import { page } from '$app/state';
+  import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
+  import { schuelerVon, name, alter, datumKurz } from '$lib/hilfen';
+  import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, noetigeNote, warnungen } from '$lib/rechnen';
+  import KursKopf from '$lib/ui/KursKopf.svelte';
+  import type { Gruppe, Leistung, Schueler, Zelle } from '$lib/typen';
+
+  const d = app.d!;
+  const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
+  const liste = $derived(kurs ? schuelerVon(d, kurs) : []);
+  const skala = $derived(SKALA[kurs.profil]);
+  const fos = $derived(kurs.profil === 'FOS');
+  let breite = $state(1200);
+  let tabelleErzwingen = $state(false);
+  const alsListe = $derived(breite < 720 && !tabelleErzwingen);
+
+  const spalten = $derived({
+    klausuren: kurs.leistungen.filter((l) => l.gruppe === 'klausuren'),
+    mitarbeit: kurs.leistungen.filter((l) => l.gruppe === 'mitarbeit'),
+    sl: kurs.leistungen.filter((l) => l.gruppe === 'sl')
+  });
+  // Reihenfolge der Eingabespalten für die Tastatur
+  const eingabeSpalten = $derived([...spalten.klausuren, ...spalten.mitarbeit, ...spalten.sl]);
+  const ergebnisse = $derived(Object.fromEntries(liste.map((s) => [s.id, rechne(kurs, s.id)])));
+  const g = $derived(kurs.gewichte);
+  const pz = (a: number, b: number) => Math.round((a / (a + b || 1)) * 100) + ' %';
+  const gewText = (x: number) => (x === 1 ? '' : '×' + x.toLocaleString('de-DE'));
+
+  // ---------- Zellen bearbeiten ----------
+  const zelle = (l: Leistung, s: Schueler): Zelle | undefined => kurs.zellen[zellSchluessel(l.id, s.id)];
+  const anzeige = (z?: Zelle) => (z?.status ? z.status : z?.wert !== undefined ? String(z.wert) : '');
+  let aktiv = $state<{ l: Leistung; s: Schueler } | null>(null);
+  const grob = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+
+  function setzen(l: Leistung, s: Schueler, eingabe: string): boolean {
+    const t = eingabe.trim().toUpperCase().replace(',', '.');
+    const key = zellSchluessel(l.id, s.id);
+    const alt = kurs.zellen[key] ? { ...kurs.zellen[key] } : undefined;
+    const behalte = { gewicht: alt?.gewicht, stern: alt?.stern };
+    let neu: Zelle | undefined;
+    if (t === '') neu = behalte.gewicht || behalte.stern ? { ...behalte } : undefined;
+    else if (t === 'E' || t === 'UE') neu = { ...behalte, status: t };
+    else {
+      const n = Number(t);
+      if (!Number.isInteger(n) || n < skala.min || n > skala.max) {
+        zeige(`Bitte ${skala.min} bis ${skala.max}, E oder UE eingeben`);
+        return false;
+      }
+      neu = { ...behalte, wert: n };
+    }
+    if (neu) {
+      for (const k of Object.keys(neu) as (keyof Zelle)[]) if (neu[k] === undefined) delete neu[k];
+      kurs.zellen[key] = neu;
+    } else delete kurs.zellen[key];
+    if (JSON.stringify(alt) !== JSON.stringify(neu)) speichern();
+    return true;
+  }
+
+  function feld(li: number, si: number) {
+    return document.querySelector<HTMLInputElement>(`input[data-p="${li}-${si}"]`);
+  }
+  function taste(ev: KeyboardEvent, li: number, si: number) {
+    const ziel = ev.currentTarget as HTMLInputElement;
+    const weiter = (dl: number, ds: number) => {
+      const f = feld(li + dl, si + ds);
+      if (f) { ev.preventDefault(); f.focus(); }
+    };
+    if (ev.key === 'Enter' || ev.key === 'ArrowDown') { if (setzen(eingabeSpalten[li], liste[si], ziel.value)) weiter(0, ev.shiftKey && ev.key === 'Enter' ? -1 : 1); }
+    else if (ev.key === 'ArrowUp') { setzen(eingabeSpalten[li], liste[si], ziel.value); weiter(0, -1); }
+    else if (ev.key === 'ArrowRight' && ziel.selectionStart === ziel.value.length) { setzen(eingabeSpalten[li], liste[si], ziel.value); weiter(1, 0); }
+    else if (ev.key === 'ArrowLeft' && ziel.selectionStart === 0) { setzen(eingabeSpalten[li], liste[si], ziel.value); weiter(-1, 0); }
+    else if (ev.key === 'Escape') { ziel.value = anzeige(zelle(eingabeSpalten[li], liste[si])); ziel.blur(); }
+  }
+  function verlassen(ev: FocusEvent, l: Leistung, s: Schueler) {
+    const f = ev.currentTarget as HTMLInputElement;
+    if (!setzen(l, s, f.value)) f.value = anzeige(zelle(l, s));
+    setTimeout(() => { if (!document.activeElement?.closest('.notenleiste, input[data-p]')) aktiv = null; }, 50);
+  }
+  // Notenleiste (Tablet/Handy und Maus): Wert setzen und eine Zeile weiter
+  function leiste(wert: string) {
+    if (!aktiv) return;
+    const li = eingabeSpalten.indexOf(aktiv.l);
+    const si = liste.indexOf(aktiv.s);
+    setzen(aktiv.l, aktiv.s, wert);
+    const f = feld(li, si + 1) ?? feld(li, si);
+    f?.focus();
+  }
+  let sternText = $state('');
+  let sternOffen = $state(false);
+  function stern() {
+    if (!aktiv) return;
+    const z = (kurs.zellen[zellSchluessel(aktiv.l.id, aktiv.s.id)] ??= {});
+    if (sternText.trim()) z.stern = sternText.trim(); else delete z.stern;
+    sternOffen = false;
+    speichern();
+  }
+  function einzelgewicht(x: number | null) {
+    if (!aktiv) return;
+    const z = (kurs.zellen[zellSchluessel(aktiv.l.id, aktiv.s.id)] ??= {});
+    if (x === null) delete z.gewicht; else z.gewicht = x;
+    speichern();
+  }
+
+  // ---------- Dialoge ----------
+  let dlg = $state<null | 'neu' | 'gewichte' | 'monat' | { l: Leistung } | { s: Schueler }>(null);
+  const ARTEN = [
+    { art: 'Klausur', gruppe: 'klausuren' as Gruppe },
+    { art: 'Test', gruppe: 'sl' as Gruppe },
+    { art: 'Präsentation', gruppe: 'sl' as Gruppe },
+    { art: 'Abgabe', gruppe: 'sl' as Gruppe },
+    { art: 'Referat', gruppe: 'sl' as Gruppe },
+    { art: 'Sonstiges', gruppe: 'sl' as Gruppe }
+  ];
+  let neu = $state({ art: 'Test', name: '', datum: '', gewicht: 1 });
+  function neueAnlegen() {
+    const a = ARTEN.find((x) => x.art === neu.art)!;
+    const anzahl = kurs.leistungen.filter((l) => l.art === neu.art).length + 1;
+    const l: Leistung = { id: neueId(), name: neu.name.trim() || `${neu.art} ${anzahl}`, art: neu.art, gruppe: a.gruppe, gewicht: Number(neu.gewicht) || 1, datum: neu.datum || undefined };
+    const letzte = kurs.leistungen.findLastIndex((x) => x.gruppe === a.gruppe);
+    kurs.leistungen.splice(letzte + 1, 0, l);
+    speichern();
+    dlg = null;
+    neu = { art: 'Test', name: '', datum: '', gewicht: 1 };
+    zeige(`${l.name} angelegt`, () => { kurs.leistungen.splice(kurs.leistungen.indexOf(l), 1); speichern(); });
+  }
+  function loeschen(l: Leistung) {
+    const i = kurs.leistungen.indexOf(l);
+    const zellen = Object.fromEntries(Object.entries(kurs.zellen).filter(([k]) => k.startsWith(l.id + ':')));
+    kurs.leistungen.splice(i, 1);
+    for (const k of Object.keys(zellen)) delete kurs.zellen[k];
+    speichern();
+    dlg = null;
+    zeige(`${l.name} gelöscht`, () => { kurs.leistungen.splice(i, 0, l); Object.assign(kurs.zellen, zellen); speichern(); });
+  }
+
+  // Monatsnote aus Smileys vorschlagen (E68)
+  let monat = $state(new Date().toISOString().slice(0, 7));
+  const monatSpalte = $derived(spalten.mitarbeit.find((l) => l.monat === monat));
+  const vorschlaege = $derived(
+    liste.map((s) => {
+      const stufen = d.mitarbeit.filter((e) => e.kursId === kurs.id && e.schuelerId === s.id && e.zeit.startsWith(monat)).map((e) => e.stufe);
+      return { s, n: stufen.length, v: monatsVorschlag(kurs.profil, stufen) };
+    })
+  );
+  let geaendert = $state<Record<string, string>>({});
+  function monatUebernehmen(sid?: string) {
+    let l = monatSpalte;
+    if (!l) {
+      l = { id: neueId(), name: new Date(monat + '-01').toLocaleDateString('de-DE', { month: 'short' }).replace('.', ''), art: 'Monatsnote', gruppe: 'mitarbeit', gewicht: 1, monat };
+      kurs.leistungen.splice(kurs.leistungen.findLastIndex((x) => x.gruppe === 'mitarbeit') + 1, 0, l);
+    }
+    for (const r of vorschlaege) {
+      if (sid && r.s.id !== sid) continue;
+      const w = geaendert[r.s.id] ?? (r.v ? String(r.v.wert) : '');
+      if (w !== '') setzen(l, r.s, w);
+    }
+    speichern();
+    if (!sid) { dlg = null; zeige(`Monatsnoten ${l.name} übernommen`); }
+  }
+  if (page.url.searchParams.has('monatsnote')) dlg = 'monat';
+
+  let ziel = $state<number | undefined>(undefined);
+  $effect.pre(() => { if (ziel === undefined || ziel < skala.min || ziel > skala.max) ziel = fos ? 5 : 4; });
+  // Endnote festlegen (E40, E46)
+  function festlegen(s: Schueler, n: number | null) {
+    if (n === null) delete kurs.endnoten[s.id]; else kurs.endnoten[s.id] = n;
+    speichern();
+  }
+  // Trendpfeil Mitarbeit: Smiley-Schnitt im letzten Monat gegen den Monat davor (niedrig = besser)
+  function trend(sid: string) {
+    const m = new Map<string, number[]>();
+    for (const e of d.mitarbeit) if (e.kursId === kurs.id && e.schuelerId === sid) m.set(e.zeit.slice(0, 7), [...(m.get(e.zeit.slice(0, 7)) ?? []), e.stufe]);
+    const r = [...m.entries()].sort().slice(-2).map(([, v]) => v.reduce((a, b) => a + b, 0) / v.length);
+    if (r.length < 2) return '';
+    return r[1] < r[0] - 0.3 ? '↗' : r[1] > r[0] + 0.3 ? '↘' : '→';
+  }
+  const ost = (x: number | null) => (x !== null && !bestanden(kurs.profil, x) ? 'warn' : '');
+  const spaltenSchnitt = (l: Leistung) => mittel(liste.map((s) => ({ wert: zellWert(kurs.profil, zelle(l, s)), gewicht: 1 })));
+</script>
+
+<svelte:window bind:innerWidth={breite} />
+<svelte:head><title>{kurs?.name} · Noten</title></svelte:head>
+
+{#if kurs}
+  <KursKopf {kurs} aktiv="noten">
+    {#snippet rechts()}
+      <button class="pille" onclick={() => (dlg = 'gewichte')}>Profil <b>{kurs.profil}</b> · Gewichte</button>
+      <button class="pille" onclick={() => (dlg = 'monat')}>Monatsnote vorschlagen</button>
+      <button class="knopf haupt" onclick={() => (dlg = 'neu')}>+ Leistung</button>
+    {/snippet}
+  </KursKopf>
+
+  <div class="seite">
+    {#if alsListe}
+      <div class="karte liste">
+        {#each liste as s}
+          {@const e = ergebnisse[s.id]}
+          <a class="lz" href="/schueler/{s.id}?kurs={kurs.id}">
+            <div><b>{name(s)}</b>{#if s.nta}&nbsp;<span class="nta">N</span>{/if}<div class="klein leise">Kl. {zahl(e.klausuren)} · Mit. {zahl(e.mitarbeit)} {trend(s.id)} · Tests {zahl(e.sl)}{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></div>
+            <div class="lnote zahl {ost(e.gesamt)}">{fos ? (e.gesamt ?? '–') : zahl(e.gesamt)}</div>
+          </a>
+        {/each}
+      </div>
+      <button class="knopf leise" onclick={() => (tabelleErzwingen = true)}>Ganze Tabelle zeigen</button>
+    {:else}
+      <div class="tabwrap karte">
+        <table class="zahl">
+          <thead>
+            <tr>
+              <th rowspan="3" class="name kopfname">Schüler</th>
+              <th colspan={spalten.klausuren.length + 1} rowspan="2" class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Klausuren <span>{pz(g.klausuren, g.sonstige)}</span></button></th>
+              <th colspan={spalten.mitarbeit.length + spalten.sl.length + 2} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Sonstige Leistungen (AT) <span>{pz(g.sonstige, g.klausuren)}</span></button></th>
+              <th rowspan="3" class="ges kopfges">Gesamtnote<div class="klein">live · {fos ? 'Notenpunkte' : 'Note'}</div></th>
+            </tr>
+            <tr>
+              <th colspan={spalten.mitarbeit.length + 1} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Mitarbeit <span>{pz(g.mitarbeit, g.sl)}</span></button></th>
+              <th colspan={spalten.sl.length + 1} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Tests und Sonstiges <span>{pz(g.sl, g.mitarbeit)}</span></button></th>
+            </tr>
+            <tr>
+              {#each [spalten.klausuren, spalten.mitarbeit, spalten.sl] as gruppe}
+                {#each gruppe as l}
+                  <th class="sp"><button onclick={() => (dlg = { l })} title="Name, Datum, Gewicht">{l.name}<span class="klein leise">{l.datum ? datumKurz(l.datum) : ''} {gewText(l.gewicht)}</span></button></th>
+                {/each}
+                <th class="sp schnitt">Ø</th>
+              {/each}
+            </tr>
+          </thead>
+          <tbody>
+            {#each liste as s, si}
+              {@const e = ergebnisse[s.id]}
+              <tr class:aktivzeile={aktiv?.s === s}>
+                <th class="name" scope="row"><a href="/schueler/{s.id}?kurs={kurs.id}">{name(s)}</a>{#if s.nta}&nbsp;<span class="nta" title={s.nta}>N</span>{/if}<div class="klein leise">{alter(s)} J.{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></th>
+                {#each [spalten.klausuren, spalten.mitarbeit, spalten.sl] as gruppe, gi}
+                  {#each gruppe as l}
+                    {@const z = zelle(l, s)}
+                    {@const li = eingabeSpalten.indexOf(l)}
+                    <td class="zelle" class:ue={z?.status === 'UE'} class:e={z?.status === 'E'} class:rot={z?.wert !== undefined && !bestanden(kurs.profil, z.wert)}>
+                      <input data-p="{li}-{si}" value={anzeige(z)} inputmode={grob ? 'none' : 'text'} autocomplete="off" aria-label="{l.name} {name(s)}"
+                        onfocus={(ev) => { aktiv = { l, s }; sternText = z?.stern ?? ''; (ev.currentTarget as HTMLInputElement).select(); }}
+                        onblur={(ev) => verlassen(ev, l, s)} onkeydown={(ev) => taste(ev, li, si)} placeholder="·" />
+                      {#if z?.stern}<span class="stern" title={z.stern}>★</span>{/if}
+                      {#if z?.gewicht !== undefined}<span class="eg">{gewText(z.gewicht) || '×1'}</span>{/if}
+                    </td>
+                  {/each}
+                  {@const w = gi === 0 ? e.klausuren : gi === 1 ? e.mitarbeit : e.sl}
+                  <td class="schnitt"><span class="ber {ost(w)}">{w === null ? '·' : zahl(w)}</span></td>
+                {/each}
+                <td class="ges">
+                  <button class="gesb" onclick={() => (dlg = { s })}>
+                    {#if fos}
+                      <span class="gn {ost(e.gesamt)}">{e.gesamt ?? '–'}</span>
+                      <span class="klein">{kurs.endnoten[s.id] !== undefined ? `festgelegt ${kurs.endnoten[s.id]}` : `ungerundet ${zahl(e.gesamtExakt)}`}</span>
+                    {:else}
+                      <span class="gn {ost(e.gesamt)}">{zahl(e.gesamt)}</span>
+                      <span class="klein">{kurs.endnoten[s.id] !== undefined ? `festgelegt ${kurs.endnoten[s.id]}` : e.vorschlag.length ? `Vorschlag ${e.vorschlag.join(' oder ')}${e.vorschlag.length > 1 ? '?' : ''}` : ''}</span>
+                    {/if}
+                    {#if kurs.endnoten[s.id] !== undefined && !e.vorschlag.includes(kurs.endnoten[s.id])}<span class="klein hinweis">★ Rechnung geändert</span>{/if}
+                  </button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th class="name leise">Ø Kurs</th>
+              {#each [spalten.klausuren, spalten.mitarbeit, spalten.sl] as gruppe}
+                {#each gruppe as l}<td class="leise">{zahl(spaltenSchnitt(l), 1)}</td>{/each}
+                <td></td>
+              {/each}
+              <td class="ges"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="klein leise">Eintippen wie in Excel: Zahl, E oder UE, Enter oder Pfeiltasten springen weiter. Klick auf eine Spalte ändert Name, Datum und Gewicht, Klick auf die Gesamtnote zeigt den Rechenweg.</p>
+    {/if}
+  </div>
+
+  {#if aktiv}
+    {@const z = zelle(aktiv.l, aktiv.s)}
+    <div class="notenleiste schweben" role="toolbar" aria-label="Notenleiste" tabindex="-1" onmousedown={(e) => e.preventDefault()}>
+      <div class="kopfzeile klein"><b>{name(aktiv.s)}</b> · {aktiv.l.name}</div>
+      <div class="tasten">
+        {#each skala.werte as w}
+          <button class="taste" class:rot={!bestanden(kurs.profil, w)} class:an={z?.wert === w} onclick={() => leiste(String(w))}>{w}</button>
+        {/each}
+      </div>
+      <div class="tasten sonder">
+        <button class="taste rahmen" onclick={() => leiste('E')}>E</button>
+        <button class="taste rahmen rot" onclick={() => leiste('UE')}>UE</button>
+        <button class="taste rahmen" onclick={() => leiste('')}>leeren</button>
+        <button class="taste rahmen" class:an={!!z?.stern} onclick={() => (sternOffen = !sternOffen)}>★ Vorbehalt</button>
+        <button class="taste rahmen" class:an={z?.gewicht === 0.5} onclick={() => einzelgewicht(z?.gewicht === 0.5 ? null : 0.5)}>×½</button>
+        <button class="taste rahmen" class:an={z?.gewicht === 0} onclick={() => einzelgewicht(z?.gewicht === 0 ? null : 0)}>zählt nicht</button>
+      </div>
+      {#if sternOffen}
+        <div class="zeile sternzeile">
+          <input class="eingabe raum" bind:value={sternText} placeholder="z. B. knapp an 11, wenn die Vokabelliste kommt" onkeydown={(e) => e.key === 'Enter' && stern()} />
+          <button class="knopf" onclick={stern}>Merken</button>
+        </div>
+      {/if}
+    </div>
+  {/if}
+
+  {#if dlg}
+    <div class="hintergrund" role="presentation" onclick={(ev) => ev.target === ev.currentTarget && (dlg = null)}>
+      <div class="schweben dialog" role="dialog" aria-modal="true">
+        {#if dlg === 'neu'}
+          <h2>Neue Leistung</h2>
+          <div class="kacheln">
+            {#each ARTEN as a}<button class="kachel" aria-pressed={neu.art === a.art} onclick={() => (neu.art = a.art)}>{a.art}<span class="klein leise">{a.gruppe === 'klausuren' ? 'Klausuren' : 'Tests und Sonstiges'}</span></button>{/each}
+          </div>
+          <div class="formular">
+            <label class="feld"><span>Name</span><input bind:value={neu.name} placeholder="{neu.art} {kurs.leistungen.filter((l) => l.art === neu.art).length + 1}" /></label>
+            <label class="feld"><span>Datum (auch in der Zukunft)</span><input type="date" bind:value={neu.datum} /></label>
+            <label class="feld"><span>Gewicht in der Gruppe</span><input type="number" min="0" step="0.1" bind:value={neu.gewicht} /></label>
+          </div>
+          <div class="zeile ende"><button class="knopf leise" onclick={() => (dlg = null)}>Abbrechen</button><button class="knopf haupt" onclick={neueAnlegen}>Anlegen</button></div>
+        {:else if dlg === 'gewichte'}
+          <h2>Profil und Gewichte</h2>
+          <p class="leise klein">Gewichte sind relativ (E41): 1 : 1 und 50 : 50 rechnen gleich. Voreinstellung nach UPZ: Klausuren 0,5 : Sonstige 0,5, Mitarbeit 0,6 : Tests 0,4.</p>
+          <div class="formular zwei">
+            <label class="feld"><span>Klausuren</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.klausuren} oninput={speichern} /></label>
+            <label class="feld"><span>Sonstige Leistungen</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.sonstige} oninput={speichern} /></label>
+            <label class="feld"><span>Mitarbeit (innerhalb Sonstige)</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.mitarbeit} oninput={speichern} /></label>
+            <label class="feld"><span>Tests und Sonstiges</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.sl} oninput={speichern} /></label>
+          </div>
+          <label class="feld"><span>Rechenprofil</span>
+            <select bind:value={kurs.profil} onchange={speichern}>
+              <option value="FOS">FOS: Notenpunkte 0–15, Rundung in Stufen (UPZ)</option>
+              <option value="OSZ">OSZ: Noten 1–6, Notenschnitt (vereinfacht)</option>
+            </select>
+          </label>
+          <p class="klein leise">Achtung: Beim Wechsel des Profils bleiben die eingetragenen Zahlen stehen und werden nicht umgerechnet.</p>
+          <div class="zeile ende"><button class="knopf haupt" onclick={() => (dlg = null)}>Fertig</button></div>
+        {:else if dlg === 'monat'}
+          <h2>Monatsnote vorschlagen</h2>
+          <p class="klein leise">Aus den Smileys des Monats: Smiley 1 bis 5 = Note 1 bis 5{fos ? ', umgerechnet in Notenpunkte (Note 1 = 14, 2 = 11, 3 = 8, 4 = 5, 5 = 2)' : ''}. Du kannst jeden Vorschlag ändern.</p>
+          <div class="zeile">
+            <label class="feld raum"><span>Monat</span><input type="month" bind:value={monat} /></label>
+            <button class="knopf haupt" onclick={() => monatUebernehmen()}>Alle übernehmen</button>
+          </div>
+          <table class="mtab zahl">
+            <tbody>
+              {#each vorschlaege as r}
+                {@const ist = monatSpalte ? zelle(monatSpalte, r.s) : undefined}
+                <tr>
+                  <td>{name(r.s)}<div class="klein leise">{r.n} Einträge{r.v ? ` · Ø Smiley ${zahl(r.v.note)}` : ''}</div></td>
+                  <td><input class="eingabe klein-in" value={geaendert[r.s.id] ?? (r.v ? r.v.wert : '')} oninput={(e) => (geaendert[r.s.id] = (e.currentTarget as HTMLInputElement).value)} aria-label="Vorschlag {name(r.s)}" /></td>
+                  <td>{#if ist?.wert !== undefined}<span class="leise klein">steht: {ist.wert}</span>{/if}</td>
+                  <td><button class="knopf leise" disabled={!r.v && !geaendert[r.s.id]} onclick={() => monatUebernehmen(r.s.id)} aria-label="übernehmen">✓</button></td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+          <div class="zeile ende"><button class="knopf leise" onclick={() => (dlg = null)}>Schließen</button></div>
+        {:else if 'l' in dlg}
+          {@const l = dlg.l}
+          <h2>{l.name}</h2>
+          <div class="formular">
+            <label class="feld"><span>Name</span><input bind:value={l.name} oninput={speichern} /></label>
+            {#if l.gruppe !== 'mitarbeit'}<label class="feld"><span>Datum</span><input type="date" bind:value={l.datum} oninput={speichern} /></label>{/if}
+            <label class="feld"><span>Gewicht in der Gruppe (relativ)</span><input type="number" min="0" step="0.1" bind:value={l.gewicht} oninput={speichern} /></label>
+          </div>
+          <p class="klein leise">Spalten-Ø {zahl(spaltenSchnitt(l))} · eingetragen {liste.filter((s) => zelle(l, s)?.wert !== undefined || zelle(l, s)?.status).length} von {liste.length}</p>
+          <div class="zeile ende"><button class="knopf leise warn" onclick={() => loeschen(l)}>Löschen</button><span class="raum"></span><button class="knopf haupt" onclick={() => (dlg = null)}>Fertig</button></div>
+        {:else if 's' in dlg}
+          {@const s = dlg.s}
+          {@const e = ergebnisse[s.id]}
+          <div class="zeile"><h2 class="raum">{name(s)}</h2><a class="klein" href="/schueler/{s.id}?kurs={kurs.id}">Schülerkarte</a></div>
+          <p class="klein leise">Rechenweg</p>
+          <div class="weg">{#each e.weg as w}<div>{w}</div>{/each}</div>
+          {#if e.nachschreiben.length}<p class="klein">Nachschreiben offen: {e.nachschreiben.join(', ')}</p>{/if}
+          {#each Object.entries(kurs.zellen).filter(([k, z]) => k.endsWith(':' + s.id) && z.stern) as [k, z]}
+            <p class="klein"><span class="stern-i">★</span> {kurs.leistungen.find((l) => k.startsWith(l.id + ':'))?.name}: {z.stern}</p>
+          {/each}
+          {@const offen = kurs.leistungen.filter((l) => l.gruppe !== 'mitarbeit' && !zelle(l, s)?.status && zelle(l, s)?.wert === undefined)}
+          {#if offen.length}
+            <p class="klein leise">Was wäre, wenn … (nur Rechnung, nichts wird gespeichert)</p>
+            <div class="wenn">
+              <label class="zeile klein">Gesamt mindestens
+                <select class="eingabe" bind:value={ziel}>{#each skala.werte as w}<option value={w}>{w}</option>{/each}</select>
+              </label>
+              {#each offen as l}
+                {@const n = noetigeNote(kurs, s.id, l.id, ziel ?? (fos ? 5 : 4))}
+                <div class="zeile klein"><span class="raum">{l.name}</span><b>{n === 'schon' ? 'schon erreicht' : n === 'unmoeglich' ? 'allein nicht erreichbar' : `mindestens ${n}`}</b></div>
+              {/each}
+            </div>
+          {/if}
+          <p class="klein leise">Endnote festlegen {e.vorschlag.length > 1 ? '(genau ,50: du entscheidest)' : ''}</p>
+          <div class="tasten">
+            {#each skala.werte as w}
+              <button class="taste" class:vorschlag={e.vorschlag.includes(w)} class:an={kurs.endnoten[s.id] === w} class:rot={!bestanden(kurs.profil, w)} onclick={() => festlegen(s, w)}>{w}</button>
+            {/each}
+          </div>
+          <div class="zeile ende">
+            {#if kurs.endnoten[s.id] !== undefined}<button class="knopf leise" onclick={() => festlegen(s, null)}>Festlegung aufheben</button>{/if}
+            <span class="raum"></span><button class="knopf haupt" onclick={() => (dlg = null)}>Fertig</button>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
+{/if}
+
+<style>
+  .seite { padding: 18px 32px 200px; }
+  .tabwrap { padding: 0; overflow: auto; max-height: calc(100dvh - 190px); }
+  table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
+  th, td { border-bottom: 1px solid var(--leo-linie-fein); border-right: 1px solid var(--leo-linie-fein); padding: 0; text-align: center; }
+  thead th { background: var(--leo-flaeche-leise); position: sticky; z-index: 3; font-weight: 600; }
+  thead tr:nth-child(1) th { top: 0; height: 44px; }
+  thead tr:nth-child(2) th { top: 44px; height: 40px; }
+  thead tr:nth-child(3) th { top: 84px; }
+  .name { position: sticky; left: 0; background: var(--leo-karte); text-align: left; padding: 6px 14px; min-width: 180px; z-index: 2; font-weight: 500; }
+  thead .name, tfoot .name { background: var(--leo-flaeche-leise); z-index: 4; }
+  .name a { color: var(--leo-tinte); text-decoration: none; }
+  .gk { text-align: left; }
+  .gkb { width: 100%; height: 100%; display: flex; justify-content: space-between; gap: 12px; background: none; border: 0; padding: 0 14px; font-weight: 650; }
+  .gkb span { color: var(--leo-leise); font-weight: 500; }
+  .sp button { background: none; border: 0; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; width: 100%; font-weight: 600; min-width: 64px; }
+  .schnitt { background: var(--leo-flaeche-leise); min-width: 62px; }
+  .zelle { position: relative; min-width: 62px; }
+  .zelle input { width: 100%; height: 48px; border: 0; background: transparent; text-align: center; font-weight: 700; font-size: var(--leo-text-note); font-variant-numeric: tabular-nums; padding: 0 4px; color: var(--leo-tinte); }
+  .zelle input::placeholder { color: var(--leo-linie); }
+  .zelle input:focus { outline: 2px solid var(--leo-akzent); outline-offset: -2px; background: var(--leo-auswahl); }
+  .zelle.rot input, .zelle.ue input { color: var(--leo-warnung); }
+  .zelle.ue input { background: var(--leo-warnung-hell); font-size: 12px; }
+  .zelle.e input { font-size: 12px; color: var(--leo-leise); }
+  .stern { position: absolute; top: 2px; right: 4px; color: var(--leo-stern); font-size: 12px; pointer-events: none; }
+  .eg { position: absolute; bottom: 2px; right: 4px; color: var(--leo-akzent); font-size: 10px; font-weight: 700; pointer-events: none; }
+  .ber { color: var(--leo-berechnet); font-size: 13px; font-weight: 500; text-decoration: underline dotted; text-underline-offset: 3px; }
+  .warn { color: var(--leo-warnung) !important; }
+  .ges { position: sticky; right: 0; background: var(--leo-akzent-hell); border-left: 3px solid var(--leo-akzent); min-width: 130px; z-index: 2; }
+  .kopfges { color: var(--leo-akzent); z-index: 4; background: var(--leo-akzent-hell) !important; }
+  .gesb { background: none; border: 0; width: 100%; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; }
+  .gn { font-size: var(--leo-text-endnote); font-weight: 800; }
+  .hinweis { color: var(--leo-stern); }
+  tr.aktivzeile .name { background: var(--leo-auswahl); }
+  tfoot td, tfoot th { font-size: 12px; padding: 8px 4px; background: var(--leo-flaeche-leise); }
+  .notenleiste { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + var(--unten, 0px)); z-index: 30; padding: 10px 12px; width: min(980px, calc(100vw - 24px)); }
+  .kopfzeile { margin: 0 4px 8px; }
+  .tasten { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tasten.sonder { margin-top: 6px; }
+  .taste { min-width: 46px; height: 46px; border-radius: var(--leo-r-m); border: 0; background: var(--leo-taste); font-weight: 700; font-size: 16px; padding: 0 10px; font-variant-numeric: tabular-nums; }
+  .taste.rot { color: var(--leo-warnung); }
+  .taste.rahmen { background: var(--leo-karte); border: 1px solid var(--leo-linie); font-size: 14px; font-weight: 600; }
+  .taste.an { background: var(--leo-akzent); color: var(--leo-auf-akzent); }
+  .taste.vorschlag { outline: 2px solid var(--leo-akzent); }
+  .sternzeile { margin-top: 8px; }
+  .liste { padding: 0 14px; margin-bottom: 12px; }
+  .lz { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--leo-linie-fein); text-decoration: none; color: var(--leo-tinte); }
+  .lnote { font-size: 26px; font-weight: 800; }
+  .kacheln { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
+  .kachel { border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); background: var(--leo-karte); padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font-weight: 600; }
+  .kachel[aria-pressed='true'] { border: 2px solid var(--leo-akzent); background: var(--leo-akzent-hell); padding: 11px; }
+  .formular { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
+  .formular.zwei { display: grid; grid-template-columns: 1fr 1fr; }
+  .ende { justify-content: flex-end; margin-top: 16px; }
+  .weg { background: var(--leo-akzent-hell); border-radius: var(--leo-r-m); padding: 10px 14px; font-family: var(--leo-schrift-mono); font-size: 12.5px; line-height: 1.7; }
+  .stern-i { color: var(--leo-stern); }
+  .w-unter { color: var(--leo-warnung); font-weight: 600; }
+  .w-kippe { color: #8a6200; font-weight: 600; }
+  .w-wenig { color: var(--leo-leise); font-style: italic; }
+  .wenn { border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .wenn select { min-height: 34px; padding: 4px 8px; }
+  .mtab { width: 100%; margin-top: 12px; }
+  .mtab td { text-align: left; padding: 6px 4px; border-right: 0; }
+  .klein-in { width: 70px; text-align: center; }
+  .dialog p { margin: 12px 0 6px; }
+  @media (max-width: 720px) { .seite { padding: 12px 12px 200px; } .formular.zwei { grid-template-columns: 1fr; } .kacheln { grid-template-columns: 1fr 1fr; } }
+</style>

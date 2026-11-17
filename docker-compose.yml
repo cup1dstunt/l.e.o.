@@ -1,0 +1,11 @@
+# L.E.O. Prototyp auf Unraid (oder jedem Docker-Host): docker compose up -d --build
+services:
+  leo:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    image: leo-prototyp:latest
+    container_name: leo-prototyp
+    ports:
+      - "8088:80"   # links den freien Port auf dem Server wählen
+    restart: unless-stopped

@@ -338,6 +338,32 @@ Quelle: [prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Ents
 | PF25 | **Beamer-Modus** nur mit Gruppenauslosung, zufälligem Namenziehen (gern als Rad) und Timer (E78); verzahnt mit U10 | K | 2 | M |
 | PF22 | **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
 
+## Aus dem Prototyp 0.4 und dem Brainstorming (17.11.2026)
+
+Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainstorming im Projektchat. Status: **im Prototyp** = im abgespeckten Prototyp (`app/`) eingebaut, zum Testen; endgültig erst nach der Modulplanung.
+
+| # | Punkt | Herkunft | Prio | Aufwand | Status |
+|---|---|---|---|---|---|
+| PB1 | **Wo sind wir stehengeblieben:** Notiz am Kurs (Klasse + Fach), erscheint in der nächsten Stunde oben und auf der Startseite (konkretisiert PF10) | K | 1 | S | im Prototyp |
+| PB2 | **Was-wäre-wenn:** welche Note in einer offenen Leistung nötig ist, um eine Gesamtnote zu erreichen (I36) | C, K bestätigt | 1 | S | im Prototyp (Rechenweg-Fenster) |
+| PB3 | **Warnampel:** unter der Grenze, auf der Kippe, zu wenige Noten; Fehlzeitengrenze in der Schülerkarte (I37, Q6) | C, K bestätigt | 1 | S | im Prototyp |
+| PB4 | **Nachschreiber-Liste** bei E an Klausuren (I44), mit Namen und Termin | C, K bestätigt | 1 | S | Zähler im Prototyp, Liste offen |
+| PB5 | **Trendpfeil Mitarbeit** (letzter Monat gegen Vormonat) | C, K bestätigt | 2 | S | im Prototyp (Handy-Liste) |
+| PB6 | **Hinweis „heute noch nicht bewertet“** mit Filter in der Live-Stunde (erweitert E55) | C, K bestätigt | 1 | S | im Prototyp |
+| PB7 | **Schnellgruppen:** zufällig oder leistungsgemischt, nur Anwesende | K | 1 | S | im Prototyp |
+| PB8 | **Fairer Zufall:** nur Anwesende, niemand doppelt, bis alle dran waren | C, K bestätigt | 1 | S | im Prototyp |
+| PB9 | **Gesprächsvorbereitung:** eine Seite je Schüler mit Noten, Fehlzeiten, Mitarbeit, Notizen für Eltern- oder Schülergespräch (verzahnt mit PF15 PDF-Report) | C, K bestätigt | 2 | M | offen |
+| PB10 | **Bausteine zu Formulierungen:** aus gesammelten Textbausteinen Sätze für Rückmeldung oder Gespräch vorschlagen, ohne Schülernamen an KI-Dienste | C, K bestätigt | 3 | M | offen |
+| PB11 | **Wochenrückblick:** was diese Woche erfasst wurde, wer ohne Mitarbeitseintrag blieb, offene Nachschreiber | C, K bestätigt | 2 | S | offen |
+| PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | offen (Export im Prototyp unverschlüsselt) |
+| PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | offen |
+| PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | offen |
+| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | einfache Fassung im Prototyp (Reiter „Planung“) |
+| PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | Zählung mit Beispiel-Ferien im Prototyp, Quelle WebUntis offen |
+| PB17 | **Live-Stunde: Werkzeuge für die Stunde** sammeln (Zufall, Gruppen, Timer, Beamer-Modus PF25, Lernstoff, Übergang); was fehlt noch? | K | 1 | M | teilweise im Prototyp |
+| PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | offen |
+| PB19 | **App-Pakete** für Windows/macOS (Tauri) und Android/iOS (Capacitor) aus derselben Browser-App (E79) | C | 2 | M | offen |
+
 ## Offen
 
 | # | Punkt | Herkunft | Prio |
@@ -355,4 +381,5 @@ Quelle: [prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Ents
 | I35 „Wer hat meine Kurse angesehen?“ | entfällt, niemand außer der Lehrkraft sieht sie (E29) |
 | Schulleitung sieht Endnoten | ersetzt durch E29 |
 | EWH-Inhalte (Klausurarchiv, Bausteinkatalog für Klausuren) | L.E.O. ist eigenständig (Brainstorm) |
+| Klausur-Assistent (Brainstorm 17.11.2026) | nicht benötigt (Konstantin) |
 | Design-Vorschläge in der Planung | anfangs nicht gewünscht; seit E48 gibt es eine Designsprache (docs/DESIGN.md) |

@@ -1,0 +1,7 @@
+**/node_modules
+app/.svelte-kit
+app/build
+.git
+docs/konzept
+docs/prototyp-feedback
+docs/quellen
