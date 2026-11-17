@@ -1,0 +1,64 @@
+@import '../../design/tokens.css';
+@import '@fontsource-variable/inter';
+
+/* Mitarbeitsfarben (E52, E60): nur auf Smiley-Gesicht und im Mitarbeitsverlauf */
+:root {
+  --leo-mit-1: #d5e8da; --leo-mit-2: #e6efd9; --leo-mit-3: #faf0c4; --leo-mit-4: #fbe0c6; --leo-mit-5: #f9e3de;
+  --leo-mitb-1: #8fc4a0; --leo-mitb-2: #c5dcae; --leo-mitb-3: #e9cf6a; --leo-mitb-4: #eba461; --leo-mitb-5: #e6a99d;
+  --leo-gesicht: #2b2f33;
+  color-scheme: light;
+}
+:root[data-theme='dunkel'] { color-scheme: dark; --leo-gesicht: #1d2125; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='hell']) { color-scheme: dark; --leo-gesicht: #1d2125; } }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--leo-papier);
+  color: var(--leo-tinte);
+  font-family: 'Inter Variable', var(--leo-schrift);
+  font-size: var(--leo-text-m);
+  -webkit-text-size-adjust: 100%;
+  font-feature-settings: 'cv11';
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--leo-akzent); }
+.zahl { font-variant-numeric: tabular-nums; }
+h1 { font-size: var(--leo-text-xl); margin: 0; font-weight: 700; }
+h2 { font-size: var(--leo-text-l); margin: 0; font-weight: 650; }
+.leise { color: var(--leo-leise); }
+.klein { font-size: var(--leo-text-s); }
+
+.karte { background: var(--leo-karte); border: 1px solid var(--leo-linie); border-radius: var(--leo-r-l); padding: var(--leo-a4) var(--leo-a5); }
+.knopf {
+  min-height: 40px; padding: 0 16px; border-radius: var(--leo-r-m); border: 1.5px solid var(--leo-akzent);
+  background: var(--leo-karte); color: var(--leo-akzent); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+}
+.knopf.haupt { background: var(--leo-akzent); color: var(--leo-auf-akzent); }
+.knopf.leise { border-color: var(--leo-linie); color: var(--leo-tinte); font-weight: 500; }
+.knopf:disabled { opacity: .45; cursor: default; }
+.pille { min-height: 34px; padding: 0 14px; border-radius: var(--leo-r-pill); border: 1px solid var(--leo-linie); background: var(--leo-karte); color: var(--leo-leise); display: inline-flex; align-items: center; gap: 6px; }
+.pille b { color: var(--leo-tinte); }
+.pille[aria-pressed='true'] { border-color: var(--leo-akzent); background: var(--leo-akzent-hell); color: var(--leo-akzent); }
+.feld { display: flex; flex-direction: column; gap: 4px; }
+.feld > span { font-size: var(--leo-text-s); color: var(--leo-leise); }
+.feld input, .feld textarea, .feld select, input.eingabe, textarea.eingabe {
+  border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); padding: 9px 12px; background: var(--leo-karte); min-height: 42px;
+}
+.feld input:focus, .feld textarea:focus, .feld select:focus, input.eingabe:focus, textarea.eingabe:focus { outline: none; border: 2px solid var(--leo-akzent); padding: 8px 11px; }
+:focus-visible { outline: 2px solid var(--leo-akzent); outline-offset: 2px; }
+.kennz { display: inline-grid; place-items: center; min-width: 26px; height: 22px; padding: 0 5px; border-radius: var(--leo-r-s); font-size: 12px; font-weight: 700; background: var(--leo-taste); color: var(--leo-leise); }
+.kennz.ue { background: var(--leo-warnung-hell); color: var(--leo-warnung); }
+.nta { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid var(--leo-akzent); color: var(--leo-akzent); border-radius: 50%; font-size: 11px; font-weight: 700; }
+.warn { color: var(--leo-warnung); }
+.chip { display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 0 12px; border-radius: var(--leo-r-pill); border: 1px solid var(--leo-linie); background: var(--leo-karte); }
+.chip.pos { background: var(--leo-mit-2); border-color: transparent; color: #1d2125; }
+.chip.neg { background: var(--leo-mit-5); border-color: transparent; color: #1d2125; }
+.chip.neu { background: var(--leo-mit-3); border-color: transparent; color: #1d2125; }
+.chip[aria-pressed='true'] { outline: 2px solid var(--leo-akzent); outline-offset: 0; }
+.schweben { background: var(--leo-karte); border-radius: var(--leo-r-xl); box-shadow: var(--leo-schatten-dialog); border: 1px solid var(--leo-linie); }
+.hintergrund { position: fixed; inset: 0; background: rgba(0,0,0,.18); z-index: 40; display: grid; place-items: center; padding: 16px; }
+.dialog { width: min(560px, 100%); max-height: calc(100dvh - 32px); overflow: auto; padding: 20px 24px; }
+.zeile { display: flex; align-items: center; gap: var(--leo-a3); }
+.raum { flex: 1; }

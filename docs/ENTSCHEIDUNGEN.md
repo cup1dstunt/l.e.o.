@@ -6,6 +6,8 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E79 | 17.11.2026 | **Architektur lokal-first:** L.E.O. wird als **Browser-App** entwickelt (SvelteKit, PWA). Noten und Schülerdaten liegen **lokal im Gerät** (IndexedDB), es gibt **keinen zentralen Notenserver**, in den alle Lehrkräfte eintragen. Dieselbe App soll später als Paket auf **Windows, macOS (Tauri), Android und iOS (Capacitor)** laufen. Konstantin betreibt sie auf seinem **Unraid** (Docker, nur Auslieferung der App-Dateien). Ersetzt für Noten den zentralen Teil von E22 (FastAPI + PostgreSQL); Abgleich zwischen Geräten ist offen (V10, PB18) | Konstantin: „Ich denke nicht, dass wir einen Online-Dienst hosten können, in dem alle Lehrer der Schule ihre Noten eintragen.“ |
+| E80 | 17.11.2026 | **Abgespeckter Prototyp 0.4** mit drei Modulen zum Testen: Notenbuch, Schüleransicht, Live-Stunde (dazu einfache Planung). Beispieldaten statt WebUntis/IServ. Brainstorm-Punkte PB1–PB19 im Backlog, **Klausur-Assistent verworfen** | Konstantin, Thread „Abgespeckten Prototyp für Unraid bauen“ |
 | E78 | 09.11.2026 | **Lernstoff und Übergang konkretisiert:** Lernstoff = **Textfeld oder Diktat** für den Stundeninhalt, dazu wählbar **Hausaufgabe**. Der Übergang ist **nur für die Lehrkraft** sichtbar: L.E.O. ist eine App für Lehrer, die Klasse sieht kein Notenheft. Der **Beamer-Modus** zeigt nur ganz wenige Dinge: **Gruppenauslosung, zufälliges Namenziehen (gern als Rad), Timer**. Konkretisiert E70 | Konstantin, Antworten auf N10 und N11 |
 | E77 | 09.11.2026 | **Notenbuch-Vorlage:** das Notenbuch aus dem Mockup (Referenz Screenshot 3 und Mockups) wird **zu einem sehr großen Teil so übernommen** und nur mit wirklich sinnvollen Vorschlägen verbessert. Konkretisiert E65 | Konstantin, Antwort auf N9 |
 | E76 | 09.11.2026 | **Reihenfolge:** Das **Notenbuch ist das Kernstück** und wird zuerst entwickelt, der Rest später. Das **Kalendermodul** kann viel später kommen, Quelle wird noch entschieden. Der **Raumplan** braucht ein intuitives, einfach zu bedienendes System, das noch zu entwerfen ist. Ein kleiner Platzhalter für die Startseite: siehe V9. Konkretisiert E71 | Konstantin, Antworten auf N7 und N8 |
@@ -88,6 +90,7 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Vorschlag | Begründung |
 |---|---|---|
+| V10 | **Abgleich ohne Notenserver:** Erst Sicherungsdatei (im Prototyp), danach optional ein kleiner Sync-Dienst auf dem eigenen Unraid, bei dem die Daten im Gerät **verschlüsselt** werden, bevor sie es verlassen (der Server sieht nur verschlüsselte Blöcke). So bleibt E29 gewahrt und Handy, iPad und PC sehen denselben Stand | Ohne Abgleich hat jedes Gerät eigene Daten; das ist im Unterricht mit Handy und PC unpraktisch |
 | V9 | **Platzhalter für die Startseite (Heute)** früh gestalten, mit einer ruhigen Kachel „Kalender folgt später“. Das Kalendermodul selbst kommt viel später (E76) | Konstantin fragte danach. Die Startseite hängt an „Läuft gerade“ (E50), der Platz für den Kalender sollte von Anfang an eingeplant sein, damit später nichts umgebaut werden muss |
 
 (V7 und V8 aus der UPZ-Analyse sind als E64 und E63 entschieden.)

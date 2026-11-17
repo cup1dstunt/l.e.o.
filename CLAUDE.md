@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 L.E.O. (Leistung, Entwicklung, Organisation): selbst gehostetes Werkzeug für Lehrkräfte der Leopold-Ullstein-Schule (OSZ Berlin),
-iDoceo-Ersatz, ausgelegt für ca. 100 Lehrkräfte mit IServ-SSO. Stand: Planung, noch kein Code.
+iDoceo-Ersatz, ausgelegt für ca. 100 Lehrkräfte mit IServ-SSO. Stand: Planung; abgespeckter Prototyp 0.4 in `app/` (lokal-first, E79), Betrieb siehe `docs/PROTOTYP_UNRAID.md`.
 
 Vor jeder Arbeit lesen: `docs/PLANUNG.md`, `docs/ENTSCHEIDUNGEN.md`, `docs/BACKLOG.md`, `docs/FRAGEN_SCHULE.md`.
 
