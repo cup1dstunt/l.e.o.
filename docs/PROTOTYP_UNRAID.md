@@ -19,7 +19,6 @@ Voraussetzung: Unraid mit dem Plugin **Docker Compose Manager** (Community Apps)
    cd /mnt/user/appdata
    git clone https://github.com/cup1dstunt/l.e.o.git leo
    cd leo
-   git checkout claude/project-thread-3civ3e   # bis der Prototyp auf main ist
    ```
    Das Repo ist privat: `git clone` fragt nach GitHub-Name und einem **Personal Access Token** (GitHub › Settings › Developer settings › Tokens, Recht „Contents: read“).
 2. Bauen und starten (dauert beim ersten Mal 1–3 Minuten):
