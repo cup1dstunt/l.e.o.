@@ -140,7 +140,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     options: {
       element: { id: sz.person.id, type: sz.person.typ || 2 },
       startDate: von, endDate: bis,
-      klasseFields: ['id', 'name'], subjectFields: ['id', 'name', 'longName'], roomFields: ['id', 'name'], teacherFields: ['id', 'name']
+      klasseFields: ['id', 'name'], subjectFields: ['id', 'name', 'longname'], roomFields: ['id', 'name'], teacherFields: ['id', 'name']
     }
   })) as any[];
 
@@ -161,7 +161,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     if (!kl?.id || !su?.id) continue;
     const key = kursKey(kl.id, su.id);
     const klasse = s.kl.map((k: any) => k.name || klassen.get(k.id) || '').filter(Boolean).join(', ');
-    const fach = faecher.get(su.id) || su.longName || su.name || '';
+    const fach = faecher.get(su.id) || su.longname || su.longName || su.name || '';
     if (!kurse.has(key)) kurse.set(key, { klasseId: kl.id, fachId: su.id, name: `${klasse} ${fach}`.trim(), fach, klasse, raum: '', gehalten: 0, anzahl: 0, schueler: new Set() });
     const k = kurse.get(key)!;
     const raum = s.ro?.[0]?.name || raeume.get(s.ro?.[0]?.id) || '';
