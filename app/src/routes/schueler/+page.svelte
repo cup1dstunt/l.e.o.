@@ -16,7 +16,7 @@
     {#each treffer as s}
       <a href="/schueler/{s.id}?kurs={kursVon(s.id)[0]?.id}">
         <b>{name(s)}</b>{#if s.nta}&nbsp;<span class="nta" title={s.nta}>N</span>{/if}
-        <span class="leise klein">{alter(s)} J. · {kursVon(s.id).map((k) => k.name).join(', ')}</span>
+        <span class="leise klein">{alter(s) === null ? '' : `${alter(s)} J. · `} {kursVon(s.id).map((k) => k.name).join(', ')}</span>
       </a>
     {/each}
   </div>

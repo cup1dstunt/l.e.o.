@@ -3,6 +3,7 @@ import type { Daten, Kurs, Schueler, Stunde } from './typen.ts';
 export const name = (s: Schueler) => `${s.vorname} ${s.nachname}`;
 export const kurzname = (s: Schueler) => `${s.vorname} ${s.nachname[0]}.`;
 export const alter = (s: Schueler, heute = new Date()) => {
+  if (!s.geburt) return null; // aus WebUntis ohne Export unbekannt
   const g = new Date(s.geburt);
   let a = heute.getFullYear() - g.getFullYear();
   if (heute < new Date(heute.getFullYear(), g.getMonth(), g.getDate())) a--;
@@ -42,7 +43,10 @@ export function stundenHeute(d: Daten, jetzt = new Date()) {
 }
 
 export function fehlzeitenVon(d: Daten, kursId: string, schuelerId: string) {
-  const liste = d.fehlzeiten.filter((f) => f.kursId === kursId && f.schuelerId === schuelerId).sort((a, b) => a.datum.localeCompare(b.datum));
+  const alle = d.fehlzeiten.filter((f) => f.kursId === kursId && f.schuelerId === schuelerId);
+  // Hat WebUntis für den Tag einen Eintrag, gilt dieser; die eigene Erfassung zählt dann nicht doppelt
+  const ausUntis = new Set(alle.filter((f) => f.quelle === 'untis').map((f) => f.datum));
+  const liste = alle.filter((f) => f.quelle === 'untis' || !ausUntis.has(f.datum)).sort((a, b) => a.datum.localeCompare(b.datum));
   const kurs = d.kurse.find((k) => k.id === kursId)!;
   const stunden = liste.reduce((a, f) => a + f.stunden, 0);
   const quote = kurs.stundenGehalten ? stunden / kurs.stundenGehalten : 0;
@@ -54,6 +58,13 @@ export function fehlzeitenVon(d: Daten, kursId: string, schuelerId: string) {
     stunden,
     quote
   };
+}
+
+/** Verspätungen eines Schülers; WebUntis gewinnt bei gleichem Tag. */
+export function verspaetungenVon(d: Daten, kursId: string | undefined, schuelerId: string) {
+  const alle = d.verspaetungen.filter((v) => v.kursId === kursId && v.schuelerId === schuelerId);
+  const ausUntis = new Set(alle.filter((v) => v.quelle === 'untis').map((v) => v.datum));
+  return alle.filter((v) => v.quelle === 'untis' || !ausUntis.has(v.datum)).sort((a, b) => b.datum.localeCompare(a.datum));
 }
 
 export const prozent = (x: number) => (x * 100).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' %';

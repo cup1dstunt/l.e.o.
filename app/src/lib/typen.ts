@@ -8,11 +8,13 @@ export interface Schueler {
   id: string;
   vorname: string;
   nachname: string;
-  geburt: string; // ISO-Datum
+  geburt: string; // ISO-Datum, leer wenn unbekannt (WebUntis liefert es nur per Export)
   geschlecht: 'w' | 'm' | 'd';
   mailDienst: string;
   mailPrivat?: string;
   nta?: string; // Nachteilsausgleich, z. B. „Zeitverlängerung 25 %“
+  untisId?: number; // Herkunft WebUntis (V11): Abgleich über diese Nummer
+  klasse?: string; // Klassenname laut WebUntis
 }
 
 export interface Leistung {
@@ -55,6 +57,7 @@ export interface Kurs {
   lernstoff: Record<string, { text: string; hausaufgabe: string }>; // je Datum
   uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
   sitzplan: Sitzplan;
+  untis?: { klasseId: number; fachId: number }; // Herkunft WebUntis: Klasse + Fach
 }
 
 /** Sitzplan als Raster (E86): Zellen sind Tisch oder frei, Belegung je Zellennummer. */
@@ -73,6 +76,7 @@ export interface Verspaetung {
   datum: string;
   ankunft: string; // HH:MM
   minuten: number;
+  quelle?: 'untis';
 }
 
 export interface MitarbeitEintrag {
@@ -92,6 +96,9 @@ export interface Fehlzeit {
   datum: string;
   stunden: number;
   status: 'E' | 'UE' | 'offen'; // offen = in der Stunde erfasst, E/UE kommt später (E84)
+  quelle?: 'untis'; // fehlt = in L.E.O. erfasst
+  grund?: string; // Kürzel des Abwesenheitsgrunds aus WebUntis, nur für Details
+  beginn?: string; // HH:MM der Stunde (WebUntis)
 }
 
 export interface Notiz {
@@ -106,6 +113,7 @@ export interface Stunde {
   tag: number; // 1 = Montag … 5 = Freitag
   beginn: string; // HH:MM
   ende: string;
+  quelle?: 'untis';
 }
 
 export interface Einstellungen {
@@ -115,6 +123,18 @@ export interface Einstellungen {
   liveAnsicht: 'liste' | 'sitzplan';
   sperreMinuten: number;
   passwort?: { salz: string; hash: string };
+  untis?: UntisStand;
+}
+
+/** Stand der letzten Übernahme aus WebUntis (V11). Zugangsdaten werden hier nie gespeichert. */
+export interface UntisStand {
+  schule: string;
+  benutzer: string;
+  kuerzel: string;
+  abgerufen: string; // ISO-Zeitpunkt
+  halbjahrVon: string; // ISO-Datum
+  halbjahrBis: string;
+  ausfaelle: string[]; // `${kursId}|${datum}|${beginn}` ausgefallene eigene Stunden
 }
 
 export interface Daten {
