@@ -101,7 +101,7 @@ Noch nicht drin: Kriterienraster und Selbsteinschätzungsbogen für mündliche L
 ## WebUntis-Verbindungstest (V11, E96)
 
 **Mehr › WebUntis › Verbindungstest öffnen.** Schule (`osz-lus`), WebUntis-Benutzername und App-Schlüssel oder Passwort eingeben, „Verbindung testen“.
-Der Test meldet sich an und prüft zwölf Abfragen (Schuljahr, Zeitraster, Ferien, eigener Stundenplan, Klassen, Fächer, Räume, Schüler, Fehlzeiten auf zwei Wegen, REST-Token).
+Der Test meldet sich an und prüft 13 Abfragen (Schuljahr, Zeitraster, Ferien, eigener Stundenplan, Klassen, Fächer, Räume, Schüler, Fehlzeiten auf zwei Wegen, REST-Token, Stammdaten mit Geburtsdatum und Klasse).
 Jede Kachel klappt auf und zeigt, wofür L.E.O. die Daten braucht, und welche Felder gefüllt sind. Er **liest nur**, trägt nichts in WebUntis ein, speichert nichts und zeigt keine Namen.
 „Bericht kopieren“ erzeugt einen Text nur mit Status, Anzahlen und Feldnamen, den du Claude schicken kannst.
 

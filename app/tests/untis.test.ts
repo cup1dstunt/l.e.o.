@@ -1,6 +1,6 @@
 // Prüft die Bausteine des WebUntis-Verbindungstests ohne Netz (V11).
 // Aufruf: npm test
-import { base32, totp, felder, verteilung, untisDatum, montag, bericht, fehlerText } from '../src/lib/untis.ts';
+import { base32, totp, felder, verteilung, groessteListe, spaltenkoepfe, untisDatum, montag, bericht, fehlerText } from '../src/lib/untis.ts';
 
 let ok = 0;
 let fehler = 0;
@@ -27,6 +27,8 @@ const b = bericht([{ id: 'schueler', titel: 'Schüler', wofuer: '', aufruf: '', 
 gleich('Bericht ohne Namen', b.includes('Muster') || b.includes('Beispiel'), false);
 
 gleich('verteilung', verteilung([{ s: 'entsch.' }, { s: 'entsch.' }, { s: { name: 'nicht entsch.' } }, { s: null }], 's'), { 'entsch.': 2, 'nicht entsch.': 1 });
+gleich('groessteListe', groessteListe({ a: [1], data: { rows: [{ x: 1 }, { x: 2 }, { x: 3 }] } }).length, 3);
+gleich('spaltenkoepfe', spaltenkoepfe({ data: { columns: [{ label: 'Name' }, { label: 'Klasse' }], rows: [] } }), ['Name', 'Klasse']);
 gleich('untisDatum', untisDatum(new Date(2026, 10, 18)), 20261118);
 gleich('montag', untisDatum(montag(new Date(2026, 10, 22))), 20261116);
 gleich('Fehler Schule', fehlerText(-8500, '').status, 'fehler');
