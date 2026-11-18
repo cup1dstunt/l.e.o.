@@ -93,6 +93,19 @@ export function felder(liste: unknown[]): { name: string; gefuellt: number }[] {
   return [...zaehl].map(([name, z]) => ({ name, gefuellt: Math.round((z / n) * 100) })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Wie oft kommt welcher Wert eines Kategorie-Feldes vor (z. B. Entschuldigungsstatus)? Nur für Kategorien, nie für Namen. */
+export function verteilung(liste: unknown[], feld: string): Record<string, number> {
+  const z: Record<string, number> = {};
+  for (const e of liste) {
+    const v = (e as Record<string, unknown>)?.[feld];
+    if (v === null || v === undefined || v === '') continue;
+    const o = v as Record<string, unknown>;
+    const name = typeof v === 'object' ? String(o.name ?? o.longName ?? o.code ?? o.id ?? '?') : String(v);
+    z[name] = (z[name] ?? 0) + 1;
+  }
+  return Object.fromEntries(Object.entries(z).sort((a, b) => b[1] - a[1]).slice(0, 20));
+}
+
 /** Datum als Untis-Zahl JJJJMMTT. */
 export const untisDatum = (d: Date) => d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
 
@@ -163,9 +176,9 @@ async function rest(pfad: string, token?: string): Promise<any> {
   });
   if (r.status === 401 || r.status === 403) throw new UntisFehler(r.status, 'Keine Berechtigung');
   if (!r.ok) throw new UntisFehler(r.status, `Antwort ${r.status}`);
-  const typ = r.headers.get('content-type') ?? '';
-  if (typ.includes('json')) return r.json();
-  return r.text();
+  // Manche Antworten sind als JSON ausgewiesen, aber reiner Text (z. B. das Token)
+  const text = await r.text();
+  try { return JSON.parse(text); } catch { return text; }
 }
 
 /** Bekannte Fehlercodes verständlich machen. */
@@ -300,7 +313,21 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
   // 10 Fehlzeiten über JSON-RPC (Klassenbuch-Modul nötig)
   try {
     const a = liste(await r('getTimetableWithAbsences', { options: { startDate: untisDatum(vor14), endDate: untisDatum(heute) } }));
-    ergebnis('fehlzeitenRpc', { status: a.length ? 'ok' : 'leer', anzahl: a.length, felder: felder(a) });
+    // Nur zählen: Einträge in eigenen Stunden, verschiedene Schüler darin, Verteilung der Status und Gründe
+    const eigene = a.filter((x: any) => Array.isArray(x?.teacherIds) && x.teacherIds.includes(person?.id));
+    const schuelerEigene = new Set(eigene.map((x: any) => x?.studentId)).size;
+    const mitFehlzeit = eigene.filter((x: any) => x?.absenceReason || x?.excuseStatus || x?.absentTime).length;
+    const extra: Record<string, string | number> = {
+      'Einträge in eigenen Stunden': eigene.length,
+      'verschiedene Schüler darin': schuelerEigene,
+      'davon mit Abwesenheit': mitFehlzeit
+    };
+    for (const [n, w] of Object.entries(verteilung(a, 'excuseStatus'))) extra[`Status „${n}“`] = w;
+    for (const [n, w] of Object.entries(verteilung(a, 'absenceReason'))) extra[`Grund „${n}“`] = w;
+    const typen = (f: string) => [...new Set(a.slice(0, 200).map((x: any) => (x?.[f] === null || x?.[f] === undefined ? null : Array.isArray(x[f]) ? 'Liste' : typeof x[f])).filter(Boolean))].join('/');
+    extra['Typ excuseStatus'] = typen('excuseStatus') || '–';
+    extra['Typ absentTime'] = typen('absentTime') || '–';
+    ergebnis('fehlzeitenRpc', { status: a.length ? 'ok' : 'leer', anzahl: a.length, felder: felder(a), extra });
   } catch (e) { fang('fehlzeitenRpc', e); }
 
   // 11 Fehlzeiten über die Web-Schnittstelle (wie die WebUntis-Seite)
