@@ -167,6 +167,10 @@ Echte Schülerdaten landen dabei **nur im Browser** von Konstantin, nie im Repo 
 | Fehlzeiten Web-Schnittstelle | leer | Endpunkt ist für Schülerkonten gedacht, nicht nötig |
 | REST-Token | Fehler beim Lesen (Antwort als Text) | im zweiten Test behoben |
 
+**Test 2 (21:00):** Token ✓. Fehlzeiten-Status kommen als Text: „entsch.“, „nicht entsch.“, „Verspätung“, „entsch. aPP“ (ausgesetzte Präsenzpflicht); ohne Status = offen. Gründe als Kürzel (Abw oM, K, V (z), UE, Abw mM, B, P, aPP, V (nicht z)). `absentTime` ist eine Zahl (Minuten). Zuordnung zu eigenen Stunden über `teacherIds` ergab 0 Treffer, Test 3 prüft zusätzlich Datum + Beginn. `studentlist.do` lieferte HTML statt Daten, Test 3 probiert Kopfzeilen-Varianten.
+
+Abbildung in L.E.O.: „entsch.“ und „entsch. aPP“ → **E**, „nicht entsch.“ → **UE**, „Verspätung“ → **Verspätung** (zählt nicht, E95), kein Status → **offen**.
+
 **Datenschutz-Folge:** Das Lehrerkonto sieht Schüler und Fehlzeiten der ganzen Schule. L.E.O. übernimmt deshalb **nur** Schüler und Einträge aus den **eigenen Stunden** (bzw. als Klassenleitung der eigenen Klasse) und verwirft den Rest sofort im Arbeitsspeicher. Nichts Schulweites wird gespeichert.
 
 ## 8 Antworten von Konstantin (18.11.2026)

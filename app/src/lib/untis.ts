@@ -196,10 +196,10 @@ async function rpc(pfad: string, schule: string, methode: string, params: unknow
   return j.result;
 }
 
-async function rest(pfad: string, token?: string): Promise<any> {
+async function rest(pfad: string, token?: string, mehr: Record<string, string> = {}): Promise<any> {
   const r = await fetch(`${BASIS}/${pfad}`, {
     credentials: 'same-origin',
-    headers: token ? { Authorization: `Bearer ${token}`, Accept: 'application/json' } : { Accept: 'application/json' }
+    headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...mehr }
   });
   if (r.status === 401 || r.status === 403) throw new UntisFehler(r.status, 'Keine Berechtigung');
   if (!r.ok) throw new UntisFehler(r.status, `Antwort ${r.status}`);
@@ -342,11 +342,23 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
   try {
     const a = liste(await r('getTimetableWithAbsences', { options: { startDate: untisDatum(vor14), endDate: untisDatum(heute) } }));
     // Nur zählen: Einträge in eigenen Stunden, verschiedene Schüler darin, Verteilung der Status und Gründe
-    const eigene = a.filter((x: any) => Array.isArray(x?.teacherIds) && x.teacherIds.includes(person?.id));
+    // Weg 1: Lehrkraft-Nummer in teacherIds (als Zahl oder Text). Weg 2: Datum + Beginn wie im eigenen Stundenplan.
+    const ich = String(person?.id);
+    let eigeneStunden = new Set<string>();
+    try {
+      const sp = liste(await r('getTimetable', { options: { element: { id: person!.id, type: person!.typ || 2 }, startDate: untisDatum(vor14), endDate: untisDatum(heute) } }));
+      eigeneStunden = new Set(sp.map((x: any) => `${x?.date}-${x?.startTime}`));
+    } catch { /* dann nur Weg 1 */ }
+    const perId = a.filter((x: any) => Array.isArray(x?.teacherIds) && x.teacherIds.map(String).includes(ich));
+    const perZeit = a.filter((x: any) => eigeneStunden.has(`${x?.date}-${x?.startTime}`));
+    const eigene = perId.length ? perId : perZeit;
     const schuelerEigene = new Set(eigene.map((x: any) => x?.studentId)).size;
     const mitFehlzeit = eigene.filter((x: any) => x?.absenceReason || x?.excuseStatus || x?.absentTime).length;
     const extra: Record<string, string | number> = {
-      'Einträge in eigenen Stunden': eigene.length,
+      'eigene Stunden (14 Tage)': eigeneStunden.size,
+      'Einträge per Lehrkraft-Nr.': perId.length,
+      'Einträge per Datum+Zeit': perZeit.length,
+      'Typ teacherIds': [...new Set(a.slice(0, 50).flatMap((x: any) => (Array.isArray(x?.teacherIds) ? x.teacherIds.map((t: unknown) => typeof t) : [])))].join('/') || '–',
       'verschiedene Schüler darin': schuelerEigene,
       'davon mit Abwesenheit': mitFehlzeit
     };
@@ -367,19 +379,38 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
   } catch (e) { fang('fehlzeitenRest', e); }
 
   // 12 Token für die neue REST-Schnittstelle (Voraussetzung für Stufe 2)
+  let token = '';
   try {
     const t = await rest('api/token/new');
+    if (typeof t === 'string' && t.split('.').length === 3) token = t;
     const ok = typeof t === 'string' && t.split('.').length === 3;
     ergebnis('token', { status: ok ? 'ok' : 'leer', extra: { Token: ok ? 'erhalten (nicht gespeichert)' : 'keins' } });
   } catch (e) { fang('token', e); }
 
   // 13 Stammdaten wie in der Webansicht (Geburtsdatum, Klasse). Nur Anzahl, Feldnamen und Spaltenköpfe.
   try {
-    const j = await rest(`studentlist.do?&request.preventCache=${Date.now()}`);
-    if (typeof j === 'string') throw new UntisFehler('html', j.trimStart().startsWith('<') ? 'Antwort ist eine HTML-Seite statt Daten (evtl. Sitzung nicht übernommen).' : 'Antwort ist kein JSON.');
+    // Mehrere Varianten, weil die alte Stammdaten-Seite ihre Daten nur bei bestimmten Kopfzeilen als JSON liefert
+    const pfad = () => `studentlist.do?&request.preventCache=${Date.now()}`;
+    const varianten: [string, () => Promise<any>][] = [
+      ['XHR-Kopfzeile', () => rest(pfad(), undefined, { 'X-Requested-With': 'XMLHttpRequest' })],
+      ['Token', () => rest(pfad(), token || undefined, { 'X-Requested-With': 'XMLHttpRequest' })],
+      ['ohne Zusatz', () => rest(pfad())]
+    ];
+    let j: any = null;
+    let weg = '';
+    const titel: string[] = [];
+    for (const [name, holen] of varianten) {
+      try {
+        const x = await holen();
+        if (typeof x !== 'string') { j = x; weg = name; break; }
+        const t = /<title>([^<]{0,80})<\/title>/i.exec(x)?.[1]?.trim();
+        titel.push(`${name}: ${t ? `HTML „${t}“` : 'kein JSON'}`);
+      } catch (e) { titel.push(`${name}: ${(e as Error).message}`); }
+    }
+    if (!j) throw new UntisFehler('html', `Keine Daten, nur HTML. ${titel.join(' · ')}`);
     const zeilen = groessteListe(j);
     const f = felder(zeilen);
-    const extra: Record<string, string | number> = { 'oberste Schlüssel': Object.keys(j ?? {}).slice(0, 12).join(', ') };
+    const extra: Record<string, string | number> = { Weg: weg, 'oberste Schlüssel': Object.keys(j ?? {}).slice(0, 12).join(', ') };
     if (Array.isArray(zeilen[0])) extra['Zeilen als Liste, Spalten'] = (zeilen[0] as unknown[]).length;
     const koepfe = spaltenkoepfe(j);
     if (koepfe.length) extra['Spaltenköpfe'] = koepfe.join(', ');
