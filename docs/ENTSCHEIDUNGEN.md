@@ -6,6 +6,8 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E97 | 18.11.2026 | **Weiterbauen statt Neustart** (V12 angenommen): Oberfläche, Rechenlogik und Tests des Prototyps werden weiterentwickelt; neu gebaut wird nur das Fundament (Speicherung je Objektart mit Schema-Version, Herkunft je Datensatz, Verschlüsselung, Sync), sobald WebUntis-Daten übernommen werden | Konstantin, 18.11.2026 („jap“) |
+| E96 | 18.11.2026 | **WebUntis-Anbindung nach V11** angenommen: zwei Stufen (lesen, später eigene Anwesenheit senden), Lehrer-Konto mit App-Schlüssel oder Passwort, Durchreicher im nginx, Datei-Import als Rückfall. Erster Schritt: Verbindungstest unter Mehr › WebUntis | Konstantin, 18.11.2026 („jap“) |
 | E95 | 18.11.2026 | **Verspätungen zählen nicht zu den Fehlzeiten** und nicht in die 30-%-Quote (Ausnahme im Regelwerk wird nicht abgebildet). Zeugnisrelevant ist nur die Anzahl; L.E.O. zeigt zusätzlich die Minuten (Summe, Ø, Wochentagsmuster), aus WebUntis und eigener Erfassung | Konstantin, 18.11.2026 |
 | E94 | 18.11.2026 | **WebUntis-Fakten der Schule:** `osz-lus.webuntis.com`; Anwesenheit stellt jede Lehrkraft zu Stundenbeginn fest, Verspätete werden von abwesend auf verspätet gesetzt; den Status entschuldigt/unentschuldigt setzt **nur die Klassenleitung in WebUntis**, bis dahin ungeklärt; Frist für die Krankschreibung FOS 3 Tage, Berufsschule 14 Tage. L.E.O. ersetzt WebUntis nicht, Zeugnisdaten kommen aus WebUntis. Für die Lehrkraft zählt nur E / UE / offen, Gründe sind Nebensache | Konstantin, 18.11.2026 |
 | E93 | 18.11.2026 | **Neue Leistung direkt aus der Stunde:** Die Stundenkachel auf „Heute“ bietet „Mitarbeit/Anwesenheit“ und „+ Leistung“ (legt im Notenbuch eine Leistung mit heutigem Datum an) | Konstantin, Nachtrag 18.11.: klar machen, dass man dort eine neue Leistung anlegen kann |
@@ -105,8 +107,6 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Vorschlag | Begründung |
 |---|---|---|
-| V12 | **Weiterbauen statt Neustart, Fundament gezielt erneuern:** Der Prototyp nutzt schon den Ziel-Stack (SvelteKit-PWA, E79). Statt später alles neu zu schreiben, werden Oberfläche, Rechenlogik und Tests weiterentwickelt. Neu gebaut wird nur das Fundament, sobald WebUntis und Abgleich anstehen: Speicherung je Objektart mit Schema-Version, Herkunft je Datensatz, Verschlüsselung, Sync. Prototyp-Abkürzungen werden im Code als solche markiert | Ein Neustart würde dieselbe Technik noch einmal bauen und die vielen kleinen Feedback-Details (E81–E93) gefährden; das eigentliche Risiko liegt nur in Speicherung und Sync |
-| V11 | **WebUntis-Anbindung in zwei Stufen über das Lehrer-Konto** (Benutzer mit Schlüssel bzw. App-Schlüssel, Schule `osz-lus`), Datei-Import als Rückfall, im Browser über einen Durchreicher im vorhandenen nginx (kein Speichern), in der nativen App direkt. **Stufe 1 lesen:** Stundenplan, Klassen, Schüler, Fehlzeiten, zusammengefasst zu E / UE / offen (mit Frist FOS 3, Berufsschule 14 Tage) / Verspätung. **Stufe 2 senden:** nur eigene Feststellung (abwesend, verspätet bis) per Knopf mit Rückmeldung, nie Status E/UE, WebUntis gewinnt bei Abweichung; erst nach Freigabe der Schule. Erster Bauschritt: Verbindungstest. Details: [WEBUNTIS_ANBINDUNG.md](WEBUNTIS_ANBINDUNG.md) | Sofort nutzbar ohne Genehmigung, nur eigene Rechte; Senden spart das doppelte Eintragen, ist aber undokumentiert und ein amtlicher Eintrag, daher eng begrenzt |
 | V10 | **Abgleich ohne Notenserver:** Erst Sicherungsdatei (im Prototyp), danach optional ein kleiner Sync-Dienst auf dem eigenen Unraid, bei dem die Daten im Gerät **verschlüsselt** werden, bevor sie es verlassen (der Server sieht nur verschlüsselte Blöcke). So bleibt E29 gewahrt und Handy, iPad und PC sehen denselben Stand | Ohne Abgleich hat jedes Gerät eigene Daten; das ist im Unterricht mit Handy und PC unpraktisch |
 | V9 | **Platzhalter für die Startseite (Heute)** früh gestalten, mit einer ruhigen Kachel „Kalender folgt später“. Das Kalendermodul selbst kommt viel später (E76) | Konstantin fragte danach. Die Startseite hängt an „Läuft gerade“ (E50), der Platz für den Kalender sollte von Anfang an eingeplant sein, damit später nichts umgebaut werden muss |
 
@@ -129,3 +129,5 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 | V5 | zurückgestellt → E16 |
 | V6 | angenommen mit Ergänzung → E17 |
 | V3b | angenommen → E22 |
+| V11 | angenommen → E96 |
+| V12 | angenommen → E97 |
