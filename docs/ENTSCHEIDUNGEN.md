@@ -6,6 +6,7 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Datum | Entscheidung | Warum |
 |---|---|---|---|
+| E95 | 18.11.2026 | **Verspätungen zählen nicht zu den Fehlzeiten** und nicht in die 30-%-Quote (Ausnahme im Regelwerk wird nicht abgebildet). Zeugnisrelevant ist nur die Anzahl; L.E.O. zeigt zusätzlich die Minuten (Summe, Ø, Wochentagsmuster), aus WebUntis und eigener Erfassung | Konstantin, 18.11.2026 |
 | E94 | 18.11.2026 | **WebUntis-Fakten der Schule:** `osz-lus.webuntis.com`; Anwesenheit stellt jede Lehrkraft zu Stundenbeginn fest, Verspätete werden von abwesend auf verspätet gesetzt; den Status entschuldigt/unentschuldigt setzt **nur die Klassenleitung in WebUntis**, bis dahin ungeklärt; Frist für die Krankschreibung FOS 3 Tage, Berufsschule 14 Tage. L.E.O. ersetzt WebUntis nicht, Zeugnisdaten kommen aus WebUntis. Für die Lehrkraft zählt nur E / UE / offen, Gründe sind Nebensache | Konstantin, 18.11.2026 |
 | E93 | 18.11.2026 | **Neue Leistung direkt aus der Stunde:** Die Stundenkachel auf „Heute“ bietet „Mitarbeit/Anwesenheit“ und „+ Leistung“ (legt im Notenbuch eine Leistung mit heutigem Datum an) | Konstantin, Nachtrag 18.11.: klar machen, dass man dort eine neue Leistung anlegen kann |
 | E92 | 18.11.2026 | **Feste Gewichte nicht anzeigen:** Klausuren und AT stehen im Notenbuch ohne „50 %“, weil sie nicht änderbar sind (E83); Prozente nur dort, wo man sie ändern kann | Konstantin, Nachtrag 18.11.: „brauchen wir eigentlich auch nicht“, UI wirkte unruhig |

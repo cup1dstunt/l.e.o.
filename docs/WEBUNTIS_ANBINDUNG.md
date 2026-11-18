@@ -79,7 +79,7 @@ Die Lehrkraft braucht davon nur wenig. L.E.O. fasst daher zusammen:
 | **Verspätung** | Grund „Verspätung (zählend/nicht zählend)“, mit Ankunftszeit | Verspätungsübersicht, nicht als Fehlstunde |
 
 Der genaue Grund (z. B. Religiöser Feiertag) steht nur im aufgeklappten Detail (E89), für die Note spielt er keine Rolle.
-Offen: ob „Verspätung (zählend)“ in die 30-%-Quote eingeht (Annahme: ja, anteilig wie in WebUntis; per Verbindungstest prüfen).
+Verspätungen zählen **nicht** zu den Fehlzeiten und nicht in die 30-%-Quote (Konstantin, 18.11.2026; eine Ausnahme im Regelwerk wird nicht abgebildet). Auf dem Zeugnis steht nur die **Anzahl** der Verspätungen. L.E.O. zeigt deshalb die Anzahl im Vordergrund und **zusätzlich die Minuten** (Summe und Ø je Schüler, Wochentagsmuster), mit Hinweis, dass die Minuten nur so genau sind wie der Zeitpunkt des Eintrags.
 
 ### 3.4 Anwesenheit an WebUntis senden (Stufe 2)
 

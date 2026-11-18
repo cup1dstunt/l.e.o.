@@ -12,7 +12,7 @@
    - f) Wofür nutzen Kollegen die Zensurenliste?
 3. Welche Exporte erlaubt dir WebUntis für Fehlzeiten und Stundenplan (Format, Felder)? Ein Beispiel-Export wäre ideal.
 4. Konzept der Dateiablage je Stunde.
-11. ~~WebUntis-Zugang und Status~~ beantwortet 18.11.2026 (E94). Offen: zählt „Verspätung (zählend)“ in die 30-%-Quote?
+11. ~~WebUntis-Zugang und Status~~ beantwortet 18.11.2026 (E94). Verspätungen zählen nicht (E95).
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
 6. ~~V1–V6, V3b~~ beantwortet.
 7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.
