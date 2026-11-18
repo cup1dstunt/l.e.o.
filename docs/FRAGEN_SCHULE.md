@@ -12,6 +12,7 @@
    - f) Wofür nutzen Kollegen die Zensurenliste?
 3. Welche Exporte erlaubt dir WebUntis für Fehlzeiten und Stundenplan (Format, Felder)? Ein Beispiel-Export wäre ideal.
 4. Konzept der Dateiablage je Stunde.
+11. WebUntis (für V11): Adresse und Schulname in WebUntis, Anmeldung über IServ oder eigenes Passwort, gibt es im Profil „Freigaben“ mit QR-Code, siehst du Fehlzeiten mit E/UE? Siehe [WEBUNTIS_ANBINDUNG.md](WEBUNTIS_ANBINDUNG.md) Abschnitt 8.
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
 6. ~~V1–V6, V3b~~ beantwortet.
 7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.

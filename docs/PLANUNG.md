@@ -308,6 +308,8 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 
 ### 6.1 WebUntis
 
+Modulentwurf mit Zugriffswegen, Datenmodell und Folgen für die Module: [WEBUNTIS_ANBINDUNG.md](WEBUNTIS_ANBINDUNG.md) (V11).
+
 Schulweit ändert sich die Lage: Statt 100 einzelner Logins braucht es **eine zentrale Verbindung der Schule**.
 Damit wird der offizielle Weg deutlich attraktiver.
 
