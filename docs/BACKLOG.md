@@ -364,6 +364,28 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 | PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | offen |
 | PB19 | **App-Pakete** für Windows/macOS (Tauri) und Android/iOS (Capacitor) aus derselben Browser-App (E79) | C | 2 | M | offen |
 
+## Aus dem Testinstanz-Feedback (18.11.2026)
+
+Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Entscheidungen E81–E90.
+
+| # | Punkt | Herkunft | Prio | Aufwand | Status |
+|---|---|---|---|---|---|
+| FB1 | Lokale Anmeldung, Sperre, später IServ-SSO und Verschlüsselung der lokalen Daten mit dem Passwort (E81) | K | 1 | M | Passwort und Sperre in 0.5, Verschlüsselung offen |
+| FB2 | Tagesübersicht als Stundenleiste (E82) | K | 1 | S | in 0.5 |
+| FB3 | Suche Strg+K (E90) | K | 1 | S | in 0.5 |
+| FB4 | Sitzplan-Editor mit Vorlagen und Drag and Drop (E86), Raumvorlagen später je Raum teilen | K | 1 | L | Grundfassung in 0.5 |
+| FB5 | Live-Stunde: Liste/Sitzplan umschaltbar (E86) | K | 1 | S | in 0.5 |
+| FB6 | Anwesenheit da/fehlt, Verspätung mit Uhrzeit (E84); E/UE später aus WebUntis | K | 1 | S | in 0.5 |
+| FB7 | **Mündliche Leistungen kriterienorientiert:** Rasterbogen (Kriterien, Mitarbeit ist eines), Selbsteinschätzungsbogen für Schüler zum Verteilen, Vergleich Selbst-/Fremdeinschätzung (E85, verzahnt mit BEWERTUNGSBOEGEN.md) | K | 1 | L | offen |
+| FB8 | Klausuren : AT fest 50 : 50, nur mündlich : Tests frei (E83) | K | 1 | S | in 0.5 |
+| FB9 | Einzelgewicht frei eingeben | K | 1 | S | in 0.5 |
+| FB10 | Ø-Kachel mit Noten und Was-wäre-wenn (E89) | K | 1 | M | in 0.5 |
+| FB11 | Was-wäre-wenn für alle Leistungsarten | K | 1 | S | in 0.5 |
+| FB12 | „Klassen“ statt „Kurse“ (E87) | K | 1 | S | in 0.5 |
+| FB13 | Schülerkarte: Kacheln klickbar, Reihenfolge Klausur 1, Klausur 2, AT, mündlich Ø, Tests Ø; Verlaufsgraph mündliche Noten | K | 1 | M | in 0.5 |
+| FB14 | Verspätungsübersicht mit Wochentagsanalyse | K | 1 | S | in 0.5 |
+| FB15 | Mitarbeitsverlauf kräftiger, Trendpfeil, Monat aufklappbar (E88) | K | 1 | S | in 0.5 |
+
 ## Offen
 
 | # | Punkt | Herkunft | Prio |
