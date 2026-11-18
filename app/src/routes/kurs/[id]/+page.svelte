@@ -2,8 +2,10 @@
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { schuelerVon, name, alter, datumKurz } from '$lib/hilfen';
-  import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, noetigeNote, warnungen } from '$lib/rechnen';
+  import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, warnungen } from '$lib/rechnen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
+  import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
+  import WasWaereWenn from '$lib/ui/WasWaereWenn.svelte';
   import type { Gruppe, Leistung, Schueler, Zelle } from '$lib/typen';
 
   const d = app.d!;
@@ -102,6 +104,24 @@
     speichern();
   }
 
+  // ---------- Ø-Kachel (Feedback 9): Mouse-over zeigt die Noten, Klick hält sie offen mit Was-wäre-wenn ----------
+  let kachel = $state<{ s: Schueler; gruppe: Gruppe; x: number; y: number; oben: boolean; fest: boolean } | null>(null);
+  let kz: ReturnType<typeof setTimeout> | undefined;
+  const fein = typeof matchMedia !== 'undefined' && matchMedia('(hover: hover)').matches;
+  function kachelAuf(ev: Event, s: Schueler, gruppe: Gruppe, fest: boolean) {
+    if (!fest && (!fein || kachel?.fest)) return;
+    clearTimeout(kz);
+    const r = (ev.currentTarget as HTMLElement).getBoundingClientRect();
+    const oben = r.bottom > innerHeight * 0.55;
+    const setzen = () => (kachel = { s, gruppe, x: Math.max(12, Math.min(innerWidth - 452, r.left - 160)), y: oben ? innerHeight - r.top + 6 : r.bottom + 6, oben, fest });
+    if (fest) setzen(); else kz = setTimeout(setzen, 250);
+  }
+  function kachelWeg() {
+    clearTimeout(kz);
+    if (kachel && !kachel.fest) kz = setTimeout(() => { if (kachel && !kachel.fest) kachel = null; }, 200);
+  }
+  const GN: Record<Gruppe, string> = { klausuren: 'Klausuren', mitarbeit: 'Mündliche Leistungen', sl: 'Tests und Sonstiges' };
+
   // ---------- Dialoge ----------
   let dlg = $state<null | 'neu' | 'gewichte' | 'monat' | { l: Leistung } | { s: Schueler }>(null);
   const ARTEN = [
@@ -160,8 +180,6 @@
   }
   if (page.url.searchParams.has('monatsnote')) dlg = 'monat';
 
-  let ziel = $state<number | undefined>(undefined);
-  $effect.pre(() => { if (ziel === undefined || ziel < skala.min || ziel > skala.max) ziel = fos ? 5 : 4; });
   // Endnote festlegen (E40, E46)
   function festlegen(s: Schueler, n: number | null) {
     if (n === null) delete kurs.endnoten[s.id]; else kurs.endnoten[s.id] = n;
@@ -197,7 +215,7 @@
         {#each liste as s}
           {@const e = ergebnisse[s.id]}
           <a class="lz" href="/schueler/{s.id}?kurs={kurs.id}">
-            <div><b>{name(s)}</b>{#if s.nta}&nbsp;<span class="nta">N</span>{/if}<div class="klein leise">Kl. {zahl(e.klausuren)} · Mit. {zahl(e.mitarbeit)} {trend(s.id)} · Tests {zahl(e.sl)}{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></div>
+            <div><b>{name(s)}</b>{#if s.nta}&nbsp;<span class="nta">N</span>{/if}<div class="klein leise">Kl. {zahl(e.klausuren)} · mündl. {zahl(e.mitarbeit)} {trend(s.id)} · Tests {zahl(e.sl)}{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></div>
             <div class="lnote zahl {ost(e.gesamt)}">{fos ? (e.gesamt ?? '–') : zahl(e.gesamt)}</div>
           </a>
         {/each}
@@ -209,13 +227,13 @@
           <thead>
             <tr>
               <th rowspan="3" class="name kopfname">Schüler</th>
-              <th colspan={spalten.klausuren.length + 1} rowspan="2" class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Klausuren <span>{pz(g.klausuren, g.sonstige)}</span></button></th>
-              <th colspan={spalten.mitarbeit.length + spalten.sl.length + 2} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Sonstige Leistungen (AT) <span>{pz(g.sonstige, g.klausuren)}</span></button></th>
+              <th colspan={spalten.klausuren.length + 1} rowspan="2" class="gk"><div class="gkb fest">Klausuren <span>50 %</span></div></th>
+              <th colspan={spalten.mitarbeit.length + spalten.sl.length + 2} class="gk"><div class="gkb fest">Sonstige Leistungen (AT) <span>50 %</span></div></th>
               <th rowspan="3" class="ges kopfges">Gesamtnote<div class="klein">live · {fos ? 'Notenpunkte' : 'Note'}</div></th>
             </tr>
             <tr>
-              <th colspan={spalten.mitarbeit.length + 1} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Mitarbeit <span>{pz(g.mitarbeit, g.sl)}</span></button></th>
-              <th colspan={spalten.sl.length + 1} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')}>Tests und Sonstiges <span>{pz(g.sl, g.mitarbeit)}</span></button></th>
+              <th colspan={spalten.mitarbeit.length + 1} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')} title="Gewichtung ändern">Mündliche Leistungen <span>{pz(g.mitarbeit, g.sl)} ✎</span></button></th>
+              <th colspan={spalten.sl.length + 1} class="gk"><button class="gkb" onclick={() => (dlg = 'gewichte')} title="Gewichtung ändern">Tests und Sonstiges <span>{pz(g.sl, g.mitarbeit)} ✎</span></button></th>
             </tr>
             <tr>
               {#each [spalten.klausuren, spalten.mitarbeit, spalten.sl] as gruppe}
@@ -244,7 +262,8 @@
                     </td>
                   {/each}
                   {@const w = gi === 0 ? e.klausuren : gi === 1 ? e.mitarbeit : e.sl}
-                  <td class="schnitt"><span class="ber {ost(w)}">{w === null ? '·' : zahl(w)}</span></td>
+                  {@const gr = (['klausuren', 'mitarbeit', 'sl'] as const)[gi]}
+                  <td class="schnitt"><button class="ber {ost(w)}" onclick={(ev) => kachelAuf(ev, s, gr, true)} onmouseenter={(ev) => kachelAuf(ev, s, gr, false)} onmouseleave={kachelWeg}>{w === null ? '·' : zahl(w)}</button></td>
                 {/each}
                 <td class="ges">
                   <button class="gesb" onclick={() => (dlg = { s })}>
@@ -293,6 +312,10 @@
         <button class="taste rahmen" class:an={!!z?.stern} onclick={() => (sternOffen = !sternOffen)}>★ Vorbehalt</button>
         <button class="taste rahmen" class:an={z?.gewicht === 0.5} onclick={() => einzelgewicht(z?.gewicht === 0.5 ? null : 0.5)}>×½</button>
         <button class="taste rahmen" class:an={z?.gewicht === 0} onclick={() => einzelgewicht(z?.gewicht === 0 ? null : 0)}>zählt nicht</button>
+        <label class="taste rahmen gewfeld">Gewicht
+          <input inputmode="decimal" placeholder={String(aktiv.l.gewicht).replace('.', ',')} value={z?.gewicht !== undefined ? String(z.gewicht).replace('.', ',') : ''}
+            onchange={(e) => { const t = (e.currentTarget as HTMLInputElement).value.trim().replace(',', '.'); const n = Number(t); einzelgewicht(t === '' ? null : Number.isFinite(n) && n >= 0 ? n : null); }} aria-label="Einzelgewicht frei" />
+        </label>
       </div>
       {#if sternOffen}
         <div class="zeile sternzeile">
@@ -300,6 +323,17 @@
           <button class="knopf" onclick={stern}>Merken</button>
         </div>
       {/if}
+    </div>
+  {/if}
+
+  {#if kachel}
+    {@const k = kachel}
+    {#if k.fest}<div class="kachelfang" role="presentation" onclick={() => (kachel = null)}></div>{/if}
+    <div class="schweben skachel" role="dialog" tabindex="-1" aria-label="Ø {GN[k.gruppe]}" style:left="{k.x}px" style:top={k.oben ? 'auto' : `${k.y}px`} style:bottom={k.oben ? `${k.y}px` : 'auto'}
+      onmouseenter={() => clearTimeout(kz)} onmouseleave={kachelWeg}>
+      <div class="zeile"><b class="raum">Ø {GN[k.gruppe]} · {name(k.s)}</b>{#if k.fest}<button class="x" onclick={() => (kachel = null)} aria-label="schließen">×</button>{/if}</div>
+      <SchnittKachel {kurs} sid={k.s.id} gruppe={k.gruppe} mitWenn={k.fest} />
+      {#if !k.fest}<p class="klein leise">Klicken für Was-wäre-wenn</p>{/if}
     </div>
   {/if}
 
@@ -319,11 +353,9 @@
           <div class="zeile ende"><button class="knopf leise" onclick={() => (dlg = null)}>Abbrechen</button><button class="knopf haupt" onclick={neueAnlegen}>Anlegen</button></div>
         {:else if dlg === 'gewichte'}
           <h2>Profil und Gewichte</h2>
-          <p class="leise klein">Gewichte sind relativ (E41): 1 : 1 und 50 : 50 rechnen gleich. Voreinstellung nach UPZ: Klausuren 0,5 : Sonstige 0,5, Mitarbeit 0,6 : Tests 0,4.</p>
+          <p class="leise klein"><b>Klausuren : AT = 50 : 50</b> ist Schulvorgabe und nicht änderbar (E83). Frei ist die Gewichtung innerhalb der AT. Gewichte sind relativ (E41): 1 : 1 und 50 : 50 rechnen gleich. Voreinstellung nach UPZ 0,6 : 0,4.</p>
           <div class="formular zwei">
-            <label class="feld"><span>Klausuren</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.klausuren} oninput={speichern} /></label>
-            <label class="feld"><span>Sonstige Leistungen</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.sonstige} oninput={speichern} /></label>
-            <label class="feld"><span>Mitarbeit (innerhalb Sonstige)</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.mitarbeit} oninput={speichern} /></label>
+            <label class="feld"><span>Mündliche Leistungen</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.mitarbeit} oninput={speichern} /></label>
             <label class="feld"><span>Tests und Sonstiges</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.sl} oninput={speichern} /></label>
           </div>
           <label class="feld"><span>Rechenprofil</span>
@@ -336,7 +368,7 @@
           <div class="zeile ende"><button class="knopf haupt" onclick={() => (dlg = null)}>Fertig</button></div>
         {:else if dlg === 'monat'}
           <h2>Monatsnote vorschlagen</h2>
-          <p class="klein leise">Aus den Smileys des Monats: Smiley 1 bis 5 = Note 1 bis 5{fos ? ', umgerechnet in Notenpunkte (Note 1 = 14, 2 = 11, 3 = 8, 4 = 5, 5 = 2)' : ''}. Du kannst jeden Vorschlag ändern.</p>
+          <p class="klein leise">Monatsnote der mündlichen Leistungen aus den Mitarbeit-Smileys des Monats: Smiley 1 bis 5 = Note 1 bis 5{fos ? ', umgerechnet in Notenpunkte (Note 1 = 14, 2 = 11, 3 = 8, 4 = 5, 5 = 2)' : ''}. Du kannst jeden Vorschlag ändern.</p>
           <div class="zeile">
             <label class="feld raum"><span>Monat</span><input type="month" bind:value={monat} /></label>
             <button class="knopf haupt" onclick={() => monatUebernehmen()}>Alle übernehmen</button>
@@ -375,19 +407,7 @@
           {#each Object.entries(kurs.zellen).filter(([k, z]) => k.endsWith(':' + s.id) && z.stern) as [k, z]}
             <p class="klein"><span class="stern-i">★</span> {kurs.leistungen.find((l) => k.startsWith(l.id + ':'))?.name}: {z.stern}</p>
           {/each}
-          {@const offen = kurs.leistungen.filter((l) => l.gruppe !== 'mitarbeit' && !zelle(l, s)?.status && zelle(l, s)?.wert === undefined)}
-          {#if offen.length}
-            <p class="klein leise">Was wäre, wenn … (nur Rechnung, nichts wird gespeichert)</p>
-            <div class="wenn">
-              <label class="zeile klein">Gesamt mindestens
-                <select class="eingabe" bind:value={ziel}>{#each skala.werte as w}<option value={w}>{w}</option>{/each}</select>
-              </label>
-              {#each offen as l}
-                {@const n = noetigeNote(kurs, s.id, l.id, ziel ?? (fos ? 5 : 4))}
-                <div class="zeile klein"><span class="raum">{l.name}</span><b>{n === 'schon' ? 'schon erreicht' : n === 'unmoeglich' ? 'allein nicht erreichbar' : `mindestens ${n}`}</b></div>
-              {/each}
-            </div>
-          {/if}
+          <WasWaereWenn {kurs} sid={s.id} />
           <p class="klein leise">Endnote festlegen {e.vorschlag.length > 1 ? '(genau ,50: du entscheidest)' : ''}</p>
           <div class="tasten">
             {#each skala.werte as w}
@@ -449,6 +469,13 @@
   .taste.an { background: var(--leo-akzent); color: var(--leo-auf-akzent); }
   .taste.vorschlag { outline: 2px solid var(--leo-akzent); }
   .sternzeile { margin-top: 8px; }
+  .gewfeld { display: inline-flex; align-items: center; gap: 6px; }
+  .gewfeld input { width: 56px; height: 32px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-s); text-align: center; background: var(--leo-karte); }
+  .gkb.fest { cursor: default; align-items: center; }
+  .schnitt .ber { background: none; border: 0; padding: 12px 6px; width: 100%; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .skachel { position: fixed; z-index: 35; width: 440px; max-width: calc(100vw - 24px); max-height: 70vh; overflow: auto; padding: 14px 16px; }
+  .kachelfang { position: fixed; inset: 0; z-index: 34; }
+  .x { border: 0; background: none; font-size: 20px; color: var(--leo-leise); min-width: 36px; min-height: 32px; }
   .liste { padding: 0 14px; margin-bottom: 12px; }
   .lz { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--leo-linie-fein); text-decoration: none; color: var(--leo-tinte); }
   .lnote { font-size: 26px; font-weight: 800; }
@@ -463,8 +490,7 @@
   .w-unter { color: var(--leo-warnung); font-weight: 600; }
   .w-kippe { color: #8a6200; font-weight: 600; }
   .w-wenig { color: var(--leo-leise); font-style: italic; }
-  .wenn { border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
-  .wenn select { min-height: 34px; padding: 4px 8px; }
+
   .mtab { width: 100%; margin-top: 12px; }
   .mtab td { text-align: left; padding: 6px 4px; border-right: 0; }
   .klein-in { width: 70px; text-align: center; }

@@ -33,9 +33,9 @@ export interface Zelle {
 }
 
 export interface Gewichte {
-  klausuren: number; // gegen „Sonstige Leistungen“
-  sonstige: number;
-  mitarbeit: number; // innerhalb „Sonstige Leistungen“
+  klausuren: number; // fest 0,5 (E83, Schulvorgabe), nur aus Kompatibilität gespeichert
+  sonstige: number; // fest 0,5
+  mitarbeit: number; // mündliche Leistungen innerhalb AT (E85), frei
   sl: number; // übrige sonstige Leistungen (Tests, Präsentationen …)
 }
 
@@ -54,6 +54,25 @@ export interface Kurs {
   stundenGehalten: number; // Basis der Fehlzeitenquote
   lernstoff: Record<string, { text: string; hausaufgabe: string }>; // je Datum
   uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
+  sitzplan: Sitzplan;
+}
+
+/** Sitzplan als Raster (E86): Zellen sind Tisch oder frei, Belegung je Zellennummer. */
+export interface Sitzplan {
+  vorlage: string;
+  spalten: number;
+  reihen: number;
+  tische: boolean[];
+  belegung: Record<number, string>;
+}
+
+export interface Verspaetung {
+  id: string;
+  kursId: string;
+  schuelerId: string;
+  datum: string;
+  ankunft: string; // HH:MM
+  minuten: number;
 }
 
 export interface MitarbeitEintrag {
@@ -72,7 +91,7 @@ export interface Fehlzeit {
   schuelerId: string;
   datum: string;
   stunden: number;
-  status: 'E' | 'UE';
+  status: 'E' | 'UE' | 'offen'; // offen = in der Stunde erfasst, E/UE kommt später (E84)
 }
 
 export interface Notiz {
@@ -93,6 +112,9 @@ export interface Einstellungen {
   navigation: 'links' | 'rechts' | 'unten';
   theme: 'system' | 'hell' | 'dunkel';
   stundenendeHinweis: boolean;
+  liveAnsicht: 'liste' | 'sitzplan';
+  sperreMinuten: number;
+  passwort?: { salz: string; hash: string };
 }
 
 export interface Daten {
@@ -101,6 +123,7 @@ export interface Daten {
   kurse: Kurs[];
   mitarbeit: MitarbeitEintrag[];
   fehlzeiten: Fehlzeit[];
+  verspaetungen: Verspaetung[];
   notizen: Notiz[];
   stundenplan: Stunde[];
   einstellungen: Einstellungen;

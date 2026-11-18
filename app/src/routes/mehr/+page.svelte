@@ -1,6 +1,23 @@
 <script lang="ts">
   import { app, speichern, zuruecksetzen, exportieren, importieren, zeige } from '$lib/speicher.svelte';
+  import { hashen, neuesSalz } from '$lib/sicherheit';
+  import { sitzung } from '$lib/sitzung.svelte';
   const d = app.d!;
+  let altPw = $state('');
+  let neuPw = $state('');
+  let neuPw2 = $state('');
+  function pwAendern(e: Event) {
+    e.preventDefault();
+    const p = d.einstellungen.passwort;
+    if (p && hashen(altPw, p.salz) !== p.hash) { zeige('Bisheriges Passwort stimmt nicht'); return; }
+    if (neuPw.length < 4) { zeige('Mindestens 4 Zeichen'); return; }
+    if (neuPw !== neuPw2) { zeige('Die beiden neuen Passwörter sind verschieden'); return; }
+    const salz = neuesSalz();
+    d.einstellungen.passwort = { salz, hash: hashen(neuPw, salz) };
+    speichern();
+    altPw = neuPw = neuPw2 = '';
+    zeige('Passwort geändert');
+  }
   let datei: HTMLInputElement;
   let sicher = $state(false);
   async function laden(e: Event) {
@@ -31,6 +48,25 @@
   </section>
 
   <section class="karte">
+    <h2>Anmeldung</h2>
+    <p>Das Passwort schützt L.E.O. auf diesem Gerät, etwa wenn Schülerinnen und Schüler das iPad oder den Beamer sehen. Es verlässt das Gerät nie. Vergessen heißt: Daten nur über eine Sicherung zurückholen.</p>
+    <p class="klein leise">Automatisch sperren nach</p>
+    <div class="zeile">
+      {#each [[5, '5 Min.'], [15, '15 Min.'], [30, '30 Min.'], [60, '1 Std.'], [0, 'nie']] as [w, t]}
+        <button class="pille" aria-pressed={d.einstellungen.sperreMinuten === w} onclick={() => { d.einstellungen.sperreMinuten = w as number; speichern(); }}>{t}</button>
+      {/each}
+    </div>
+    <div class="zeile wrap"><button class="knopf" onclick={() => (sitzung.entsperrt = false)}>Jetzt sperren</button></div>
+    <form class="pw" onsubmit={pwAendern}>
+      <p class="klein leise">Passwort ändern</p>
+      <input class="eingabe" type="password" autocomplete="current-password" placeholder="Bisheriges Passwort" bind:value={altPw} />
+      <input class="eingabe" type="password" autocomplete="new-password" placeholder="Neues Passwort" bind:value={neuPw} />
+      <input class="eingabe" type="password" autocomplete="new-password" placeholder="Neues Passwort wiederholen" bind:value={neuPw2} />
+      <button class="knopf" type="submit">Ändern</button>
+    </form>
+  </section>
+
+  <section class="karte">
     <h2>Daten</h2>
     <p>Alle Daten liegen <b>nur in diesem Browser auf diesem Gerät</b>. Der Server liefert nur die App aus und sieht keine Noten. Ein anderes Gerät oder ein anderer Browser hat eigene Daten.</p>
     <div class="zeile wrap">
@@ -52,7 +88,7 @@
 
   <section class="karte">
     <h2>Über diesen Prototyp</h2>
-    <p class="leise">L.E.O. Prototyp 0.4 (abgespeckt): Notenbuch, Schüleransicht, Live-Stunde. Erfundene Beispieldaten, kein WebUntis, kein IServ, keine Anmeldung.</p>
+    <p class="leise">L.E.O. Prototyp 0.5: Tagesübersicht, Notenbuch, Schülerkarte, Live-Stunde, Sitzplan, Planung. Erfundene Beispieldaten, kein WebUntis, kein IServ. Anmeldung nur lokal auf diesem Gerät.</p>
     <p class="leise">Als App installieren: im Browser „Zum Startbildschirm“ (iPad/iPhone) bzw. „Installieren“ (Chrome/Edge). Das geht nur über HTTPS oder auf localhost.</p>
   </section>
 </div>
@@ -64,6 +100,7 @@
   .wrap { margin: 10px 0; }
   .schalter { margin-top: 16px; }
   .schalter input { width: 20px; height: 20px; accent-color: var(--leo-akzent); }
+  .pw { display: flex; flex-direction: column; gap: 8px; max-width: 360px; }
   .warn { color: var(--leo-warnung); }
   .klein.leise { margin: 14px 0 6px; }
   @media (max-width: 720px) { .seite { padding: 16px; } }

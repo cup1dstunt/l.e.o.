@@ -11,7 +11,7 @@
 </script>
 
 <div class="seite">
-  <div class="zeile kopf"><h1 class="raum">Schüler</h1><input class="eingabe" type="search" placeholder="Name oder Kurs suchen" bind:value={suche} /></div>
+  <div class="zeile kopf"><h1 class="raum">Schüler</h1><input class="eingabe" type="search" placeholder="Name oder Klasse suchen" bind:value={suche} /></div>
   <div class="karte liste">
     {#each treffer as s}
       <a href="/schueler/{s.id}?kurs={kursVon(s.id)[0]?.id}">

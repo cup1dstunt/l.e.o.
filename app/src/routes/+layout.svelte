@@ -3,14 +3,36 @@
   import { page } from '$app/state';
   import { app, laden } from '$lib/speicher.svelte';
   import Hinweisleiste from '$lib/ui/Hinweisleiste.svelte';
+  import Anmeldung from '$lib/ui/Anmeldung.svelte';
+  import Suche from '$lib/ui/Suche.svelte';
+  import { sitzung } from '$lib/sitzung.svelte';
   import { onMount } from 'svelte';
 
   let { children } = $props();
   let breite = $state(1200);
 
+  // Entsperrt bleibt die App nur in diesem Tab und nur bis zur Sperre nach Inaktivität (E81)
+  let letzteAktivitaet = Date.now();
   onMount(() => {
     laden();
+    try { sitzung.entsperrt = sessionStorage.getItem('leo-entsperrt') === '1'; } catch {}
+    const aktiv = () => (letzteAktivitaet = Date.now());
+    const t = setInterval(() => {
+      const min = app.d?.einstellungen.sperreMinuten ?? 15;
+      if (sitzung.entsperrt && min > 0 && Date.now() - letzteAktivitaet > min * 60_000) sitzung.entsperrt = false;
+    }, 15_000);
+    for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, aktiv);
+    return () => clearInterval(t);
   });
+  $effect(() => {
+    try { sessionStorage.setItem('leo-entsperrt', sitzung.entsperrt ? '1' : '0'); } catch {}
+  });
+  function tasten(e: KeyboardEvent) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && sitzung.entsperrt) {
+      e.preventDefault();
+      sitzung.suche = !sitzung.suche;
+    }
+  }
 
   $effect(() => {
     const t = app.d?.einstellungen.theme;
@@ -20,18 +42,23 @@
 
   const nav = [
     { href: '/', text: 'Heute', icon: 'M12 7v5l3 2 M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18' },
-    { href: '/kurse', text: 'Kurse', icon: 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z' },
+    { href: '/klassen', text: 'Klassen', icon: 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z' },
     { href: '/schueler', text: 'Schüler', icon: 'M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M4 21c0-4 4-6 8-6s8 2 8 6' },
     { href: '/mehr', text: 'Mehr', icon: 'M5 12h.01 M12 12h.01 M19 12h.01' }
   ];
-  const aktiv = (href: string) => (href === '/' ? page.url.pathname === '/' || page.url.pathname.startsWith('/stunde') : page.url.pathname.startsWith(href));
+  const aktiv = (href: string) =>
+    href === '/' ? page.url.pathname === '/' || page.url.pathname.startsWith('/stunde')
+    : href === '/klassen' ? /^\/(klassen|kurs|planung|sitzplan)/.test(page.url.pathname)
+    : page.url.pathname.startsWith(href);
   const lage = $derived(breite < 720 ? 'unten' : (app.d?.einstellungen.navigation ?? 'links'));
 </script>
 
-<svelte:window bind:innerWidth={breite} />
+<svelte:window bind:innerWidth={breite} onkeydown={tasten} />
 
 {#if !app.d}
   <div class="laden">L.E.O. lädt …</div>
+{:else if !sitzung.entsperrt}
+  <Anmeldung bind:entsperrt={sitzung.entsperrt} />
 {:else}
   <div class="rahmen {lage}" style:--unten={lage === 'unten' ? '64px' : '0px'}>
     <nav aria-label="Hauptnavigation">
@@ -42,7 +69,15 @@
           <span>{n.text}</span>
         </a>
       {/each}
+ <button class="navknopf" onclick={() => (sitzung.suche = true)} aria-label="Suchen (Strg+K)">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
+        <span>Suche</span>
+      </button>
       {#if lage !== 'unten'}
+        <button class="navknopf sperre" onclick={() => (sitzung.entsperrt = false)} aria-label="Sperren">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+          <span>Sperren</span>
+        </button>
         <span class="status" title={app.gespeichert ? 'Alles lokal in diesem Browser gespeichert' : 'Speichert …'}>{app.gespeichert ? 'lokal ✓' : '…'}</span>
       {/if}
     </nav>
@@ -52,6 +87,7 @@
     </main>
   </div>
   <Hinweisleiste />
+  <Suche bind:offen={sitzung.suche} />
 {/if}
 
 <style>
@@ -63,7 +99,10 @@
   .logo { margin-bottom: 14px; }
   nav a:not(.logo) { width: 76px; padding: 10px 0 8px; border-radius: var(--leo-r-l); display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--leo-leise); text-decoration: none; font-size: 13px; }
   nav a.aktiv { background: var(--leo-akzent-hell); color: var(--leo-akzent); font-weight: 650; }
-  .status { margin-top: auto; font-size: 11px; color: var(--leo-leise); }
+  .navknopf { width: 76px; padding: 10px 0 8px; border-radius: var(--leo-r-l); display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--leo-leise); background: none; border: 0; font-size: 13px; }
+  .sperre { margin-top: auto; }
+  .unten .navknopf { width: auto; flex: 1; border-radius: 0; padding: 8px 0; }
+  .status { font-size: 11px; color: var(--leo-leise); }
   main { flex: 1; min-width: 0; }
   .unten { flex-direction: column; }
   .unten nav { order: 2; position: fixed; bottom: 0; left: 0; right: 0; top: auto; width: auto; height: calc(64px + env(safe-area-inset-bottom)); padding: 0 0 env(safe-area-inset-bottom); flex-direction: row; justify-content: space-around; border-right: 0; border-top: 1px solid var(--leo-linie); }
