@@ -179,6 +179,13 @@
     if (!sid) { dlg = null; zeige(`Monatsnoten ${l.name} übernommen`); }
   }
   if (page.url.searchParams.has('monatsnote')) dlg = 'monat';
+  // Aus der Tagesübersicht: neue Leistung für heute anlegen
+  function neuFuerHeute() {
+    const h = new Date();
+    neu.datum = `${h.getFullYear()}-${String(h.getMonth() + 1).padStart(2, '0')}-${String(h.getDate()).padStart(2, '0')}`;
+    dlg = 'neu';
+  }
+  if (page.url.searchParams.has('neu')) neuFuerHeute();
 
   // Endnote festlegen (E40, E46)
   function festlegen(s: Schueler, n: number | null) {
@@ -227,8 +234,8 @@
           <thead>
             <tr>
               <th rowspan="3" class="name kopfname">Schüler</th>
-              <th colspan={spalten.klausuren.length + 1} rowspan="2" class="gk"><div class="gkb fest">Klausuren <span>50 %</span></div></th>
-              <th colspan={spalten.mitarbeit.length + spalten.sl.length + 2} class="gk"><div class="gkb fest">Sonstige Leistungen (AT) <span>50 %</span></div></th>
+              <th colspan={spalten.klausuren.length + 1} rowspan="2" class="gk"><div class="gkb fest">Klausuren</div></th>
+              <th colspan={spalten.mitarbeit.length + spalten.sl.length + 2} class="gk"><div class="gkb fest">Sonstige Leistungen (AT)</div></th>
               <th rowspan="3" class="ges kopfges">Gesamtnote<div class="klein">live · {fos ? 'Notenpunkte' : 'Note'}</div></th>
             </tr>
             <tr>
