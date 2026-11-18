@@ -89,7 +89,8 @@
         {/if}
         <div class="knoepfe">
           <a class="knopf haupt" href="/stunde/{k.id}">Stunde öffnen</a>
-          <a class="knopf" href="/stunde/{k.id}?mitarbeit=1">Mitarbeit</a>
+          <a class="knopf" href="/stunde/{k.id}?mitarbeit=1">Mitarbeit/Anwesenheit</a>
+          <a class="knopf" href="/kurs/{k.id}?neu=1">+ Leistung</a>
           <a class="knopf leise" href="/kurs/{k.id}">Noten</a>
         </div>
         {#if !plan.laeuft}<p class="klein leise">Zum Testen kannst du jede Stunde jederzeit öffnen.</p>{/if}

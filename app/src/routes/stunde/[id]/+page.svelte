@@ -10,6 +10,7 @@
   import type { MitarbeitEintrag, Stufe, Schueler } from '$lib/typen';
   import { rechne } from '$lib/rechnen';
   import { onMount } from 'svelte';
+  import { lehrersicht } from '$lib/sitzplan';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -190,9 +191,9 @@
       <section class="karte schueler">
         {#if d.einstellungen.liveAnsicht === 'sitzplan'}
           {@const sp = kurs.sitzplan}
-          <div class="tafel klein leise">vorne · Tafel</div>
           <div class="sitze" style:grid-template-columns="repeat({sp.spalten}, minmax(0, 1fr))">
-            {#each sp.tische as tisch, i}
+            {#each lehrersicht(sp.tische.length) as i (i)}
+              {@const tisch = sp.tische[i]}
               {@const sid = sp.belegung[i]}
               {@const s = sid ? d.schueler.find((x) => x.id === sid) : undefined}
               {#if !tisch}<div></div>
@@ -211,6 +212,7 @@
               {/if}
             {/each}
           </div>
+          <div class="tafel klein leise">Lehrertisch · Tafel</div>
           {@const ohnePlatz = liste.filter((x) => !Object.values(sp.belegung).includes(x.id))}
           {#if ohnePlatz.length}<p class="klein leise">Ohne Platz: {ohnePlatz.map(kurzname).join(', ')} · <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>{/if}
           <p class="klein leise hilfe">Platz antippen: Mitarbeit, Bausteine und Anwesenheit. <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>
@@ -372,7 +374,7 @@
   .umschalter { display: inline-flex; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-pill); overflow: hidden; }
   .umschalter button { border: 0; background: var(--leo-karte); padding: 0 14px; min-height: 34px; color: var(--leo-leise); }
   .umschalter button[aria-pressed='true'] { background: var(--leo-akzent); color: var(--leo-auf-akzent); font-weight: 600; }
-  .tafel { text-align: center; border-bottom: 3px solid var(--leo-linie); margin: 0 20% 14px; padding-bottom: 4px; }
+  .tafel { text-align: center; border-top: 3px solid var(--leo-linie); margin: 14px 20% 6px; padding-top: 4px; }
   .sitze { display: grid; gap: 6px; }
   .platz { min-height: 64px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); background: var(--leo-karte); padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; }
   .platz.frei { background: var(--leo-flaeche-leise); border-style: dashed; }

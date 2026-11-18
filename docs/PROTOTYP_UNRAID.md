@@ -1,6 +1,6 @@
 # L.E.O. Prototyp 0.5 auf Unraid betreiben
 
-Stand: 18.11.2026 (E79–E90). Prototyp mit Tagesübersicht, Notenbuch, Schülerkarte, Live-Stunde, Sitzplan und einfacher Planung.
+Stand: 18.11.2026 (E79–E93). Prototyp mit Tagesübersicht, Notenbuch, Schülerkarte, Live-Stunde, Sitzplan und einfacher Planung.
 Erfundene Beispieldaten, kein WebUntis, kein IServ. Anmeldung nur lokal pro Gerät (E81).
 
 **Erster Start:** L.E.O. fragt nach einem Passwort und legt es für dieses Gerät und diesen Browser fest. Es verlässt das Gerät nie. Ändern und automatisches Sperren unter **Mehr › Anmeldung**. Vergessen? Dann Browserdaten löschen, das löscht aber auch die Noten (vorher Sicherung herunterladen).
@@ -86,12 +86,12 @@ Ungetestet: Ich konnte das fertige Image nicht komplett auf einem Unraid starten
 | Bereich | Funktionen |
 |---|---|
 | Anmeldung | lokales Passwort beim Start, Sperren-Knopf, automatische Sperre nach Inaktivität (einstellbar), Passwort ändern (E81) |
-| Heute | Stundenleiste des Tages (laufende Stunde hervorgehoben, vergangene blass), Kachel „Läuft gerade“ bzw. „Als Nächstes“, „Heute erfasst“, Offenes, Frühwarnung, Platzhalter Kalender (E82) |
+| Heute | Stundenleiste des Tages (laufende Stunde hervorgehoben, vergangene blass), Kachel „Läuft gerade“ bzw. „Als Nächstes“ mit „Mitarbeit/Anwesenheit“ und „+ Leistung“ (E93), „Heute erfasst“, Offenes, Frühwarnung, Platzhalter Kalender (E82) |
 | Suche | Strg+K bzw. ⌘K oder Lupe: Schüler, Klassen (Noten, Stunde, Sitzplan, Planung) und Seiten, mit Pfeiltasten und Enter (E90) |
 | Klassen | Übersicht aller Klassen (statt „Kurse“, E87) |
-| Notenbuch | Klausuren und AT fest 50:50, nur mündlich:Tests einstellbar (E83), „Mündliche Leistungen“ (E85), Profil FOS oder OSZ (vereinfacht), Eingabe wie Excel oder per Notenleiste, E/UE, ★ Vorbehalt, freies Einzelgewicht, Ø-Zellen öffnen eine Kachel mit Herkunft und Was-wäre-wenn (Hover am PC, Antippen am iPad), Was-wäre-wenn für alle offenen Leistungen, Gesamtnote mit Rechenweg, Monatsnote aus Smileys vorschlagen |
+| Notenbuch | Klausuren und AT fest 50:50 (ohne Prozentanzeige, E92), nur mündlich:Tests einstellbar (E83), „Mündliche Leistungen“ (E85), Profil FOS oder OSZ (vereinfacht), Eingabe wie Excel oder per Notenleiste, E/UE, ★ Vorbehalt, freies Einzelgewicht, Ø-Zellen öffnen eine Kachel mit Herkunft und Was-wäre-wenn (Hover am PC, Antippen am iPad), Was-wäre-wenn für alle offenen Leistungen, Gesamtnote mit Rechenweg, Monatsnote aus Smileys vorschlagen |
 | Live-Stunde | Liste oder Sitzplan umschaltbar (E86), Anwesenheit nur da/fehlt, nochmal antippen erfasst Verspätung mit Uhrzeit (Vorschlag jetzt, änderbar, E84), fünf Smileys mit Bausteinen, „noch nicht bewertet“, Zufall, Gruppen, Lernstoff, Übergang |
-| Sitzplan | Vorlagen (Reihen, U-Form, Gruppentische, Doppel-U, leer), Tische an/aus, Raster ändern, alphabetisch oder zufällig setzen, Ziehen oder Antippen zum Setzen und Tauschen (E86) |
+| Sitzplan | Lehrersicht mit Lehrertisch unten (E91), Vorlagen (Reihen, U-Form, Gruppentische, Doppel-U, leer), Tische an/aus, Raster ändern, alphabetisch oder zufällig setzen, Ziehen oder Antippen zum Setzen und Tauschen (E86) |
 | Planung | kommende Stunden mit Stoff und Hausaufgabe, Blöcke im Halbjahr (Beispiel-Ferien) |
 | Schülerkarte | Kacheln Klausur 1, Klausur 2, AT, mündlich Ø, Tests Ø, jede aufklappbar mit Herkunft (E89), Verlaufsgrafik mündlich, Fehlzeiten-Kacheln zeigen die Tage, Verspätungen mit Minuten, Wochentag-Auswertung für Fehltage oder Verspätungen, Mitarbeit je Monat in kräftigen Farben mit Trendpfeil, Monat antippen zeigt die Einträge (E88), Notizen |
 | Mehr | Anmeldung, Navigation links/rechts/unten, hell/dunkel, Sicherung, Beispieldaten neu laden |

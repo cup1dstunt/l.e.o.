@@ -24,3 +24,8 @@ export function verteilen(plan: Sitzplan, schuelerIds: string[]) {
     if (i < frei.length) plan.belegung[frei[i]] = id;
   });
 }
+
+/** Reihenfolge der Plätze in Lehrersicht (E91): um 180° gedreht, vorne ist unten, links und rechts aus Sicht der Lehrkraft. */
+export function lehrersicht(anzahl: number): number[] {
+  return Array.from({ length: anzahl }, (_, i) => anzahl - 1 - i);
+}

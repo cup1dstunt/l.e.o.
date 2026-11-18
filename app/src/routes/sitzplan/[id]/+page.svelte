@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import { app, speichern, zeige } from '$lib/speicher.svelte';
   import { schuelerVon, kurzname, name } from '$lib/hilfen';
-  import { VORLAGEN, ausVorlage, verteilen } from '$lib/sitzplan';
+  import { VORLAGEN, ausVorlage, verteilen, lehrersicht } from '$lib/sitzplan';
   import KursKopf from '$lib/ui/KursKopf.svelte';
 
   const d = app.d!;
@@ -97,9 +97,11 @@
 
     <div class="bereich">
       <section class="karte raumplan">
-        <div class="tafel klein leise">vorne · Tafel · Lehrertisch</div>
+        <p class="klein leise sicht">Lehrersicht: du schaust von vorne auf die Klasse.</p>
         <div class="raster" style:grid-template-columns="repeat({sp.spalten}, minmax(0, 1fr))">
-          {#each sp.tische as tisch, i}
+          <!-- Lehrersicht (E91): Raster um 180° gedreht, vorne (Reihe 0) ist unten -->
+          {#each lehrersicht(sp.tische.length) as i (i)}
+            {@const tisch = sp.tische[i]}
             {@const s = sp.belegung[i] ? sch(sp.belegung[i]) : undefined}
             <button class="zelle" class:tisch class:bearbeiten={tischeBearbeiten} class:belegt={!!s} class:auswahl={!!s && gewaehlt === s.id}
               aria-label={tisch ? (s ? `Platz von ${name(s)}` : 'freier Platz') : 'kein Tisch'}
@@ -112,6 +114,7 @@
             </button>
           {/each}
         </div>
+        <div class="tafel klein leise">Lehrertisch · Tafel</div>
         <p class="klein leise">{plaetze} Plätze · {liste.length} Schüler. {tischeBearbeiten ? 'Felder antippen schaltet Tische ein oder aus.' : 'Ziehen oder antippen und Zielplatz antippen. Auf einen besetzten Platz ziehen tauscht.'}</p>
       </section>
 
@@ -140,7 +143,8 @@
   .werkzeug { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
   .mini { width: 32px; height: 32px; border: 1px solid var(--leo-linie); background: var(--leo-karte); border-radius: var(--leo-r-s); margin: 0 4px; }
   .bereich { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: start; }
-  .tafel { text-align: center; border-bottom: 3px solid var(--leo-linie); margin: 0 20% 16px; padding-bottom: 4px; }
+  .tafel { text-align: center; border-top: 3px solid var(--leo-linie); margin: 16px 20% 12px; padding-top: 4px; }
+  .sicht { margin: 0 0 12px; text-align: center; }
   .raster { display: grid; gap: 6px; }
   .zelle { min-height: 56px; border: 1px dashed transparent; border-radius: var(--leo-r-m); background: transparent; font-size: 13px; font-weight: 600; padding: 4px; overflow: hidden; text-overflow: ellipsis; }
   .zelle.bearbeiten { border-color: var(--leo-linie); }
