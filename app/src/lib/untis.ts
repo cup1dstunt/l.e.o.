@@ -93,6 +93,33 @@ export function felder(liste: unknown[]): { name: string; gefuellt: number }[] {
   return [...zaehl].map(([name, z]) => ({ name, gefuellt: Math.round((z / n) * 100) })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Die längste Liste irgendwo in einer Antwort (Tabellenzeilen), höchstens 4 Ebenen tief. */
+export function groessteListe(x: unknown, tiefe = 0): unknown[] {
+  if (Array.isArray(x)) {
+    let best: unknown[] = x;
+    if (tiefe < 4) for (const e of x.slice(0, 3)) { const l = groessteListe(e, tiefe + 1); if (l.length > best.length) best = l; }
+    return best;
+  }
+  if (!x || typeof x !== 'object' || tiefe >= 4) return [];
+  let best: unknown[] = [];
+  for (const v of Object.values(x)) { const l = groessteListe(v, tiefe + 1); if (l.length > best.length) best = l; }
+  return best;
+}
+
+/** Spaltenköpfe, falls die Antwort sie als Liste von Texten oder {label|name|title} mitliefert. Keine Inhalte. */
+export function spaltenkoepfe(x: unknown, tiefe = 0): string[] {
+  if (!x || typeof x !== 'object' || tiefe > 4) return [];
+  for (const [k, v] of Object.entries(x)) {
+    if (/col|head|field/i.test(k) && Array.isArray(v) && v.length && v.length < 60) {
+      const t = v.map((e) => (typeof e === 'string' ? e : String((e as any)?.label ?? (e as any)?.name ?? (e as any)?.title ?? (e as any)?.id ?? ''))).filter(Boolean);
+      if (t.length) return t.slice(0, 40);
+    }
+    const tiefer = spaltenkoepfe(v, tiefe + 1);
+    if (tiefer.length) return tiefer;
+  }
+  return [];
+}
+
 /** Wie oft kommt welcher Wert eines Kategorie-Feldes vor (z. B. Entschuldigungsstatus)? Nur für Kategorien, nie für Namen. */
 export function verteilung(liste: unknown[], feld: string): Record<string, number> {
   const z: Record<string, number> = {};
@@ -189,7 +216,7 @@ export function fehlerText(code: number | string, text: string): { status: Statu
   if (c === -8520) return { status: 'fehler', text: 'Nicht angemeldet (Sitzung fehlt). Werden Cookies durch den Durchreicher weitergegeben?' };
   if (c === -8509 || c === -8510 || c === 403) return { status: 'verwehrt', text: 'Dein Konto hat dafür keine Berechtigung.' };
   if (c === -32601) return { status: 'verwehrt', text: 'Diese Abfrage gibt es auf diesem Server nicht.' };
-  if (code === 'netz' || code === 'durchreicher') return { status: 'fehler', text };
+  if (code === 'netz' || code === 'durchreicher' || code === 'html') return { status: 'fehler', text };
   return { status: 'fehler', text: `${text} (Code ${code})` };
 }
 
@@ -205,7 +232,8 @@ export const PRUEFUNGEN: Omit<Pruefung, 'status'>[] = [
   { id: 'schueler', titel: 'Schüler', wofuer: 'Schülerlisten, Alter, Geschlecht', aufruf: 'getStudents' },
   { id: 'fehlzeitenRpc', titel: 'Fehlzeiten (Klassenbuch)', wofuer: 'Fehlzeiten, E/UE, 30-%-Regel', aufruf: 'getTimetableWithAbsences (letzte 14 Tage)' },
   { id: 'fehlzeitenRest', titel: 'Fehlzeiten (Web-Schnittstelle)', wofuer: 'Fehlzeiten mit Status und Grund', aufruf: 'GET api/classreg/absences/students' },
-  { id: 'token', titel: 'Neue REST-Schnittstelle', wofuer: 'späteres Senden (Stufe 2)', aufruf: 'GET api/token/new' }
+  { id: 'token', titel: 'Neue REST-Schnittstelle', wofuer: 'späteres Senden (Stufe 2)', aufruf: 'GET api/token/new' },
+  { id: 'stammdaten', titel: 'Stammdaten Schüler', wofuer: 'Geburtsdatum (Alter), Klassenzuordnung', aufruf: 'GET studentlist.do (wie Stammdaten › Schüler)' }
 ];
 
 const liste = (x: unknown): unknown[] => (Array.isArray(x) ? x : x && typeof x === 'object' ? (Object.values(x).find(Array.isArray) as unknown[]) ?? [] : []);
@@ -344,6 +372,23 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
     const ok = typeof t === 'string' && t.split('.').length === 3;
     ergebnis('token', { status: ok ? 'ok' : 'leer', extra: { Token: ok ? 'erhalten (nicht gespeichert)' : 'keins' } });
   } catch (e) { fang('token', e); }
+
+  // 13 Stammdaten wie in der Webansicht (Geburtsdatum, Klasse). Nur Anzahl, Feldnamen und Spaltenköpfe.
+  try {
+    const j = await rest(`studentlist.do?&request.preventCache=${Date.now()}`);
+    if (typeof j === 'string') throw new UntisFehler('html', j.trimStart().startsWith('<') ? 'Antwort ist eine HTML-Seite statt Daten (evtl. Sitzung nicht übernommen).' : 'Antwort ist kein JSON.');
+    const zeilen = groessteListe(j);
+    const f = felder(zeilen);
+    const extra: Record<string, string | number> = { 'oberste Schlüssel': Object.keys(j ?? {}).slice(0, 12).join(', ') };
+    if (Array.isArray(zeilen[0])) extra['Zeilen als Liste, Spalten'] = (zeilen[0] as unknown[]).length;
+    const koepfe = spaltenkoepfe(j);
+    if (koepfe.length) extra['Spaltenköpfe'] = koepfe.join(', ');
+    const geb = f.find((x) => /birth|geb/i.test(x.name));
+    const kl = f.find((x) => /klass|class/i.test(x.name));
+    extra.Geburtsdatum = geb ? `${geb.name} ${geb.gefuellt} %` : 'Feld nicht erkannt';
+    extra.Klasse = kl ? `${kl.name} ${kl.gefuellt} %` : 'Feld nicht erkannt';
+    ergebnis('stammdaten', { status: zeilen.length ? 'ok' : 'leer', anzahl: zeilen.length, felder: f, extra });
+  } catch (e) { fang('stammdaten', e); }
 
   try { await r('logout'); } catch { /* egal */ }
 }
