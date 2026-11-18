@@ -144,7 +144,7 @@ Weil das ein amtlicher Eintrag ist, gelten strenge Regeln:
 ## 7 Reihenfolge zum Bauen (Vorschlag)
 
 1. **Verbindungstest** (Durchreicher in nginx + Anmeldung + Kacheln „was geht“). **Gebaut 18.11.2026** unter Mehr › WebUntis, ungetestet gegen das echte WebUntis. Kleinster Schritt, beantwortet alle offenen Rechte-Fragen mit Konstantins echtem Konto.
-2. Stundenplan und Klassen übernehmen (Heute zeigt echte Stunden).
+2. Stundenplan und Klassen übernehmen (Heute zeigt echte Stunden). **Gebaut 18.11.2026 zusammen mit 3 und 4** (Mehr › WebUntis › Jetzt abgleichen), mit erfundenem WebUntis im Browser getestet, nicht mit echten Daten.
 3. Schüler übernehmen mit Abgleich (neu/Abgang).
 4. Fehlzeiten mit E/UE, Klausur-Status im Notenbuch, 30-%-Kachel.
 5. Datei-Import als Rückfall mit Spaltenzuordnung.

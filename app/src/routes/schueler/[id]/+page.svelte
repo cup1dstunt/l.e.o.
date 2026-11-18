@@ -2,7 +2,7 @@
   // Schülerkarte: jede Kennzahl ist eine Kachel, die ihre Herkunft öffnet (E89).
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { name, alter, fehlzeitenVon, prozent, datumWt, datumKurz, heuteISO, nachWochentag, WOCHENTAGE } from '$lib/hilfen';
+  import { name, alter, fehlzeitenVon, verspaetungenVon, prozent, datumWt, datumKurz, heuteISO, nachWochentag, WOCHENTAGE } from '$lib/hilfen';
   import { rechne, zahl, zellSchluessel, bestanden, zellWert, mittel } from '$lib/rechnen';
   import { STUFEN, bausteinStufe } from '$lib/bausteine';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -30,7 +30,7 @@
 
   // ---------- Fehlzeiten und Verspätungen ----------
   let fehlOffen = $state<string | null>(null);
-  const verspaetungen = $derived(d.verspaetungen.filter((v) => v.kursId === kurs?.id && v.schuelerId === s.id).sort((a, b) => b.datum.localeCompare(a.datum)));
+  const verspaetungen = $derived(verspaetungenVon(d, kurs?.id, s.id));
   const minutenGesamt = $derived(verspaetungen.reduce((a, v) => a + v.minuten, 0));
   let wtArt = $state<'fehl' | 'spaet'>('fehl');
   const wt = $derived(wtArt === 'fehl' ? nachWochentag(fz?.liste.map((f) => f.datum) ?? []) : nachWochentag(verspaetungen.map((v) => v.datum)));
@@ -106,8 +106,8 @@
   <div class="seite">
     <section class="karte person">
       <h1>{name(s)} {#if s.nta}<span class="nta" title={s.nta}>N</span>{/if}</h1>
-      <p class="leise">{s.geschlecht === 'w' ? 'weiblich' : s.geschlecht === 'm' ? 'männlich' : 'divers'} · {alter(s)} Jahre · {kurs.klasse}</p>
-      <p>{s.mailDienst} <span class="leise">(dienstlich)</span><br />{#if s.mailPrivat}{s.mailPrivat} <span class="leise">(privat)</span>{:else}<span class="leise">privat nicht hinterlegt</span>{/if}</p>
+      <p class="leise">{s.geschlecht === 'w' ? 'weiblich' : s.geschlecht === 'm' ? 'männlich' : 'divers'} · {alter(s) === null ? 'Alter unbekannt' : `${alter(s)} Jahre`} · {kurs.klasse}</p>
+      <p>{#if s.mailDienst}{s.mailDienst} <span class="leise">(dienstlich)</span>{:else}<span class="leise">Dienstmail nicht hinterlegt</span>{/if}<br />{#if s.mailPrivat}{s.mailPrivat} <span class="leise">(privat)</span>{:else}<span class="leise">privat nicht hinterlegt</span>{/if}</p>
       {#if s.nta}<p class="akzent">{s.nta} · von Klassenleitung</p>{/if}
     </section>
 
@@ -156,7 +156,7 @@
     </section>
 
     <section class="karte fehl">
-      <div class="zeile"><h2 class="raum">Fehlzeiten und Verspätungen</h2><span class="klein leise">E/UE später aus WebUntis</span></div>
+      <div class="zeile"><h2 class="raum">Fehlzeiten und Verspätungen</h2><span class="klein leise">{d.einstellungen.untis ? `WebUntis, Stand ${new Date(d.einstellungen.untis.abgerufen).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` : 'E/UE später aus WebUntis'}</span></div>
       <div class="kacheln">
         {#if fz.tageOffen}<button class="kz" aria-expanded={fehlOffen === 'offen'} onclick={() => (fehlOffen = fehlOffen === 'offen' ? null : 'offen')}><b class="zahl">{fz.tageOffen}</b><span class="klein leise">Tage noch offen</span></button>{/if}
         <button class="kz" aria-expanded={fehlOffen === 'E'} onclick={() => (fehlOffen = fehlOffen === 'E' ? null : 'E')}><b class="zahl">{fz.tageE}</b><span class="klein leise">Tage entschuldigt</span></button>
@@ -170,7 +170,7 @@
             <ul class="fl">{#each verspaetungen as v}<li><span>{datumWt(v.datum)}</span><span class="kennz">+{v.minuten} min</span><span class="leise klein">Ankunft {v.ankunft}</span></li>{/each}</ul>
             {#if verspaetungen.length === 0}<p class="leise klein">Keine Verspätungen.</p>{/if}
           {:else}
-            <ul class="fl">{#each [...fehlListe].reverse() as f}<li><span>{datumWt(f.datum)}</span><span class="kennz" class:ue={f.status === 'UE'}>{f.status === 'offen' ? '?' : f.status}</span><span class="leise klein">{f.stunden} Std. · {STATUS[f.status]}</span></li>{/each}</ul>
+            <ul class="fl">{#each [...fehlListe].reverse() as f}<li><span>{datumWt(f.datum)}</span><span class="kennz" class:ue={f.status === 'UE'}>{f.status === 'offen' ? '?' : f.status}</span><span class="leise klein">{f.stunden} Std. · {STATUS[f.status]}{f.grund ? ` · ${f.grund}` : ''}{f.quelle === 'untis' ? ' · WebUntis' : ' · eigene Erfassung'}</span></li>{/each}</ul>
             {#if fehlListe.length === 0}<p class="leise klein">Keine Tage.</p>{/if}
           {/if}
         </div>

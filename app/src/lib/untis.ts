@@ -238,6 +238,47 @@ export const PRUEFUNGEN: Omit<Pruefung, 'status'>[] = [
 
 const liste = (x: unknown): unknown[] => (Array.isArray(x) ? x : x && typeof x === 'object' ? (Object.values(x).find(Array.isArray) as unknown[]) ?? [] : []);
 
+export interface Sitzung {
+  schule: string;
+  person: { typ: number; id: number };
+  rechte: number;
+  r: (methode: string, params?: unknown) => Promise<any>;
+  rest: (pfad: string, mehr?: Record<string, string>) => Promise<any>;
+  abmelden: () => Promise<void>;
+}
+
+/** Meldet bei WebUntis an (App-Schlüssel oder Passwort). Die Sitzung lebt nur im Arbeitsspeicher. */
+export async function anmelden(z: Zugang): Promise<Sitzung> {
+  const schule = z.schule.trim();
+  // Cookie mit dem Schulnamen, wie es die WebUntis-Seite selbst setzt (für die REST-Aufrufe)
+  try { document.cookie = `schoolname="_${btoa(unescape(encodeURIComponent(schule)))}"; path=/WebUntis; SameSite=Lax`; } catch { /* egal */ }
+  let person: { typ: number; id: number };
+  let rechte = 0;
+  if (z.art === 'passwort') {
+    const r = await rpc('jsonrpc.do', schule, 'authenticate', { user: z.benutzer.trim(), password: z.geheim, client: 'LEO' });
+    person = { typ: r.personType, id: r.personId };
+  } else {
+    const otp = totp(base32(z.geheim));
+    const r = await rpc('jsonrpc_intern.do', schule, 'getUserData2017', [{ auth: { clientTime: Date.now(), user: z.benutzer.trim(), otp } }], '&m=getUserData2017&v=i2.2');
+    const u = r?.userData ?? {};
+    person = { typ: ({ CLASS: 1, TEACHER: 2, SUBJECT: 3, ROOM: 4, STUDENT: 5 } as Record<string, number>)[u.elemType] ?? 0, id: u.elemId };
+    rechte = Array.isArray(u.rights) ? u.rights.length : 0;
+  }
+  const r = (m: string, p: unknown = {}) => rpc('jsonrpc.do', schule, m, p);
+  return {
+    schule, person, rechte, r,
+    rest: (pfad, mehr = {}) => rest(pfad, undefined, mehr),
+    abmelden: async () => { try { await r('logout'); } catch { /* egal */ } }
+  };
+}
+
+/** Fehler verständlich machen (für Oberflächen außerhalb des Tests). */
+export function fehlerMeldung(e: unknown): string {
+  return e instanceof UntisFehler ? fehlerText(e.code, e.message).text : String((e as Error)?.message ?? e);
+}
+
+export { liste as alsListe, rolle };
+
 /**
  * Führt alle Prüfungen nacheinander aus und meldet jedes Ergebnis über `melde`.
  * Am Ende wird abgemeldet. Nichts wird gespeichert.
@@ -251,25 +292,12 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
   };
   const schule = z.schule.trim();
 
-  // Cookie mit dem Schulnamen, wie es die WebUntis-Seite selbst setzt (für die REST-Aufrufe)
-  try { document.cookie = `schoolname="_${btoa(unescape(encodeURIComponent(schule)))}"; path=/WebUntis; SameSite=Lax`; } catch { /* egal */ }
-
   // 1 Anmeldung
   let person: { typ: number; id: number } | null = null;
   try {
-    if (z.art === 'passwort') {
-      const r = await rpc('jsonrpc.do', schule, 'authenticate', { user: z.benutzer.trim(), password: z.geheim, client: 'LEO' });
-      person = { typ: r.personType, id: r.personId };
-      ergebnis('anmeldung', { extra: { Rolle: rolle(r.personType), 'Person gefunden': r.personId ? 'ja' : 'nein' } });
-    } else {
-      const otp = totp(base32(z.geheim));
-      const r = await rpc('jsonrpc_intern.do', schule, 'getUserData2017', [{ auth: { clientTime: Date.now(), user: z.benutzer.trim(), otp } }], '&m=getUserData2017&v=i2.2');
-      const u = r?.userData ?? {};
-      const typ = ({ CLASS: 1, TEACHER: 2, SUBJECT: 3, ROOM: 4, STUDENT: 5 } as Record<string, number>)[u.elemType] ?? 0;
-      person = { typ, id: u.elemId };
-      const rechte = Array.isArray(u.rights) ? u.rights.length : 0;
-      ergebnis('anmeldung', { extra: { Rolle: rolle(typ), 'Person gefunden': u.elemId ? 'ja' : 'nein', Rechte: rechte } });
-    }
+    const sz = await anmelden(z);
+    person = sz.person;
+    ergebnis('anmeldung', { extra: { Rolle: rolle(person.typ), 'Person gefunden': person.id ? 'ja' : 'nein', ...(z.art === 'schluessel' ? { Rechte: sz.rechte } : {}) } });
   } catch (e) {
     fang('anmeldung', e);
     for (const p of PRUEFUNGEN.slice(1)) melde({ ...p, status: 'offen', fehler: 'Erst die Anmeldung muss klappen.' });

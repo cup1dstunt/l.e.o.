@@ -98,7 +98,13 @@ Ungetestet: Ich konnte das fertige Image nicht komplett auf einem Unraid starten
 
 Noch nicht drin: Kriterienraster und Selbsteinschätzungsbogen für mündliche Leistungen (FB7), Kalender, IServ. WebUntis nur als Verbindungstest, die Daten werden noch nicht übernommen.
 
-## WebUntis-Verbindungstest (V11, E96)
+## WebUntis-Abgleich (V11, E96, E98)
+
+**Mehr › WebUntis › Jetzt abgleichen** holt deinen Stundenplan, deine Klassen mit Schülern, Fehlzeiten (E/UE/offen) und Verspätungen deiner Stunden im laufenden Halbjahr. Beim ersten Mal lassen sich die Beispielklassen entfernen. Noten, mündliche Leistungen, Notizen und Sitzpläne bleiben bei jedem weiteren Abgleich erhalten. Geburtsdatum und Nachteilsausgleich: Stammdaten-Export (CSV) unter **Export einlesen**. Der Schlüssel wird nicht gespeichert, ein automatischer Abgleich im Hintergrund kommt erst mit der Verschlüsselung (FB1).
+
+Ungetestet mit echten Daten: Zuordnung über dein Kürzel, Dauer bei einem ganzen Halbjahr (das Klassenbuch wird in 14-Tage-Stücken geholt), Ausfälle auf „Heute“ werden noch nicht angezeigt.
+
+### Verbindungstest
 
 **Mehr › WebUntis › Verbindungstest öffnen.** Schule (`osz-lus`), WebUntis-Benutzername und App-Schlüssel oder Passwort eingeben, „Verbindung testen“.
 Der Test meldet sich an und prüft 13 Abfragen (Schuljahr, Zeitraster, Ferien, eigener Stundenplan, Klassen, Fächer, Räume, Schüler, Fehlzeiten auf zwei Wegen, REST-Token, Stammdaten mit Geburtsdatum und Klasse).

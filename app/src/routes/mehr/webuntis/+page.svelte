@@ -1,6 +1,9 @@
 <script lang="ts">
-  import { PRUEFUNGEN, verbindungstest, bericht, type Pruefung, type Zugang } from '$lib/untis';
-  import { zeige } from '$lib/speicher.svelte';
+  import { PRUEFUNGEN, verbindungstest, bericht, anmelden, fehlerMeldung, type Pruefung, type Zugang } from '$lib/untis';
+  import { holen, uebernehmen, stammdatenEinlesen, type Ergebnis } from '$lib/untisimport';
+  import { app, zeige, speichern } from '$lib/speicher.svelte';
+
+  const d = app.d!;
 
   // Schule und Benutzer dürfen sich das Gerät merken, der Schlüssel nie (nur Arbeitsspeicher).
   const MERK = 'leo-untis-zugang';
@@ -22,9 +25,57 @@
     PRUEFUNGEN.map((v) => ergebnisse.find((e) => e.id === v.id) ?? { ...v, status: laeuft ? ('laeuft' as const) : ('offen' as const) })
   );
 
-  async function testen(e: Event) {
+  // ---------- Abgleich (echte Übernahme) ----------
+  let abgleich = $state(false);
+  let schritt = $state('');
+  let ergebnis = $state<Ergebnis | null>(null);
+  let fehler = $state('');
+  const beispielDa = $derived(d.kurse.some((k) => !k.untis));
+  let beispielEntfernen = $state(true);
+  const stand = $derived(d.einstellungen.untis);
+
+  function pruefen() {
+    if (!schule.trim() || !benutzer.trim() || !geheim) { zeige('Schule, Benutzer und Schlüssel bzw. Passwort ausfüllen'); return false; }
+    try { localStorage.setItem(MERK, JSON.stringify({ schule, benutzer, art })); } catch { /* egal */ }
+    return true;
+  }
+
+  async function abgleichen(e: Event) {
     e.preventDefault();
-    if (!schule.trim() || !benutzer.trim() || !geheim) { zeige('Schule, Benutzer und Schlüssel bzw. Passwort ausfüllen'); return; }
+    if (!pruefen()) return;
+    abgleich = true; fehler = ''; ergebnis = null; schritt = 'Anmeldung';
+    try {
+      const sz = await anmelden({ schule, benutzer, art, geheim });
+      try {
+        const paket = await holen(sz, (t) => (schritt = t));
+        schritt = 'Übernehmen';
+        ergebnis = uebernehmen(d, paket, { beispielEntfernen: beispielDa && beispielEntfernen, benutzer, schule });
+        speichern();
+        if (!ergebnis.schueler) fehler = 'Keine Schüler gefunden. Vermutlich passt die Zuordnung über dein Kürzel nicht. Bitte den Verbindungstest laufen lassen und mir den Bericht schicken.';
+      } finally { await sz.abmelden(); }
+    } catch (err) {
+      fehler = fehlerMeldung(err);
+    } finally {
+      abgleich = false; schritt = '';
+    }
+  }
+
+  // ---------- Stammdaten-Export (Geburtsdatum, Nachteilsausgleich) ----------
+  let exportDatei = $state<HTMLInputElement>();
+  async function exportLesen(e: Event) {
+    const dateien = [...((e.currentTarget as HTMLInputElement).files ?? [])];
+    let g = 0, z = 0;
+    for (const f of dateien) {
+      const r = stammdatenEinlesen(d, await f.text());
+      g += r.gelesen; z += r.zugeordnet;
+    }
+    speichern();
+    zeige(`${z} von ${g} Zeilen zugeordnet${g - z ? ' (andere Schüler ignoriert)' : ''}`);
+    (e.currentTarget as HTMLInputElement).value = '';
+  }
+
+  async function testen() {
+    if (!pruefen()) return;
     try { localStorage.setItem(MERK, JSON.stringify({ schule, benutzer, art })); } catch { /* egal */ }
     ergebnisse = [];
     berichtText = '';
@@ -34,7 +85,6 @@
       await verbindungstest({ schule, benutzer, art, geheim }, (p) => (ergebnisse = [...ergebnisse.filter((x) => x.id !== p.id), p]));
     } finally {
       laeuft = false;
-      geheim = ''; // nicht länger als nötig im Speicher
     }
   }
 
@@ -54,11 +104,11 @@
   </div>
 
   <section class="karte">
-    <h2>Verbindungstest</h2>
-    <p>Der Test meldet sich mit deinem WebUntis-Konto an und prüft, <b>welche Daten L.E.O. bekommen könnte</b>. Er liest nur, trägt nichts in WebUntis ein und speichert nichts. Angezeigt werden nur Anzahlen und Feldnamen, keine Namen.</p>
-    <p class="klein leise">Der Schlüssel bzw. das Passwort bleibt nur bis zum Ende des Tests im Arbeitsspeicher. Gemerkt werden Schule und Benutzername.</p>
+    <h2>Mit WebUntis abgleichen</h2>
+    <p>L.E.O. holt deinen Stundenplan, deine Klassen mit Schülern und die Fehlzeiten deiner Stunden im laufenden Halbjahr. Es liest nur und trägt nichts in WebUntis ein.</p>
+    <p class="klein leise">„Nur Verbindung testen“ prüft, welche Daten ankommen, und speichert nichts. Der Schlüssel bzw. das Passwort bleibt nur im Arbeitsspeicher dieser Seite. Gemerkt werden Schule und Benutzername.</p>
 
-    <form class="form" onsubmit={testen}>
+    <form class="form" onsubmit={abgleichen}>
       <label class="feld"><span>Schule (in WebUntis die Adresszeile, hinter „school=“)</span>
         <input bind:value={schule} autocomplete="off" autocapitalize="off" spellcheck="false" />
       </label>
@@ -74,14 +124,49 @@
       <label class="feld"><span>{art === 'schluessel' ? 'Schlüssel (WebUntis › Profil › Freigaben › Zugriff über Untis Mobile › Anzeigen)' : 'WebUntis-Passwort (nicht das IServ-Passwort)'}</span>
         <input type="password" bind:value={geheim} autocomplete={art === 'passwort' ? 'current-password' : 'off'} spellcheck="false" />
       </label>
-      <div><button class="knopf haupt" type="submit" disabled={laeuft}>{laeuft ? 'Prüfe …' : 'Verbindung testen'}</button></div>
+      {#if beispielDa}
+        <label class="zeile schalter"><input type="checkbox" bind:checked={beispielEntfernen} /> Beispielklassen und Beispielschüler beim Abgleich entfernen</label>
+      {/if}
+      <div class="zeile wrap">
+        <button class="knopf haupt" type="submit" disabled={abgleich || laeuft}>{abgleich ? 'Gleiche ab …' : 'Jetzt abgleichen'}</button>
+        <button class="knopf leise" type="button" onclick={testen} disabled={abgleich || laeuft}>{laeuft ? 'Prüfe …' : 'Nur Verbindung testen'}</button>
+      </div>
     </form>
+    {#if abgleich}<p class="klein leise">{schritt} …</p>{/if}
+    {#if fehler}<p class="klein warn">{fehler}</p>{/if}
   </section>
+
+  {#if ergebnis || stand}
+    <section class="karte">
+      <h2>Abgleich</h2>
+      {#if stand}<p class="klein leise">Stand {new Date(stand.abgerufen).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · Kürzel {stand.kuerzel || 'nicht erkannt'} · Halbjahr {stand.halbjahrVon.split('-').reverse().join('.')} bis {stand.halbjahrBis.split('-').reverse().join('.')}</p>{/if}
+      {#if ergebnis}
+        <div class="kacheln">
+          <a class="kachel" href="/klassen"><b class="zahl anzahl">{ergebnis.kurse}</b><span class="klein leise">Klassen{ergebnis.kurseNeu ? `, ${ergebnis.kurseNeu} neu` : ''}</span></a>
+          <a class="kachel" href="/schueler"><b class="zahl anzahl">{ergebnis.schueler}</b><span class="klein leise">Schüler{ergebnis.schuelerNeu ? `, ${ergebnis.schuelerNeu} neu` : ''}</span></a>
+          <div class="kachel"><b class="zahl anzahl">{ergebnis.fehlzeiten}</b><span class="klein leise">Fehlzeiten, davon {ergebnis.offen} offen</span></div>
+          <div class="kachel"><b class="zahl anzahl">{ergebnis.verspaetungen}</b><span class="klein leise">Verspätungen</span></div>
+          <div class="kachel"><b class="zahl anzahl">{ergebnis.stammdaten}</b><span class="klein leise">mit Geburtsdatum aus dem Bericht</span></div>
+        </div>
+      {/if}
+      <p class="klein leise">Übernommen werden nur deine eigenen Stunden. Alles andere aus WebUntis wird sofort verworfen. Noten, mündliche Leistungen, Notizen und Sitzpläne bleiben bei jedem Abgleich erhalten. Wer in WebUntis nicht mehr auftaucht, wird nicht gelöscht.</p>
+    </section>
+
+    <section class="karte">
+      <h2>Geburtsdatum und Nachteilsausgleich</h2>
+      <p>WebUntis gibt das Geburtsdatum nur im Stammdaten-Bericht heraus. In WebUntis: <b>Stammdaten › Schüler › Klasse wählen › Bericht › CSV</b>. Die Datei hier einlesen, auch mehrere auf einmal.</p>
+      <p class="klein leise">Übernommen werden nur Geburtsdatum, Klasse und Nachteilsausgleich von Schülern, die schon in L.E.O. sind. Adressen, Telefon und Mail aus der Datei werden ignoriert.</p>
+      <div class="zeile wrap">
+        <button class="knopf" onclick={() => exportDatei?.click()}>Export einlesen</button>
+        <input type="file" accept=".csv,.txt,text/csv,text/plain" multiple bind:this={exportDatei} onchange={exportLesen} hidden />
+      </div>
+    </section>
+  {/if}
 
   {#if ergebnisse.length || laeuft}
     <section class="karte">
       <div class="zeile kopf">
-        <h2 class="raum">Ergebnis</h2>
+        <h2 class="raum">Verbindungstest</h2>
         {#if fertig}<span class="leise zahl">{mitDaten} von {PRUEFUNGEN.length} Abfragen liefern Daten</span>{/if}
       </div>
       <div class="kacheln">
@@ -143,6 +228,8 @@
   .s-verwehrt .marke { background: var(--leo-stern-hell); color: var(--leo-stern); }
   .s-fehler .marke { background: var(--leo-warnung-hell); color: var(--leo-warnung); }
   .anzahl { font-weight: 700; font-size: var(--leo-text-l); }
+  .schalter input { width: 20px; height: 20px; accent-color: var(--leo-akzent); }
+  a.kachel { text-decoration: none; color: inherit; }
   .detail { margin-top: 14px; padding: 14px 16px; border-radius: var(--leo-r-m); background: var(--leo-flaeche-leise); border: 1px solid var(--leo-linie-fein); }
   .detail h3 { margin: 0 0 6px; font-size: var(--leo-text-m); }
   .detail p { margin: 4px 0; }
