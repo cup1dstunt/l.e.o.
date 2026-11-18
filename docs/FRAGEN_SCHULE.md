@@ -12,7 +12,7 @@
    - f) Wofür nutzen Kollegen die Zensurenliste?
 3. Welche Exporte erlaubt dir WebUntis für Fehlzeiten und Stundenplan (Format, Felder)? Ein Beispiel-Export wäre ideal.
 4. Konzept der Dateiablage je Stunde.
-11. WebUntis (für V11): Adresse und Schulname in WebUntis, Anmeldung über IServ oder eigenes Passwort, gibt es im Profil „Freigaben“ mit QR-Code, siehst du Fehlzeiten mit E/UE? Siehe [WEBUNTIS_ANBINDUNG.md](WEBUNTIS_ANBINDUNG.md) Abschnitt 8.
+11. ~~WebUntis-Zugang und Status~~ beantwortet 18.11.2026 (E94). Offen: zählt „Verspätung (zählend)“ in die 30-%-Quote?
 5. Welche IServ-Kalender/Pläne sollen importiert werden, gibt es einen iCal-Feed?
 6. ~~V1–V6, V3b~~ beantwortet.
 7. Wie bewerten **IBA** und **Willkommensklassen** (Punkte, Noten, Notenspiegel)? Konstantin klärt das.
@@ -60,6 +60,7 @@ Offene Fragen aus dem Prototyp-Feedback vom 09.11.2026 ([prototyp-feedback/2026-
 3. Können Fehlzeiten mit Status (E/UE) regelmäßig exportiert werden, z. B. als Datei in einen Ordner?
 4. Sind Geburtsdatum und Geschlecht der Schüler in WebUntis gepflegt und exportierbar?
 5. Ist die Klassenleitung in WebUntis hinterlegt?
+6. Darf L.E.O. die Anwesenheitsfeststellung der Lehrkraft (abwesend, verspätet) **an WebUntis senden**, über das Konto der Lehrkraft? Den Status E/UE setzt weiterhin die Klassenleitung (V11 Stufe 2).
 
 ## An den IServ-Admin
 

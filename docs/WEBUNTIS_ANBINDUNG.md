@@ -1,12 +1,17 @@
 # WebUntis-Anbindung (Modulentwurf)
 
-Stand 18.11.2026, Entwurf zur Abstimmung mit Konstantin. **Nichts davon ist gegen ein echtes WebUntis getestet.**
+Stand 18.11.2026 (ergänzt nach Konstantins Antworten, 18:47), Entwurf zur Abstimmung mit Konstantin. **Nichts davon ist gegen ein echtes WebUntis getestet.**
 Grundlagen: PLANUNG 6.1, E16 (austauschbare Adapter), E79 (lokal-first), E84 (E/UE nie in der Live-Stunde).
 
 ## 1 Ziel in einem Satz
 
 L.E.O. holt Klassen, Schüler, Stundenplan und Fehlzeiten aus WebUntis, damit nichts zweimal eingetippt wird.
-WebUntis bleibt die Quelle, L.E.O. **liest nur** und schreibt nichts zurück.
+WebUntis bleibt die Quelle und das amtliche System, L.E.O. **ersetzt es nicht** (darf es auch nicht).
+Stufe 1: L.E.O. **liest nur**. Stufe 2 (Wunsch Konstantin): L.E.O. **sendet die eigene Anwesenheitsfeststellung** an WebUntis (Abschnitt 3.4).
+Den Status entschuldigt/unentschuldigt entscheidet immer die Klassenleitung in WebUntis.
+
+Schule: `https://osz-lus.webuntis.com`, Schulname „Leopold-Ullstein-Schule“. Konstantin meldet sich per IServ (OpenID Connect) an,
+kann aber auch einen Benutzer mit Schlüssel nutzen.
 
 ## 2 Was WebUntis realistisch liefert
 
@@ -46,15 +51,56 @@ Eine Browser-App darf WebUntis nicht direkt abfragen: WebUntis erlaubt keine Anf
 - Folge für den Datenschutz: Die Daten gehen nur zwischen Gerät der Lehrkraft und WebUntis hin und her,
   über den eigenen Container. Kein Dritter, keine KI, kein zentraler Speicher.
 
-### 3.2 Zugangsdaten
+### 3.2 Zugangsdaten (Anmeldung über IServ)
 
 - Bevorzugt **App-Schlüssel** statt Passwort (bei IServ-Anmeldung an WebUntis gibt es oft gar kein eigenes Passwort).
 - Gespeichert wird er **verschlüsselt mit dem L.E.O.-Passwort** (FB1, E81). Ohne Entsperren kein Abruf.
 - Ein Passwort wird höchstens für die laufende Sitzung im Speicher gehalten, nie im Klartext abgelegt.
 
+### 3.3 Abwesenheiten an dieser Schule (Ablauf und Status)
+
+So läuft es laut Konstantin (18.11.2026):
+
+1. Die Lehrkraft stellt **zu Beginn jeder Stunde** die Anwesenheit fest. Wer später kommt, wird von „abwesend“ auf „verspätet“ gesetzt.
+2. Die **Klassenleitung** bearbeitet danach den Status. Bis dahin ist er **ungeklärt** (in der Liste „?“ und „0/4 Stunden bearbeitet“).
+3. Frist für eine Krankschreibung ab dem ersten Fehltag: **FOS 3 Tage, Berufsschule 14 Tage.**
+4. Die Klassenleitung trägt dann ein: entschuldigt oder unentschuldigt. Die Zeugnisdaten erzeugt WebUntis selbst.
+
+WebUntis kennt viele **Abwesenheitsgründe** (Abwesend ohne/mit Meldung, schulunfähig wegen Krankheit, Entschuldigt aus betrieblichen
+bzw. privaten Gründen, Religiöser Feiertag, Sonderurlaub (Dual), Prüflinge (Dual), ausgesetzte Präsenzpflicht, angeleitetes Lernen zu Hause,
+Unentschuldigt, Verspätung zählend / nicht zählend) und daneben einen **Status** (entsch. / nicht entsch. / Verspätung / ?).
+Die Lehrkraft braucht davon nur wenig. L.E.O. fasst daher zusammen:
+
+| L.E.O. zeigt | aus WebUntis | Darstellung |
+|---|---|---|
+| **entschuldigt (E)** | Status „entsch.“ | ruhig, ohne Warnfarbe |
+| **unentschuldigt (UE)** | Status „nicht entsch.“ | Warnfarbe |
+| **offen** | Status „?“ / unbearbeitet | neutral, mit „Frist bis …“ (Startdatum + 3 bzw. 14 Tage je Bildungsgang); nach Ablauf „Frist abgelaufen, Klassenleitung noch nicht entschieden“ |
+| **Verspätung** | Grund „Verspätung (zählend/nicht zählend)“, mit Ankunftszeit | Verspätungsübersicht, nicht als Fehlstunde |
+
+Der genaue Grund (z. B. Religiöser Feiertag) steht nur im aufgeklappten Detail (E89), für die Note spielt er keine Rolle.
+Offen: ob „Verspätung (zählend)“ in die 30-%-Quote eingeht (Annahme: ja, anteilig wie in WebUntis; per Verbindungstest prüfen).
+
+### 3.4 Anwesenheit an WebUntis senden (Stufe 2)
+
+**Technisch wahrscheinlich möglich, aber nicht offiziell dokumentiert.** Die WebUntis-Webseite speichert die Anwesenheit selbst über
+interne Schnittstellen, und die Lehrkraft hat dafür das Recht. L.E.O. könnte dieselben Aufrufe nutzen. Die dokumentierte JSON-RPC-Schnittstelle
+ist dagegen nur lesend; ob die Untis-Platform Schreiben erlaubt, ist offen. **Nichts davon ist getestet.**
+
+Weil das ein amtlicher Eintrag ist, gelten strenge Regeln:
+
+- L.E.O. sendet **nur** „abwesend“ und „verspätet bis HH:MM“ für **eigene** Stunden, mit dem Grund, den Lehrkräfte heute auch wählen
+  (voraussichtlich „Abwesend ohne Meldung“). **Nie** ein Status E/UE, nie fremde Stunden, nie Löschen alter Einträge.
+- Senden ist **ein Knopf am Ende der Feststellung** („3 Abwesende an WebUntis senden“), keine Automatik im Hintergrund und kein Dialog.
+  Danach liest L.E.O. den Stand aus WebUntis zurück und zeigt ✓ je Schüler oder „nicht angekommen, bitte in WebUntis eintragen“.
+- Eine Verspätung nach dem Senden (zweiter Klick, E84) wird als Änderung nachgeschickt.
+- Hat schon jemand in WebUntis etwas eingetragen, gewinnt WebUntis; L.E.O. zeigt den Unterschied und überschreibt nicht.
+- Vorher mit Schulleitung bzw. Untis-Admin klären, ob das so erlaubt ist (FRAGEN_SCHULE).
+- Bricht die interne Schnittstelle nach einem Untis-Update, schaltet L.E.O. das Senden ab und sagt es deutlich; Lesen und Datei-Import laufen weiter.
+
 ## 4 Ablauf für die Lehrkraft
 
-1. **Einrichten (einmal):** Mehr › WebUntis › Schule suchen (Name), App-Schlüssel per QR-Code scannen oder einfügen.
+1. **Einrichten (einmal):** Mehr › WebUntis › Schule (voreingestellt `osz-lus`), Benutzer mit Schlüssel bzw. App-Schlüssel per QR-Code eintragen.
    L.E.O. macht sofort einen **Verbindungstest** und zeigt als Kacheln, was geht: Stundenplan ✓, Klassen ✓, Schüler ✓,
    Geburtsdatum ✗, Fehlzeiten ✓. Jede Kachel klappt auf und zeigt, warum (E89).
 2. **Klassen übernehmen (je Halbjahr):** L.E.O. schlägt aus dem Stundenplan die eigenen Klassen vor (Klasse + Fach,
@@ -86,7 +132,7 @@ Eine Browser-App darf WebUntis nicht direkt abfragen: WebUntis erlaubt keine Anf
 | Modul | Was sich ändert |
 |---|---|
 | **Heute / Stundenleiste** (E82) | echte Stunden aus WebUntis inklusive Ausfall und Vertretung, statt Beispiel-Stundenplan |
-| **Live-Stunde** | Schüler, die in WebUntis für diese Stunde schon fehlen, sind vorbelegt (ausgegraut, antippbar zum Ändern). Weiterhin nur da/fehlt/Verspätung (E84) |
+| **Live-Stunde** | Schüler, die in WebUntis für diese Stunde schon fehlen, sind vorbelegt (ausgegraut, antippbar zum Ändern). Weiterhin nur da/fehlt/Verspätung (E84). Stufe 2: Knopf „an WebUntis senden“ mit Rückmeldung je Schüler (3.4) |
 | **Notenbuch** | Klausur-Leistung: Wer am Termin laut WebUntis fehlte, bekommt in der Zelle „fehlt E“ oder „fehlt UE“ (F5). Was daraus für die Note folgt (Nachschreiben, 0 Punkte/6), entscheidet die Lehrkraft per Antippen, L.E.O. rechnet nichts automatisch ein |
 | **Schüleransicht** | Fehlzeiten-Kachel mit E/UE/offen, Monats- und Wochentagsmuster; Klick zeigt die einzelnen Stunden mit WebUntis-Stand (E89) |
 | **30-%-Regel** (E62, UPZ-5) | je Klasse und Fach: Fehlstunden (E und UE zusammen) geteilt durch **gehaltene** Stunden laut WebUntis im Halbjahr. Stufen 15/20/30 % als Farbe, ab 30 % Hinweis „N im Zeugnis, Zeugniskonferenz“. Rechenweg hinter Info-Knopf |
@@ -102,11 +148,14 @@ Eine Browser-App darf WebUntis nicht direkt abfragen: WebUntis erlaubt keine Anf
 3. Schüler übernehmen mit Abgleich (neu/Abgang).
 4. Fehlzeiten mit E/UE, Klausur-Status im Notenbuch, 30-%-Kachel.
 5. Datei-Import als Rückfall mit Spaltenzuordnung.
+6. **Stufe 2: Anwesenheit senden** (3.4), erst nach Freigabe durch die Schule und zuerst nur in Konstantins eigenen Stunden.
+   Vorher einmal mitschauen, welche Aufrufe die WebUntis-Webseite beim Eintragen macht (ohne Schülerdaten zu speichern).
 
 Echte Schülerdaten landen dabei **nur im Browser** von Konstantin, nie im Repo (CLAUDE.md). Tests laufen mit erfundenen Untis-Antworten.
 
-## 8 Offene Fragen an Konstantin
+## 8 Antworten von Konstantin (18.11.2026)
 
-1. WebUntis-Adresse der Schule (z. B. `xyz.webuntis.com`, steht in der Adresszeile) und Schulname in WebUntis.
-2. Meldest du dich bei WebUntis über IServ an oder mit eigenem Passwort? Gibt es im Profil den Punkt „Freigaben“ mit QR-Code?
-3. Siehst du in WebUntis die Fehlzeiten deiner Schüler mit „entschuldigt/unentschuldigt“?
+1. WebUntis: `https://osz-lus.webuntis.com`, Leopold-Ullstein-Schule.
+2. Anmeldung über IServ (OpenID Connect), alternativ Benutzer mit Schlüssel möglich.
+3. Status E/UE wird von der Klassenleitung gesetzt, vorher „ungeklärt“; Fristen FOS 3 Tage, Berufsschule 14 Tage (3.3).
+   Wunsch: in L.E.O. erfasste Anwesenheit an WebUntis senden (3.4).
