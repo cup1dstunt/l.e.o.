@@ -5,15 +5,19 @@
 
   const d = app.d!;
 
-  // Schule und Benutzer dürfen sich das Gerät merken, der Schlüssel nie (nur Arbeitsspeicher).
+  // Schule und Benutzer merkt sich das Gerät immer, Schlüssel bzw. Passwort nur auf Wunsch (unverschlüsselt im Browser).
   const MERK = 'leo-untis-zugang';
+  const MERK_GEHEIM = 'leo-untis-geheim';
+  let geheimGemerkt = '';
+  try { geheimGemerkt = localStorage.getItem(MERK_GEHEIM) ?? ''; } catch { /* privat */ }
   let gemerkt: Partial<Zugang> = {};
   try { gemerkt = JSON.parse(localStorage.getItem(MERK) ?? '{}'); } catch { /* privat */ }
 
   let schule = $state(gemerkt.schule ?? 'osz-lus');
   let benutzer = $state(gemerkt.benutzer ?? '');
   let art = $state<Zugang['art']>(gemerkt.art ?? 'schluessel');
-  let geheim = $state('');
+  let geheim = $state(geheimGemerkt);
+  let merken = $state(true);
   let laeuft = $state(false);
   let ergebnisse = $state<Pruefung[]>([]);
   let offen = $state<string | null>(null);
@@ -36,7 +40,11 @@
 
   function pruefen() {
     if (!schule.trim() || !benutzer.trim() || !geheim) { zeige('Schule, Benutzer und Schlüssel bzw. Passwort ausfüllen'); return false; }
-    try { localStorage.setItem(MERK, JSON.stringify({ schule, benutzer, art })); } catch { /* egal */ }
+    try {
+      localStorage.setItem(MERK, JSON.stringify({ schule, benutzer, art }));
+      if (merken) localStorage.setItem(MERK_GEHEIM, geheim);
+      else localStorage.removeItem(MERK_GEHEIM);
+    } catch { /* egal */ }
     return true;
   }
 
@@ -51,7 +59,7 @@
         schritt = 'Übernehmen';
         ergebnis = uebernehmen(d, paket, { beispielEntfernen: beispielDa && beispielEntfernen, benutzer, schule });
         speichern();
-        if (!ergebnis.schueler) fehler = 'Keine Schüler gefunden. Vermutlich passt die Zuordnung über dein Kürzel nicht. Bitte den Verbindungstest laufen lassen und mir den Bericht schicken.';
+        if (!ergebnis.schueler) fehler = `Keine Schüler gefunden. L.E.O. konnte deine Kennung im Klassenbuch nicht sicher erkennen${d.einstellungen.untis?.kuerzel ? ` (gewählt: ${d.einstellungen.untis.kuerzel})` : ''}. Bitte melde dich mit diesem Hinweis.`;
       } finally { await sz.abmelden(); }
     } catch (err) {
       fehler = fehlerMeldung(err);
@@ -76,7 +84,6 @@
 
   async function testen() {
     if (!pruefen()) return;
-    try { localStorage.setItem(MERK, JSON.stringify({ schule, benutzer, art })); } catch { /* egal */ }
     ergebnisse = [];
     berichtText = '';
     offen = null;
@@ -106,7 +113,7 @@
   <section class="karte">
     <h2>Mit WebUntis abgleichen</h2>
     <p>L.E.O. holt deinen Stundenplan, deine Klassen mit Schülern und die Fehlzeiten deiner Stunden im laufenden Halbjahr. Es liest nur und trägt nichts in WebUntis ein.</p>
-    <p class="klein leise">„Nur Verbindung testen“ prüft, welche Daten ankommen, und speichert nichts. Der Schlüssel bzw. das Passwort bleibt nur im Arbeitsspeicher dieser Seite. Gemerkt werden Schule und Benutzername.</p>
+    <p class="klein leise">„Nur Verbindung testen“ prüft, welche Daten ankommen, und speichert nichts. Gemerkt werden Schule und Benutzername, auf Wunsch auch der Schlüssel. Er liegt dann unverschlüsselt in diesem Browser, also nur auf dem eigenen Gerät anhaken.</p>
 
     <form class="form" onsubmit={abgleichen}>
       <label class="feld"><span>Schule (in WebUntis die Adresszeile, hinter „school=“)</span>
@@ -124,6 +131,7 @@
       <label class="feld"><span>{art === 'schluessel' ? 'Schlüssel (WebUntis › Profil › Freigaben › Zugriff über Untis Mobile › Anzeigen)' : 'WebUntis-Passwort (nicht das IServ-Passwort)'}</span>
         <input type="password" bind:value={geheim} autocomplete={art === 'passwort' ? 'current-password' : 'off'} spellcheck="false" />
       </label>
+      <label class="zeile schalter"><input type="checkbox" bind:checked={merken} /> Schlüssel bzw. Passwort auf diesem Gerät merken</label>
       {#if beispielDa}
         <label class="zeile schalter"><input type="checkbox" bind:checked={beispielEntfernen} /> Beispielklassen und Beispielschüler beim Abgleich entfernen</label>
       {/if}
