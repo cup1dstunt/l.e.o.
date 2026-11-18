@@ -153,6 +153,22 @@ Weil das ein amtlicher Eintrag ist, gelten strenge Regeln:
 
 Echte Schülerdaten landen dabei **nur im Browser** von Konstantin, nie im Repo (CLAUDE.md). Tests laufen mit erfundenen Untis-Antworten.
 
+## 7a Ergebnis des ersten Verbindungstests (18.11.2026, 21:28, Konstantins Konto)
+
+| Abfrage | Ergebnis | Folge |
+|---|---|---|
+| Anmeldung (App-Schlüssel) | ✓ Lehrkraft, 5 Rechte | Weg A trägt |
+| Schuljahr, Zeitraster, Ferien | ✓ (Halbjahr 24.08.2026–29.01.2027, 5 Tage × 11 Stunden, 89 Ferien-/Feiertagseinträge) | Semesterplanung kann echte Daten nutzen |
+| Eigener Stundenplan | ✓ 27 Stunden in 2 Wochen, mit Ausfall (`code`) und Vertretungstext | Heute/Stundenleiste kann umgestellt werden |
+| Klassen | ✓ 68, mit `teacher1`/`teacher2` | Klassenleitung ablesbar |
+| Fächer, Räume | ✓ 204 / 86 | |
+| Schüler | ✓ **5028 (ganze Schule)**, Geschlecht 100 %, **kein Geburtsdatum** | Alter nur per Datei-Import oder von Hand; die Liste enthält **keine Klassenzuordnung** |
+| Fehlzeiten JSON-RPC (`getTimetableWithAbsences`) | ✓ **17 917 Einträge in 14 Tagen** (schulweit), Felder `studentId`, `teacherIds`, `date`, `startTime`, `absenceReason`, `excuseStatus`, `absentTime`, `checked` | E/UE kommt per Schnittstelle. Klassenlisten lassen sich vermutlich aus den Einträgen der eigenen Stunden ableiten (zweiter Test prüft das) |
+| Fehlzeiten Web-Schnittstelle | leer | Endpunkt ist für Schülerkonten gedacht, nicht nötig |
+| REST-Token | Fehler beim Lesen (Antwort als Text) | im zweiten Test behoben |
+
+**Datenschutz-Folge:** Das Lehrerkonto sieht Schüler und Fehlzeiten der ganzen Schule. L.E.O. übernimmt deshalb **nur** Schüler und Einträge aus den **eigenen Stunden** (bzw. als Klassenleitung der eigenen Klasse) und verwirft den Rest sofort im Arbeitsspeicher. Nichts Schulweites wird gespeichert.
+
 ## 8 Antworten von Konstantin (18.11.2026)
 
 1. WebUntis: `https://osz-lus.webuntis.com`, Leopold-Ullstein-Schule.
