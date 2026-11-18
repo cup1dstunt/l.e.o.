@@ -50,9 +50,17 @@ export function fehlzeitenVon(d: Daten, kursId: string, schuelerId: string) {
     liste,
     tageE: new Set(liste.filter((f) => f.status === 'E').map((f) => f.datum)).size,
     tageUE: new Set(liste.filter((f) => f.status === 'UE').map((f) => f.datum)).size,
+    tageOffen: new Set(liste.filter((f) => f.status === 'offen').map((f) => f.datum)).size,
     stunden,
     quote
   };
 }
 
 export const prozent = (x: number) => (x * 100).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' %';
+
+export const WOCHENTAGE = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
+/** Anzahl verschiedener Tage je Wochentag Mo–Fr */
+export function nachWochentag(daten: string[]) {
+  const tage = [...new Set(daten)];
+  return WOCHENTAGE.map((_, i) => tage.filter((t) => new Date(t + 'T12:00').getDay() === i + 1).length);
+}

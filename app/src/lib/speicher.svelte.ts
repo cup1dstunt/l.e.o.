@@ -1,6 +1,23 @@
 // Lokaler Speicher: alle Daten in IndexedDB dieses Browsers. Kein Server, keine Übertragung.
 import { beispielDaten } from './beispiel.ts';
 import type { Daten } from './typen.ts';
+import { ausVorlage, verteilen } from './sitzplan.ts';
+
+/** Ältere Sicherungen (0.4) auf den aktuellen Stand bringen. */
+function migrieren(d: Daten): Daten {
+  d.verspaetungen ??= [];
+  d.einstellungen.liveAnsicht ??= 'liste';
+  d.einstellungen.sperreMinuten ??= 15;
+  for (const k of d.kurse) {
+    k.gewichte.klausuren = 0.5;
+    k.gewichte.sonstige = 0.5;
+    if (!k.sitzplan) {
+      k.sitzplan = ausVorlage('reihen');
+      verteilen(k.sitzplan, k.schueler);
+    }
+  }
+  return d;
+}
 
 const DB = 'leo-prototyp';
 const STORE = 'daten';
@@ -51,7 +68,8 @@ export function speichern() {
 
 export async function laden() {
   try {
-    app.d = (await lesen()) ?? beispielDaten();
+    const alt = await lesen();
+    app.d = alt ? migrieren(alt) : beispielDaten();
     if (navigator.storage?.persist) navigator.storage.persist(); // Browser bitten, die Daten nicht zu löschen
   } catch (e) {
     app.fehler = 'Lokaler Speicher nicht verfügbar, Änderungen gehen beim Schließen verloren.';
@@ -61,7 +79,9 @@ export async function laden() {
 }
 
 export function zuruecksetzen() {
+  const pw = app.d?.einstellungen.passwort;
   app.d = beispielDaten();
+  app.d.einstellungen.passwort = pw; // Anmeldung bleibt
   speichern();
 }
 
@@ -77,7 +97,9 @@ export function exportieren() {
 export async function importieren(datei: File) {
   const d = JSON.parse(await datei.text());
   if (d?.version !== 1 || !Array.isArray(d.kurse)) throw new Error('Das ist keine L.E.O.-Sicherung.');
-  app.d = d;
+  const pw = app.d?.einstellungen.passwort;
+  app.d = migrieren(d);
+  if (pw) app.d.einstellungen.passwort = pw; // eigenes Passwort behalten
   speichern();
 }
 

@@ -1,6 +1,7 @@
 // Erfundene Beispieldaten. Keine echten Schülerdaten (CLAUDE.md, Datenschutz).
 import { BAUSTEINE } from './bausteine.ts';
-import type { Daten, Kurs, Leistung, MitarbeitEintrag, Fehlzeit, Notiz, Schueler, Stufe } from './typen.ts';
+import type { Daten, Kurs, Leistung, MitarbeitEintrag, Fehlzeit, Notiz, Schueler, Stufe, Verspaetung } from './typen.ts';
+import { ausVorlage, verteilen } from './sitzplan.ts';
 import { monatsVorschlag } from './rechnen.ts';
 
 function zufall(start: number) {
@@ -74,6 +75,11 @@ export function beispielDaten(heute = new Date()): Daten {
       gewichte: { klausuren: 0.5, sonstige: 0.5, mitarbeit: 0.6, sl: 0.4 },
       stundenGehalten: 48,
       lernstoff: {},
+      sitzplan: (() => {
+        const p = ausVorlage(fos ? 'reihen' : 'gruppen');
+        verteilen(p, [...sch].sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).map((x) => x.id));
+        return p;
+      })(),
       uebergang: { text: fos ? 'Unit 6 Reading bis Absatz 3, Vokabeln S. 84 offen' : 'Angebotsvergleich begonnen, Aufgabe 2 fehlt noch', datum: '2026-11-13' }
     };
   }
@@ -86,6 +92,7 @@ export function beispielDaten(heute = new Date()): Daten {
   // Mitarbeit: Smiley-Einträge seit September, 1–2 pro Woche und Schüler
   const mitarbeit: MitarbeitEintrag[] = [];
   const fehlzeiten: Fehlzeit[] = [];
+  const verspaetungen: Verspaetung[] = [];
   let n = 0;
   for (const k of kurse) {
     k.schueler.forEach((sid, i) => {
@@ -105,7 +112,18 @@ export function beispielDaten(heute = new Date()): Daten {
         d.setDate(d.getDate() + Math.floor(rnd() * 70));
         if (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 2);
         if (i === 3 && f < 4) while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
-        fehlzeiten.push({ id: neueId('f', n++), kursId: k.id, schuelerId: sid, datum: tag(d), stunden: 2, status: rnd() < 0.8 ? 'E' : 'UE' });
+        const neu = heute.getTime() - d.getTime() < 10 * 864e5; // letzte Tage: E/UE noch offen (E84)
+        fehlzeiten.push({ id: neueId('f', n++), kursId: k.id, schuelerId: sid, datum: tag(d), stunden: 2, status: neu ? 'offen' : rnd() < 0.8 ? 'E' : 'UE' });
+      }
+      // Verspätungen
+      const zuSpaet = i === 3 || i === 9 ? 5 : Math.floor(rnd() * 3);
+      for (let v = 0; v < zuSpaet; v++) {
+        const d = new Date('2026-09-01');
+        d.setDate(d.getDate() + Math.floor(rnd() * 70));
+        if (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 2);
+        if (i === 9 && v < 3) while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+        const min = 3 + Math.floor(rnd() * 20);
+        verspaetungen.push({ id: neueId('v', n++), kursId: k.id, schuelerId: sid, datum: tag(d), ankunft: `08:${String(min).padStart(2, '0')}`, minuten: min });
       }
     });
     // Monatsnoten Sep und Okt aus den Smileys vorschlagen und übernehmen, November bleibt offen
@@ -126,12 +144,14 @@ export function beispielDaten(heute = new Date()): Daten {
 
   // Stundenplan: beide Kurse jeden Tag, damit „Läuft gerade“ beim Testen oft etwas zeigt
   const stundenplan = [1, 2, 3, 4, 5].flatMap((t) => [
-    { kursId: 'k-fos', tag: t, beginn: t % 2 ? '08:00' : '09:45', ende: t % 2 ? '09:30' : '11:15' },
-    { kursId: 'k-osz', tag: t, beginn: t % 2 ? '11:45' : '13:30', ende: t % 2 ? '13:15' : '15:00' }
+    { kursId: 'k-fos', tag: t, beginn: '08:00', ende: '09:30' },
+    { kursId: t % 2 ? 'k-osz' : 'k-fos', tag: t, beginn: '09:45', ende: '11:15' },
+    { kursId: 'k-osz', tag: t, beginn: '11:45', ende: '13:15' },
+    ...(t === 2 || t === 4 ? [{ kursId: 'k-fos', tag: t, beginn: '13:30', ende: '15:00' }] : [])
   ]);
 
   return {
-    version: 1, schueler, kurse, mitarbeit, fehlzeiten, notizen, stundenplan,
-    einstellungen: { navigation: 'links', theme: 'system', stundenendeHinweis: true }
+    version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, stundenplan,
+    einstellungen: { navigation: 'links', theme: 'system', stundenendeHinweis: true, liveAnsicht: 'liste', sperreMinuten: 15 }
   };
 }

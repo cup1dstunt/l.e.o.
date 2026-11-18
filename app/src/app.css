@@ -5,6 +5,8 @@
 :root {
   --leo-mit-1: #d5e8da; --leo-mit-2: #e6efd9; --leo-mit-3: #faf0c4; --leo-mit-4: #fbe0c6; --leo-mit-5: #f9e3de;
   --leo-mitb-1: #8fc4a0; --leo-mitb-2: #c5dcae; --leo-mitb-3: #e9cf6a; --leo-mitb-4: #eba461; --leo-mitb-5: #e6a99d;
+  /* kräftigere Töne für den Verlauf (E88) */
+  --leo-mitv-1: #3d9a62; --leo-mitv-2: #8cc265; --leo-mitv-3: #e3bf3c; --leo-mitv-4: #e8893a; --leo-mitv-5: #d4553f;
   --leo-gesicht: #2b2f33;
   color-scheme: light;
 }
@@ -53,6 +55,7 @@ h2 { font-size: var(--leo-text-l); margin: 0; font-weight: 650; }
 .nta { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid var(--leo-akzent); color: var(--leo-akzent); border-radius: 50%; font-size: 11px; font-weight: 700; }
 .warn { color: var(--leo-warnung); }
 .chip { display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 0 12px; border-radius: var(--leo-r-pill); border: 1px solid var(--leo-linie); background: var(--leo-karte); }
+.chips, .chipzeile { align-items: flex-start; }
 .chip.pos { background: var(--leo-mit-2); border-color: transparent; color: #1d2125; }
 .chip.neg { background: var(--leo-mit-5); border-color: transparent; color: #1d2125; }
 .chip.neu { background: var(--leo-mit-3); border-color: transparent; color: #1d2125; }

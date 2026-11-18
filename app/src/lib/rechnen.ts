@@ -85,7 +85,8 @@ export const zahl = (x: number | null, stellen = 2) =>
 export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
   const fos = kurs.profil === 'FOS';
   const r = (x: number | null) => (x === null ? null : fos ? kaufm(x) : x);
-  const g = kurs.gewichte;
+  // Klausuren : AT ist fest 50 : 50 (E83), frei ist nur mündlich : Tests
+  const g = { ...kurs.gewichte, klausuren: 0.5, sonstige: 0.5 };
   const weg: string[] = [];
 
   const kaRoh = mittel(gruppenPosten(kurs, schuelerId, 'klausuren'));
@@ -99,7 +100,7 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
     roh === null ? 'leer, zählt nicht' : fos ? `${zahl(roh)} → ${gerundet}` : zahl(roh);
 
   weg.push(`Klausuren: ${fmt(kaRoh, ka)}`);
-  weg.push(`Mitarbeit: ${fmt(maRoh, ma)}`);
+  weg.push(`Mündliche Leistungen: ${fmt(maRoh, ma)}`);
   weg.push(`Tests und Sonstiges: ${fmt(slRoh, sl)}`);
 
   const sonstRoh = mittel([
@@ -107,14 +108,14 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
     { wert: sl, gewicht: g.sl }
   ]);
   const sonstige = r(sonstRoh);
-  weg.push(`Sonstige Leistungen = Mitarbeit × ${g.mitarbeit} + Tests × ${g.sl}: ${fmt(sonstRoh, sonstige)}`);
+  weg.push(`AT = mündlich × ${g.mitarbeit} + Tests × ${g.sl}: ${fmt(sonstRoh, sonstige)}`);
 
   const gesRoh = mittel([
     { wert: ka, gewicht: g.klausuren },
     { wert: sonstige, gewicht: g.sonstige }
   ]);
   const gesamt = r(gesRoh);
-  weg.push(`Gesamt = Klausuren × ${g.klausuren} + Sonstige × ${g.sonstige}: ${fmt(gesRoh, gesamt)}`);
+  weg.push(`Gesamt = Klausuren 50 % + AT 50 %: ${fmt(gesRoh, gesamt)}`);
 
   // Zum Vergleich: dieselbe Rechnung ohne Zwischenrundung
   const sonstEx = mittel([
@@ -187,4 +188,25 @@ export function warnungen(kurs: Kurs, e: Ergebnis): Warnung[] {
   const anzahl = kurs.leistungen.filter((l) => l.gruppe !== 'mitarbeit').length;
   if (anzahl && e.fehlend > anzahl / 2) w.push({ art: 'wenig', text: 'wenige Noten' });
   return w;
+}
+
+/** Was-wäre-wenn mit mehreren angenommenen Werten und zusätzlichen Leistungen. Speichert nichts. */
+export function rechneAngenommen(
+  kurs: Kurs,
+  schuelerId: string,
+  werte: Record<string, number>,
+  extra: { gruppe: Gruppe; wert: number; gewicht: number }[] = []
+): Ergebnis {
+  const zellen = { ...kurs.zellen };
+  for (const [lid, w] of Object.entries(werte)) {
+    const k = zellSchluessel(lid, schuelerId);
+    zellen[k] = { ...zellen[k], wert: w, status: undefined };
+  }
+  const leistungen = [...kurs.leistungen];
+  extra.forEach((x, i) => {
+    const id = `__annahme${i}`;
+    leistungen.push({ id, name: 'angenommen', art: 'Annahme', gruppe: x.gruppe, gewicht: x.gewicht });
+    zellen[zellSchluessel(id, schuelerId)] = { wert: x.wert };
+  });
+  return rechne({ ...kurs, zellen, leistungen }, schuelerId);
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from '$lib/speicher.svelte';
-  import { stundenHeute, datumKurz, name } from '$lib/hilfen';
+  import { stundenHeute, datumKurz, name, minuten, heuteISO } from '$lib/hilfen';
+  import { sitzung } from '$lib/sitzung.svelte';
   import { zellSchluessel, rechne, warnungen } from '$lib/rechnen';
   import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
   import { onMount } from 'svelte';
@@ -24,6 +25,11 @@
     })).filter((x) => x !== null)
   );
 
+  const hISO = heuteISO();
+  const heuteMitarbeit = $derived(d.mitarbeit.filter((e) => e.zeit.slice(0, 10) === hISO).length);
+  const heuteFehlt = $derived(d.fehlzeiten.filter((f) => f.datum === hISO).length);
+  const heuteZuSpaet = $derived(d.verspaetungen.filter((v) => v.datum === hISO).length);
+
   // Offene Punkte: Nachschreiben (E bei Klausuren, I44) und offene Monatsnoten
   const offen = $derived.by(() => {
     const liste: { text: string; href: string }[] = [];
@@ -41,11 +47,28 @@
   });
 </script>
 
+<header class="kopf">
+  <h1>Heute</h1>
+  <span class="leise">{jetzt.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })} · {plan.heute.length} {plan.heute.length === 1 ? 'Stunde' : 'Stunden'}</span>
+  <span class="raum"></span>
+  <button class="pille" onclick={() => (sitzung.suche = true)}>Suchen <b>Strg K</b></button>
+  <button class="pille" onclick={() => (sitzung.entsperrt = false)}>Sperren</button>
+</header>
+
 <div class="seite">
-  <header>
-    <h1>Heute</h1>
-    <span class="leise">{jetzt.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-  </header>
+  {#if plan.heute.length}
+    <nav class="leiste" aria-label="Stunden heute">
+      {#each plan.heute as s}
+        {@const k = kurs(s.kursId)}
+        {@const vorbei = minuten(s.ende) <= plan.min}
+        <a href="/stunde/{k.id}" class="stunde" class:jetzt={s === plan.laeuft} class:vorbei>
+          <span class="zahl klein">{s.beginn}{s === plan.laeuft ? ' · läuft' : vorbei ? ' · ✓' : ''}</span>
+          <b>{k.fach} {k.klasse}</b>
+          {#if s === plan.laeuft}<span class="mini-balken"><span style:width="{Math.min(100, ((plan.min - minuten(s.beginn)) / (minuten(s.ende) - minuten(s.beginn))) * 100)}%"></span></span>{/if}
+        </a>
+      {/each}
+    </nav>
+  {/if}
 
   <div class="raster">
     {#if haupt}
@@ -74,18 +97,12 @@
     {/if}
 
     <section class="karte">
-      <h2>Stunden heute</h2>
-      {#if plan.heute.length === 0}<p class="leise">Heute kein Unterricht.</p>{/if}
-      <ul class="liste">
-        {#each plan.heute as s}
-          {@const k = kurs(s.kursId)}
-          <li class:jetzt={s === plan.laeuft}>
-            <span class="zahl zeit">{s.beginn}–{s.ende}</span>
-            <a href="/stunde/{k.id}">{k.name}</a>
-            <a class="mini" href="/stunde/{k.id}?mitarbeit=1" aria-label="Mitarbeit {k.name}">Mitarbeit</a>
-          </li>
-        {/each}
-      </ul>
+      <h2>Heute erfasst</h2>
+      <div class="zahlen">
+        <div><b class="zahl">{heuteMitarbeit}</b><span class="klein leise">Mitarbeit-Einträge</span></div>
+        <div><b class="zahl">{heuteFehlt}</b><span class="klein leise">fehlen</span></div>
+        <div><b class="zahl">{heuteZuSpaet}</b><span class="klein leise">verspätet</span></div>
+      </div>
     </section>
 
     <section class="karte">
@@ -114,8 +131,19 @@
 </div>
 
 <style>
-  .seite { padding: 24px 32px 40px; max-width: 1400px; }
-  header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+  .kopf { background: var(--leo-karte); border-bottom: 1px solid var(--leo-linie); padding: 14px 32px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .kopf h1 { font-size: 20px; }
+  .seite { padding: 20px 32px 40px; max-width: 1500px; }
+  .leiste { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(170px, 1fr); gap: 12px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 2px; }
+  .stunde { background: var(--leo-karte); border: 1px solid var(--leo-linie); border-radius: var(--leo-r-l); padding: 12px 18px; text-decoration: none; color: var(--leo-tinte); display: flex; flex-direction: column; gap: 2px; min-height: 72px; }
+  .stunde b { font-size: 16px; }
+  .stunde.jetzt { background: var(--leo-akzent); border-color: var(--leo-akzent); color: var(--leo-auf-akzent); }
+  .stunde.vorbei { opacity: .6; }
+  .mini-balken { height: 4px; border-radius: 9px; background: rgba(255,255,255,.3); margin-top: 6px; overflow: hidden; }
+  .mini-balken span { display: block; height: 100%; background: var(--leo-auf-akzent); }
+  .zahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .zahlen div { display: flex; flex-direction: column; }
+  .zahlen b { font-size: 26px; font-weight: 750; }
   .raster { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
   .laeuft { grid-row: span 2; display: flex; flex-direction: column; gap: 14px; padding: 22px 26px; }
   .laeuft.aktiv { border: 2px solid var(--leo-akzent); }
@@ -129,13 +157,10 @@
   .liste { list-style: none; padding: 0; margin: 10px 0 0; }
   .liste li { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px dashed var(--leo-linie); }
   .liste li:first-child { border-top: 0; }
-  .liste li.jetzt { font-weight: 650; }
   .liste a { text-decoration: none; color: var(--leo-tinte); }
-  .liste .mini { margin-left: auto; color: var(--leo-akzent); font-size: 13px; font-weight: 600; padding: 8px 4px; }
-  .zeit { color: var(--leo-leise); width: 92px; }
   .rot { color: var(--leo-warnung); font-weight: 600; }
   .gold { color: #8a6200; font-weight: 600; }
   .mini2 { margin-left: auto; }
   .platzhalter { border-style: dashed; background: transparent; }
-  @media (max-width: 900px) { .raster { grid-template-columns: 1fr; } .laeuft { grid-row: auto; } .seite { padding: 16px; } }
+  @media (max-width: 900px) { .raster { grid-template-columns: 1fr; } .laeuft { grid-row: auto; } .seite { padding: 16px; } .kopf { padding: 12px 16px; } }
 </style>

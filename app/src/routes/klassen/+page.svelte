@@ -4,7 +4,7 @@
 </script>
 
 <div class="seite">
-  <h1>Kurse</h1>
+  <h1>Klassen</h1>
   <div class="raster">
     {#each d.kurse as k}
       <div class="karte">

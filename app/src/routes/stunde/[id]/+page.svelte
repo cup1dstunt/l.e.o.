@@ -57,14 +57,40 @@
     }
   }
 
-  const ANW = ['da', 'E', 'UE'] as const;
-  function anwesenheit(s: Schueler, ziel?: 'da' | 'E' | 'UE') {
-    const f = fehlt(s.id);
-    const jetztStatus = f ? f.status : 'da';
-    const neu = ziel ?? ANW[(ANW.indexOf(jetztStatus) + 1) % 3];
-    if (f) d.fehlzeiten.splice(d.fehlzeiten.indexOf(f), 1);
-    if (neu !== 'da') d.fehlzeiten.push({ id: neueId(), kursId: kurs.id, schuelerId: s.id, datum: heute, stunden: 2, status: neu });
+  // Anwesenheit (E84): nur da / fehlt. Zweiter Klick auf „fehlt“ erfasst eine Verspätung.
+  const zuSpaet = (sid: string) => d.verspaetungen.find((v) => v.kursId === kurs.id && v.schuelerId === sid && v.datum === heute);
+  const hhmm = (dt = new Date()) => `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
+  function fehltSetzen(s: Schueler) {
+    const v = zuSpaet(s.id);
+    if (v) d.verspaetungen.splice(d.verspaetungen.indexOf(v), 1);
+    if (!fehlt(s.id)) d.fehlzeiten.push({ id: neueId(), kursId: kurs.id, schuelerId: s.id, datum: heute, stunden: 2, status: 'offen' });
     speichern();
+  }
+  function daSetzen(s: Schueler) {
+    const f = fehlt(s.id);
+    if (f) d.fehlzeiten.splice(d.fehlzeiten.indexOf(f), 1);
+    const v = zuSpaet(s.id);
+    if (v) d.verspaetungen.splice(d.verspaetungen.indexOf(v), 1);
+    speichern();
+  }
+  let verspaetung = $state<{ s: Schueler; zeit: string } | null>(null);
+  function anwesenheitKlick(s: Schueler) {
+    if (fehlt(s.id)) verspaetung = { s, zeit: hhmm() }; // zweiter Klick: Verspätung anbieten
+    else if (zuSpaet(s.id)) verspaetung = { s, zeit: zuSpaet(s.id)!.ankunft };
+    else {
+      fehltSetzen(s);
+      zeige(`${kurzname(s)} fehlt · nochmal tippen für Verspätung`, () => daSetzen(s));
+    }
+  }
+  function verspaetungSpeichern() {
+    if (!verspaetung) return;
+    const { s, zeit } = verspaetung;
+    daSetzen(s);
+    const min = Math.max(0, minuten(zeit) - minuten(slot.beginn));
+    d.verspaetungen.push({ id: neueId(), kursId: kurs.id, schuelerId: s.id, datum: heute, ankunft: zeit, minuten: min });
+    speichern();
+    zeige(`${kurzname(s)}: ${min} min verspätet`);
+    verspaetung = null;
   }
 
   // Fenster mit Textbausteinen und Kommentar
@@ -141,6 +167,10 @@
 {#if kurs}
   <KursKopf {kurs} aktiv="stunde" info="Live-Stunde · Raum {kurs.raum} · {anwesend.length} von {liste.length} da">
     {#snippet rechts()}
+      <div class="umschalter" role="group" aria-label="Ansicht">
+        <button aria-pressed={d.einstellungen.liveAnsicht === 'liste'} onclick={() => { d.einstellungen.liveAnsicht = 'liste'; speichern(); }}>Liste</button>
+        <button aria-pressed={d.einstellungen.liveAnsicht === 'sitzplan'} onclick={() => { d.einstellungen.liveAnsicht = 'sitzplan'; speichern(); }}>Sitzplan</button>
+      </div>
       <button class="pille" aria-pressed={nurOhne} onclick={() => (nurOhne = !nurOhne)}>Noch nicht bewertet <b>{ohneEintrag}</b></button>
       <button class="pille" aria-pressed={nurMitarbeit} onclick={() => (nurMitarbeit = !nurMitarbeit)}>Nur Mitarbeit</button>
       <button class="knopf haupt" onclick={abschliessen}>Stunde abschließen</button>
@@ -158,17 +188,45 @@
 
     <div class="bereich" class:breit={nurMitarbeit}>
       <section class="karte schueler">
+        {#if d.einstellungen.liveAnsicht === 'sitzplan'}
+          {@const sp = kurs.sitzplan}
+          <div class="tafel klein leise">vorne · Tafel</div>
+          <div class="sitze" style:grid-template-columns="repeat({sp.spalten}, minmax(0, 1fr))">
+            {#each sp.tische as tisch, i}
+              {@const sid = sp.belegung[i]}
+              {@const s = sid ? d.schueler.find((x) => x.id === sid) : undefined}
+              {#if !tisch}<div></div>
+              {:else if !s}<div class="platz frei"></div>
+              {:else}
+                {@const f = fehlt(s.id)}
+                {@const v = zuSpaet(s.id)}
+                {@const e = letzter(s.id)}
+                <button class="platz" class:fehlt={!!f} class:gewaehlt={zufallName?.id === s.id} onclick={() => oeffnen(s)}>
+                  <span class="pn">{kurzname(s)}</span>
+                  <span class="pu">
+                    {#if f}<span class="kennz ue">fehlt</span>{:else if v}<span class="kennz">+{v.minuten}′</span>{/if}
+                    {#if e && !f}<Smiley stufe={e.stufe} groesse={24} />{/if}
+                  </span>
+                </button>
+              {/if}
+            {/each}
+          </div>
+          {@const ohnePlatz = liste.filter((x) => !Object.values(sp.belegung).includes(x.id))}
+          {#if ohnePlatz.length}<p class="klein leise">Ohne Platz: {ohnePlatz.map(kurzname).join(', ')} · <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>{/if}
+          <p class="klein leise hilfe">Platz antippen: Mitarbeit, Bausteine und Anwesenheit. <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>
+        {:else}
         <div class="raster">
           {#each (nurOhne ? liste.filter((x) => !letzter(x.id) && !fehlt(x.id)) : liste) as s (s.id)}
             {@const f = fehlt(s.id)}
             {@const e = letzter(s.id)}
+            {@const v = zuSpaet(s.id)}
             <div class="sk" class:fehlt={!!f} class:gewaehlt={zufallName?.id === s.id}>
               <div class="zeile">
                 <button class="nm" onclick={() => oeffnen(s)} title="Bausteine, Kommentar, Anwesenheit">{kurzname(s)}</button>
-                <button class="anw" class:e={f?.status === 'E'} class:ue={f?.status === 'UE'} onclick={() => anwesenheit(s)} aria-label="Anwesenheit {name(s)}: {f ? f.status : 'da'}">{f ? f.status : 'da'}</button>
+                <button class="anw" class:fehlt={!!f} class:spaet={!!v} onclick={() => anwesenheitKlick(s)} aria-label="Anwesenheit {name(s)}">{f ? 'fehlt' : v ? `+${v.minuten}′` : 'da'}</button>
               </div>
               {#if f}
-                <div class="klein leise fehltext">{f.status === 'E' ? 'entschuldigt' : 'unentschuldigt'} · Tipp auf „{f.status}“ ändert</div>
+                <div class="klein leise fehltext">fehlt · nochmal auf „fehlt“ tippen, wenn jemand später kommt</div>
               {:else}
                 <div class="smileys" role="group" aria-label="Mitarbeit {name(s)}">
                   {#each STUFEN as st}
@@ -186,9 +244,10 @@
           {/each}
         </div>
         <p class="klein leise hilfe">
-          Tipp auf ein Smiley speichert sofort. Doppelklick oder langes Drücken öffnet Textbausteine und Kommentar. „da“ antippen wechselt zu E und UE.
+          Tipp auf ein Smiley speichert sofort. Doppelklick oder langes Drücken öffnet Textbausteine und Kommentar. „da“ antippen = fehlt, nochmal = Verspätung mit Uhrzeit.
           {#if d.einstellungen.stundenendeHinweis && ohneEintrag}<br /><b>{ohneEintrag} Anwesende noch ohne Mitarbeitseintrag.</b>{/if}
         </p>
+        {/if}
       </section>
 
       {#if !nurMitarbeit}
@@ -229,16 +288,35 @@
     </div>
   </div>
 
+  {#if verspaetung}
+    <div class="hintergrund" role="presentation" onclick={(ev) => ev.target === ev.currentTarget && (verspaetung = null)}>
+      <div class="schweben dialog klein-dlg" role="dialog" aria-modal="true" aria-label="Verspätung">
+        <h2>{name(verspaetung.s)} kommt später</h2>
+        <p class="klein leise">Ankunft (Vorschlag: jetzt). Stundenbeginn {slot.beginn}.</p>
+        <div class="zeile">
+          <input class="eingabe zeitfeld" type="time" bind:value={verspaetung.zeit} />
+          <span class="leise">= {Math.max(0, minuten(verspaetung.zeit || '00:00') - minuten(slot.beginn))} min</span>
+        </div>
+        <div class="zeile ende wrap">
+          <button class="knopf leise" onclick={() => { if (verspaetung) fehltSetzen(verspaetung.s); verspaetung = null; }}>Fehlt doch</button>
+          <button class="knopf leise" onclick={() => { if (verspaetung) daSetzen(verspaetung.s); verspaetung = null; }}>Pünktlich da</button>
+          <button class="knopf haupt" onclick={verspaetungSpeichern}>Verspätung speichern</button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
   {#if fenster}
     {@const s = fenster.s}
     {@const f = fehlt(s.id)}
+    {@const v = zuSpaet(s.id)}
     <div class="hintergrund" role="presentation" onclick={(ev) => ev.target === ev.currentTarget && (fenster = null)}>
       <div class="schweben dialog" role="dialog" aria-modal="true" aria-label="Mitarbeit {name(s)}">
         <div class="zeile"><h2 class="raum">{name(s)}</h2><a class="klein" href="/schueler/{s.id}?kurs={kurs.id}">Schülerkarte</a></div>
         <div class="anwzeile">
-          {#each ANW as a}
-            <button class="pille" aria-pressed={(f?.status ?? 'da') === a} onclick={() => anwesenheit(s, a)}>{a === 'da' ? 'anwesend' : a === 'E' ? 'E entschuldigt' : 'UE unentschuldigt'}</button>
-          {/each}
+          <button class="pille" aria-pressed={!f && !v} onclick={() => daSetzen(s)}>anwesend</button>
+          <button class="pille" aria-pressed={!!f} onclick={() => fehltSetzen(s)}>fehlt</button>
+          <button class="pille" aria-pressed={!!v} onclick={() => { fenster = null; verspaetung = { s, zeit: v?.ankunft ?? hhmm() }; }}>{v ? `verspätet ${v.minuten} min` : 'verspätet …'}</button>
         </div>
         {#if !f}
           <p class="klein leise">Mitarbeit heute</p>
@@ -282,8 +360,8 @@
   .sk.gewaehlt { background: var(--leo-auswahl); border: 2px solid var(--leo-akzent); }
   .nm { flex: 1; text-align: left; background: none; border: 0; font-weight: 650; font-size: 15px; padding: 6px 0; min-height: 36px; }
   .anw { min-width: 44px; min-height: 32px; border-radius: var(--leo-r-s); border: 1px solid var(--leo-linie); background: var(--leo-karte); color: var(--leo-leise); font-size: 12px; font-weight: 700; }
-  .anw.e { background: var(--leo-taste); color: var(--leo-tinte); }
-  .anw.ue { background: var(--leo-warnung-hell); color: var(--leo-warnung); border-color: transparent; }
+  .anw.fehlt { background: var(--leo-warnung-hell); color: var(--leo-warnung); border-color: transparent; }
+  .anw.spaet { background: var(--leo-stern-hell); color: #8a6200; border-color: transparent; }
   .smileys { display: flex; justify-content: space-between; }
   .sm { border: 0; background: none; padding: 3px; border-radius: 50%; line-height: 0; -webkit-touch-callout: none; user-select: none; touch-action: manipulation; }
   .sm.an { box-shadow: 0 0 0 2px var(--leo-akzent); }
@@ -291,6 +369,20 @@
   .fehltext { padding: 8px 0; }
   .hilfe { margin: 14px 4px 0; }
   aside { display: flex; flex-direction: column; gap: 16px; }
+  .umschalter { display: inline-flex; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-pill); overflow: hidden; }
+  .umschalter button { border: 0; background: var(--leo-karte); padding: 0 14px; min-height: 34px; color: var(--leo-leise); }
+  .umschalter button[aria-pressed='true'] { background: var(--leo-akzent); color: var(--leo-auf-akzent); font-weight: 600; }
+  .tafel { text-align: center; border-bottom: 3px solid var(--leo-linie); margin: 0 20% 14px; padding-bottom: 4px; }
+  .sitze { display: grid; gap: 6px; }
+  .platz { min-height: 64px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); background: var(--leo-karte); padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; }
+  .platz.frei { background: var(--leo-flaeche-leise); border-style: dashed; }
+  .platz.fehlt { background: var(--leo-taste); color: var(--leo-leise); }
+  .platz.gewaehlt { background: var(--leo-auswahl); border: 2px solid var(--leo-akzent); }
+  .pn { font-weight: 650; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pu { display: flex; justify-content: flex-end; align-items: center; gap: 4px; line-height: 0; }
+  .zeitfeld { font-size: 20px; }
+  .klein-dlg { width: min(440px, 100%); }
+  .wrap { flex-wrap: wrap; }
   .stehen { background: var(--leo-stern-hell); border: 1px solid #ecd28a; border-radius: var(--leo-r-l); padding: 12px 18px; }
   .stehen p { margin: 4px 0 0; font-size: 15px; }
   .gz { margin: 10px 0; flex-wrap: wrap; }

@@ -1,7 +1,7 @@
 // Prüft den Rechenkern gegen RECHENLOGIK.md (Abschnitt 5) und die UPZ-Referenzwerte (FOS).
 // Aufruf: npm test
 import { readFileSync } from 'node:fs';
-import { mittel, rechne, kaufm, monatsVorschlag, noetigeNote } from '../src/lib/rechnen.ts';
+import { mittel, rechne, kaufm, monatsVorschlag, noetigeNote, rechneAngenommen } from '../src/lib/rechnen.ts';
 import type { Kurs } from '../src/lib/typen.ts';
 
 let ok = 0;
@@ -51,7 +51,7 @@ for (const s of ref.profile.fos.schueler) {
   if (s.mitarbeit_prozent !== null && s.mitarbeit_prozent !== undefined) zellen['ma:S'] = { wert: npAusProzent(s.mitarbeit_prozent) };
   const kurs: Kurs = {
     id: 'x', name: '', fach: '', klasse: '', raum: '', profil: 'FOS', schueler: ['S'], endnoten: {}, stundenGehalten: 0,
-    lernstoff: {}, uebergang: null, zellen,
+    lernstoff: {}, uebergang: null, zellen, sitzplan: { vorlage: 'leer', spalten: 0, reihen: 0, tische: [], belegung: {} },
     gewichte: { klausuren: 0.5, sonstige: 0.5, mitarbeit: 0.6, sl: 0.4 },
     leistungen: [
       { id: 'k1', name: 'K1', gruppe: 'klausuren', art: 'Klausur', gewicht: 0.5 },
@@ -67,7 +67,7 @@ for (const s of ref.profile.fos.schueler) {
 // Was-wäre-wenn: FOS, Klausur 1 = 4, Rest 8 → welche Klausur 2 für mindestens 5 Gesamt?
 {
   const kurs: Kurs = {
-    id: 'w', name: '', fach: '', klasse: '', raum: '', profil: 'FOS', schueler: ['S'], endnoten: {}, stundenGehalten: 0, lernstoff: {}, uebergang: null,
+    id: 'w', name: '', fach: '', klasse: '', raum: '', profil: 'FOS', schueler: ['S'], endnoten: {}, stundenGehalten: 0, lernstoff: {}, uebergang: null, sitzplan: { vorlage: 'leer', spalten: 0, reihen: 0, tische: [], belegung: {} },
     gewichte: { klausuren: 0.5, sonstige: 0.5, mitarbeit: 0.6, sl: 0.4 },
     leistungen: [
       { id: 'k1', name: 'K1', gruppe: 'klausuren', art: 'Klausur', gewicht: 1 },
@@ -79,6 +79,10 @@ for (const s of ref.profile.fos.schueler) {
   // K-Ø = round((0 + x) / 2), Sonstige 6, Gesamt = round((K + 6) / 2) >= 8 → K >= 10 → x >= 19 unmöglich; Ziel 5 → K >= 3 (Rundung 4,5 → 5) → x >= 5
   gleich('Was-wäre-wenn Ziel 5', noetigeNote(kurs, 'S', 'k2', 5), 5);
   gleich('Was-wäre-wenn Ziel 8', noetigeNote(kurs, 'S', 'k2', 8), 'unmoeglich');
+  // Mehrere Annahmen: K2 = 15, zusätzlicher Test 15 → K-Ø 8, AT = round(0,6·6 + 0,4·15) = 10, Gesamt 9
+  gleich('Annahmen', rechneAngenommen(kurs, 'S', { k2: 15 }, [{ gruppe: 'sl', wert: 15, gewicht: 1 }]).gesamt, 9);
+  // Klausuren : AT bleibt fest 50 : 50, auch wenn gespeicherte Gewichte abweichen (E83)
+  gleich('fest 50:50', rechne({ ...kurs, gewichte: { ...kurs.gewichte, klausuren: 0.9, sonstige: 0.1 } }, 'S').gesamt, rechne(kurs, 'S').gesamt);
 }
 
 console.log(`${ok} bestanden, ${fehler} fehlgeschlagen`);
