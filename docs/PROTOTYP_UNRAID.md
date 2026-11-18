@@ -94,9 +94,20 @@ Ungetestet: Ich konnte das fertige Image nicht komplett auf einem Unraid starten
 | Sitzplan | Lehrersicht mit Lehrertisch unten (E91), Vorlagen (Reihen, U-Form, Gruppentische, Doppel-U, leer), Tische an/aus, Raster ändern, alphabetisch oder zufällig setzen, Ziehen oder Antippen zum Setzen und Tauschen (E86) |
 | Planung | kommende Stunden mit Stoff und Hausaufgabe, Blöcke im Halbjahr (Beispiel-Ferien) |
 | Schülerkarte | Kacheln Klausur 1, Klausur 2, AT, mündlich Ø, Tests Ø, jede aufklappbar mit Herkunft (E89), Verlaufsgrafik mündlich, Fehlzeiten-Kacheln zeigen die Tage, Verspätungen mit Minuten, Wochentag-Auswertung für Fehltage oder Verspätungen, Mitarbeit je Monat in kräftigen Farben mit Trendpfeil, Monat antippen zeigt die Einträge (E88), Notizen |
-| Mehr | Anmeldung, Navigation links/rechts/unten, hell/dunkel, Sicherung, Beispieldaten neu laden |
+| Mehr | Anmeldung, Navigation links/rechts/unten, hell/dunkel, Sicherung, Beispieldaten neu laden, **WebUntis-Verbindungstest** (siehe unten) |
 
-Noch nicht drin: Kriterienraster und Selbsteinschätzungsbogen für mündliche Leistungen (FB7), Kalender, WebUntis/IServ.
+Noch nicht drin: Kriterienraster und Selbsteinschätzungsbogen für mündliche Leistungen (FB7), Kalender, IServ. WebUntis nur als Verbindungstest, die Daten werden noch nicht übernommen.
+
+## WebUntis-Verbindungstest (V11, E96)
+
+**Mehr › WebUntis › Verbindungstest öffnen.** Schule (`osz-lus`), WebUntis-Benutzername und App-Schlüssel oder Passwort eingeben, „Verbindung testen“.
+Der Test meldet sich an und prüft zwölf Abfragen (Schuljahr, Zeitraster, Ferien, eigener Stundenplan, Klassen, Fächer, Räume, Schüler, Fehlzeiten auf zwei Wegen, REST-Token).
+Jede Kachel klappt auf und zeigt, wofür L.E.O. die Daten braucht, und welche Felder gefüllt sind. Er **liest nur**, trägt nichts in WebUntis ein, speichert nichts und zeigt keine Namen.
+„Bericht kopieren“ erzeugt einen Text nur mit Status, Anzahlen und Feldnamen, den du Claude schicken kannst.
+
+- **App-Schlüssel:** in WebUntis › Profil (oben rechts) › **Freigaben** › „Zugriff über Untis Mobile“ › **Anzeigen**. Der Text unter dem QR-Code ist der Schlüssel. Er wird nur für den Test im Arbeitsspeicher gehalten.
+- **So kommt der Browser an WebUntis:** Der nginx im Container reicht `/WebUntis/` an `osz-lus.webuntis.com` durch (ohne Zwischenspeicher und ohne Zugriffsprotokoll). Für eine andere Schule im Compose unter `environment:` `UNTIS_SERVER=<schule>.webuntis.com` setzen.
+- **Ungetestet:** Ich konnte weder WebUntis erreichen noch das nginx-Image starten. Wenn der Test „Durchreicher antwortet mit 502“ meldet, liegt es am Container (DNS oder Zertifikat), bei „Benutzer oder Schlüssel falsch“ an der Anmeldung. Die Uhr des Geräts muss stimmen, sonst passt der Einmalcode des Schlüssels nicht.
 
 ## Bekannte Grenzen (ehrlich)
 

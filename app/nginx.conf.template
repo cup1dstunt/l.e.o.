@@ -1,0 +1,50 @@
+# L.E.O. Prototyp. Vorlage: Beim Start setzt das nginx-Image ${UNTIS_SERVER} und ${NGINX_LOCAL_RESOLVERS} ein.
+server {
+  listen 80;
+  server_name _;
+  root /usr/share/nginx/html;
+
+  # Keine Noten auf dem Server: nginx liefert nur die App-Dateien aus.
+  location / {
+    try_files $uri $uri/ /index.html;
+    add_header Cache-Control "no-cache";
+  }
+  # Dateien mit Versions-Hash dürfen lange im Cache bleiben
+  location /_app/immutable/ {
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+  location = /service-worker.js { add_header Cache-Control "no-cache"; }
+
+  # Durchreicher zu WebUntis (V11): gleiche Adresse für den Browser, daher kein CORS-Problem.
+  # Reicht nur durch: kein Zwischenspeicher, kein Zugriffsprotokoll, keine Daten auf dem Server.
+  location /WebUntis/ {
+    access_log off;
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=300s ipv6=off;
+    resolver_timeout 5s;
+    set $untis https://${UNTIS_SERVER};
+    proxy_pass $untis;
+    proxy_ssl_server_name on;
+    proxy_ssl_name ${UNTIS_SERVER};
+    proxy_ssl_verify on;
+    proxy_ssl_verify_depth 3;
+    proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+    proxy_set_header Host ${UNTIS_SERVER};
+    proxy_set_header Origin https://${UNTIS_SERVER};
+    proxy_set_header Referer https://${UNTIS_SERVER}/WebUntis/;
+    proxy_set_header X-Forwarded-For "";
+    proxy_set_header X-Real-IP "";
+    # Cookies der Sitzung für diese Adresse umschreiben; über http://IP ohne HTTPS darf "Secure" nicht gesetzt sein
+    proxy_cookie_domain ~.+ $host;
+    proxy_cookie_flags ~ nosecure samesite=lax;
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 30s;
+    client_max_body_size 256k;
+    add_header Cache-Control "no-store" always;
+  }
+
+  add_header X-Content-Type-Options nosniff always;
+  add_header Referrer-Policy no-referrer always;
+  gzip on;
+  gzip_types text/css application/javascript application/json image/svg+xml application/manifest+json;
+}

@@ -10,7 +10,10 @@ COPY app ./
 RUN npm test && npm run build
 
 FROM nginx:1.27-alpine
-COPY app/nginx.conf /etc/nginx/conf.d/default.conf
+# Vorlage statt fester Datei: WebUntis-Server und DNS werden beim Start eingesetzt (V11)
+ENV UNTIS_SERVER=osz-lus.webuntis.com \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+COPY app/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=bau /repo/app/build /usr/share/nginx/html
 EXPOSE 80
 HEALTHCHECK CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1

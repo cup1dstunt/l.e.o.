@@ -87,8 +87,14 @@
   </section>
 
   <section class="karte">
+    <h2>WebUntis</h2>
+    <p>Prüfe mit deinem WebUntis-Konto, welche Daten L.E.O. bekommen könnte (Stundenplan, Klassen, Schüler, Fehlzeiten). Nur lesen, nichts wird gespeichert (V11).</p>
+    <div class="zeile wrap"><a class="knopf" href="/mehr/webuntis">Verbindungstest öffnen</a></div>
+  </section>
+
+  <section class="karte">
     <h2>Über diesen Prototyp</h2>
-    <p class="leise">L.E.O. Prototyp 0.5: Tagesübersicht, Notenbuch, Schülerkarte, Live-Stunde, Sitzplan, Planung. Erfundene Beispieldaten, kein WebUntis, kein IServ. Anmeldung nur lokal auf diesem Gerät.</p>
+    <p class="leise">L.E.O. Prototyp 0.5: Tagesübersicht, Notenbuch, Schülerkarte, Live-Stunde, Sitzplan, Planung. Erfundene Beispieldaten, WebUntis bisher nur als Verbindungstest, kein IServ. Anmeldung nur lokal auf diesem Gerät.</p>
     <p class="leise">Als App installieren: im Browser „Zum Startbildschirm“ (iPad/iPhone) bzw. „Installieren“ (Chrome/Edge). Das geht nur über HTTPS oder auf localhost.</p>
   </section>
 </div>
