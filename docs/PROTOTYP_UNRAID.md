@@ -119,13 +119,13 @@ Jede Kachel klappt auf und zeigt, wofür L.E.O. die Daten braucht, und welche Fe
 
 Browser verschlüsseln Daten (F2), gleichen ab (F4) und installieren die App nur über **HTTPS**. So geht es auf dem Unraid:
 
-**Vorher wichtig:** Der Browser trennt Daten nach Adresse. Unter `https://leo.deine-domain.de` sieht er die Daten von `http://192.168.…:8128` **nicht**. Deshalb zuerst unter der alten Adresse **Mehr › Sicherung exportieren**, nach dem Umzug unter der neuen Adresse **importieren**. Den WebUntis-Schlüssel neu eingeben.
+**Vorher wichtig:** Der Browser trennt Daten nach Adresse. Unter `https://leo.deine-domain.de` sieht er die Daten von `http://192.168.…:8128` **nicht**. Deshalb zuerst unter der alten Adresse **Mehr › Sicherung herunterladen**, nach dem Umzug unter der neuen Adresse **Mehr › Sicherung einspielen**. Den WebUntis-Schlüssel neu eingeben.
 
 1. **Domain:** Du brauchst einen Namen, der auf deinen Anschluss zeigt, z. B. eine eigene Domain oder kostenlos über DuckDNS (`leo-xyz.duckdns.org`). Bei DuckDNS das Unraid-Template „duckdns“ installieren, damit die IP aktuell bleibt.
 2. **Router:** Ports **80** und **443** an die Unraid-IP weiterleiten. (Ohne offene Ports geht es nur mit DNS-Prüfung, siehe Schritt 4.)
 3. **Nginx Proxy Manager** aus den Community Apps installieren (Template „Nginx-Proxy-Manager-Official“). Weboberfläche auf Port 81, erste Anmeldung `admin@example.com` / `changeme`, sofort ändern.
 4. **Proxy Host anlegen:** Domain Names `leo-xyz.duckdns.org`, Scheme `http`, Forward Hostname/IP = Unraid-IP, Forward Port `8128`, „Websockets Support“ an. Reiter **SSL:** „Request a new SSL Certificate“, „Force SSL“ und „HTTP/2“ an. Ohne offene Ports: „Use a DNS Challenge“ mit DuckDNS-Token.
-5. **Aufrufen:** `https://leo-xyz.duckdns.org` öffnen, anmelden, Sicherung importieren. WebUntis läuft weiter über den Durchreicher im L.E.O.-Container, dort ändert sich nichts.
+5. **Aufrufen:** `https://leo-xyz.duckdns.org` öffnen, anmelden, Sicherung einspielen. WebUntis läuft weiter über den Durchreicher im L.E.O.-Container, dort ändert sich nichts.
 6. **Sicherheit:** L.E.O. ist dann aus dem Internet erreichbar. Die Daten liegen nur in deinen Geräten, der Server liefert nur die App aus. Wer die App öffnet, sieht ohne dein Passwort keine Daten (ab F2 verschlüsselt). Wenn du es enger willst: im Proxy Host unter „Access List“ nur dein Heimnetz und die Schule zulassen.
 
 Ungetestet: Ich habe keinen Zugriff auf dein Unraid. Wenn ein Schritt anders aussieht, schick mir einen Screenshot.
