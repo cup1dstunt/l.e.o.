@@ -356,7 +356,7 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 | PB10 | **Bausteine zu Formulierungen:** aus gesammelten Textbausteinen Sätze für Rückmeldung oder Gespräch vorschlagen, ohne Schülernamen an KI-Dienste | C, K bestätigt | 3 | M | offen |
 | PB11 | **Wochenrückblick:** was diese Woche erfasst wurde, wer ohne Mitarbeitseintrag blieb, offene Nachschreiber | C, K bestätigt | 2 | S | offen |
 | PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | offen (Export im Prototyp unverschlüsselt) |
-| PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | offen |
+| PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | Woche/Tag umschaltbar im Prototyp (19.11., Entwurf A+B), Quelle WebUntis |
 | PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | offen |
 | PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | einfache Fassung im Prototyp (Reiter „Planung“) |
 | PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | Zählung mit Beispiel-Ferien im Prototyp, Quelle WebUntis offen |
@@ -385,6 +385,14 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | FB13 | Schülerkarte: Kacheln klickbar, Reihenfolge Klausur 1, Klausur 2, AT, mündlich Ø, Tests Ø; Verlaufsgraph mündliche Noten | K | 1 | M | in 0.5 |
 | FB14 | Verspätungsübersicht mit Wochentagsanalyse | K | 1 | S | in 0.5 |
 | FB15 | Mitarbeitsverlauf kräftiger, Trendpfeil, Monat aufklappbar (E88) | K | 1 | S | in 0.5 |
+
+## Aus dem WebUntis-Abgleich (19.11.2026)
+
+| # | Punkt | Herkunft | Prio | Aufwand | Status |
+|---|---|---|---|---|---|
+| WU1 | **Heute: ausgefallene Stunden** aus WebUntis nicht als „läuft gerade“ zeigen, sondern als Ausfall (im Stundenplan schon so); nächste Verbesserungsrunde | K | 1 | S | offen |
+| WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | offen |
+| WU3 | **Doppelsteckung:** beide Lehrkräfte dürfen Abwesenheiten eintragen, meist ist eine verantwortlich; Klassenliste kommt aus Einträgen aller Lehrkräfte der Stunde | K | 1 | S | im Prototyp (PR #15) |
 
 ## Offen
 
