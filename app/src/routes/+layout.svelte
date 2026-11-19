@@ -1,12 +1,12 @@
 <script lang="ts">
   import '../app.css';
   import { page } from '$app/state';
-  import { app, laden } from '$lib/speicher.svelte';
+  import { app, laden, sperren, lebenszeichen } from '$lib/speicher.svelte';
   import Hinweisleiste from '$lib/ui/Hinweisleiste.svelte';
   import Anmeldung from '$lib/ui/Anmeldung.svelte';
   import Suche from '$lib/ui/Suche.svelte';
   import { sitzung } from '$lib/sitzung.svelte';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
 
   let { children } = $props();
   let breite = $state(1200);
@@ -20,12 +20,14 @@
     const t = setInterval(() => {
       const min = app.d?.einstellungen.sperreMinuten ?? 15;
       if (sitzung.entsperrt && min > 0 && Date.now() - letzteAktivitaet > min * 60_000) sitzung.entsperrt = false;
+      else if (sitzung.entsperrt && Date.now() - letzteAktivitaet < 20_000) lebenszeichen();
     }, 15_000);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, aktiv);
     return () => clearInterval(t);
   });
   $effect(() => {
     try { sessionStorage.setItem('leo-entsperrt', sitzung.entsperrt ? '1' : '0'); } catch {}
+    if (!sitzung.entsperrt) untrack(sperren); // verschlüsselt: Schlüssel und Daten aus dem Arbeitsspeicher
   });
   function tasten(e: KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && sitzung.entsperrt) {
@@ -56,9 +58,9 @@
 
 <svelte:window bind:innerWidth={breite} onkeydown={tasten} />
 
-{#if !app.d}
+{#if !app.bereit}
   <div class="laden">L.E.O. lädt …</div>
-{:else if !sitzung.entsperrt}
+{:else if !sitzung.entsperrt || !app.d}
   <Anmeldung bind:entsperrt={sitzung.entsperrt} />
 {:else}
   <div class="rahmen {lage}" style:--unten={lage === 'unten' ? '64px' : '0px'}>

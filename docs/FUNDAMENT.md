@@ -20,18 +20,20 @@ Stand 19.11.2026. Konstantin hat das Fundament als nächsten Schritt gewählt. O
 
 | # | Abschnitt | Inhalt | Hängt ab von |
 |---|---|---|---|
-| F1 | Speicher je Objektart | IndexedDB mit einem Speicher je Objektart, Datensatz = `{id, v, quelle, geaendert, daten}`. Nur geänderte Datensätze werden geschrieben. Alter Block wird beim ersten Start übernommen und als Rückfall behalten. `app.d` bleibt für die Oberfläche gleich | – |
-| F2 | Verschlüsselung | Schlüssel aus dem L.E.O.-Passwort (PBKDF2), AES-GCM je Datensatz. Ohne Passwort kein Lesen | HTTPS (siehe unten) |
+| F1 ✓ | Speicher je Objektart (gebaut 19.11.) | IndexedDB mit einem Speicher je Objektart, Datensatz = `{id, v, quelle, geaendert, daten}`. Nur geänderte Datensätze werden geschrieben. Alter Block wird beim ersten Start übernommen und als Rückfall behalten. `app.d` bleibt für die Oberfläche gleich | – |
+| F2 ✓ | Verschlüsselung (gebaut 19.11., E101) | Zufälliger Datenschlüssel, AES-GCM je Datensatz, verpackt mit Schlüssel aus dem L.E.O.-Passwort (PBKDF2, 600 000 Runden). Ohne Passwort kein Lesen. Beim ersten Anmelden über HTTPS werden vorhandene Daten verschlüsselt, der alte Block wird gelöscht. Passwortwechsel verpackt nur den Schlüssel neu | HTTPS (siehe unten) |
 | F3 | Sicherung | Verschlüsselte Sicherungsdatei, automatisch einmal täglich im Gerät die letzten 7 Stände, Wiederherstellen mit Vorschau | F1, F2 |
 | F4 | Abgleich | Kleiner Dienst im selben Container auf dem Unraid: speichert je Nutzer verschlüsselte Datensätze mit Änderungszeit, Gerät holt und schickt nur Neues. Konflikt: neuere Änderung gewinnt je Datensatz, Noten-Zellen einzeln | F1, F2, HTTPS |
 
 ## Offene Punkte
 
-- **HTTPS:** Browser erlauben die eingebaute Verschlüsselung (WebCrypto) und die App-Installation nur über HTTPS. Auf dem Unraid heute `http://…:8128`. Vorschlag: Zugriff über einen Reverse-Proxy mit Zertifikat (z. B. Nginx Proxy Manager oder Tailscale/Caddy) einrichten. Bis dahin läuft F2 nicht im Browser.
+- **HTTPS:** Browser erlauben die eingebaute Verschlüsselung (WebCrypto) und die App-Installation nur über HTTPS. Auf dem Unraid heute `http://…:8128`. Vorschlag: Zugriff über einen Reverse-Proxy mit Zertifikat (z. B. Nginx Proxy Manager oder Tailscale/Caddy) einrichten. Bis dahin läuft F2 nicht im Browser. Entschieden: Nginx Proxy Manager (E100), Anleitung in PROTOTYP_UNRAID.md.
 - **Abgleich-Dienst:** Ein eigener kleiner Dienst (Node oder Go) im Image neben nginx, Daten in einem Unraid-Ordner. Er sieht keine Noten im Klartext.
 
 ## Was getestet wird
 
 - F1: Übernahme des alten Blocks, Schreiben nur geänderter Datensätze, Laden nach Neustart, alle bisherigen Tests.
-- F2/F3: Ver- und Entschlüsseln mit falschem Passwort schlägt fehl, Sicherung lässt sich zurückspielen.
+- F2 (geprüft 19.11.): 16 Prüfungen ohne Browser (falsches Passwort, fremder Schlüssel, umgehängte Datensätze, veränderter Inhalt, Passwortwechsel) und 20 im echten Browser (Übernahme unverschlüsselter Daten, kein lesbarer Inhalt in der Datenbank, Sperren, Neuladen, neuer Browserstart). Noch nicht geprüft: iPad/Safari und das Unraid hinter HTTPS.
+- Noch offen nach F2: Sicherungsdatei und gemerkter WebUntis-Schlüssel sind weiter unverschlüsselt (kommt mit F3 bzw. WU2).
+- F3: Sicherung lässt sich zurückspielen, falsches Passwort scheitert.
 - F4: zwei Geräte gleichzeitig, Offline-Änderungen, Konflikt.

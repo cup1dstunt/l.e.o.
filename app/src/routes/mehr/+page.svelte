@@ -1,20 +1,16 @@
 <script lang="ts">
-  import { app, speichern, zuruecksetzen, exportieren, importieren, zeige } from '$lib/speicher.svelte';
-  import { hashen, neuesSalz } from '$lib/sicherheit';
+  import { app, speichern, zuruecksetzen, exportieren, importieren, zeige, passwortAendern, kannVerschluesseln } from '$lib/speicher.svelte';
   import { sitzung } from '$lib/sitzung.svelte';
   const d = app.d!;
   let altPw = $state('');
   let neuPw = $state('');
   let neuPw2 = $state('');
-  function pwAendern(e: Event) {
+  async function pwAendern(e: Event) {
     e.preventDefault();
-    const p = d.einstellungen.passwort;
-    if (p && hashen(altPw, p.salz) !== p.hash) { zeige('Bisheriges Passwort stimmt nicht'); return; }
     if (neuPw.length < 4) { zeige('Mindestens 4 Zeichen'); return; }
     if (neuPw !== neuPw2) { zeige('Die beiden neuen Passwörter sind verschieden'); return; }
-    const salz = neuesSalz();
-    d.einstellungen.passwort = { salz, hash: hashen(neuPw, salz) };
-    speichern();
+    const f = await passwortAendern(altPw, neuPw);
+    if (f) { zeige(f); return; }
     altPw = neuPw = neuPw2 = '';
     zeige('Passwort geändert');
   }
@@ -50,6 +46,11 @@
   <section class="karte">
     <h2>Anmeldung</h2>
     <p>Das Passwort schützt L.E.O. auf diesem Gerät, etwa wenn Schülerinnen und Schüler das iPad oder den Beamer sehen. Es verlässt das Gerät nie. Vergessen heißt: Daten nur über eine Sicherung zurückholen.</p>
+    {#if app.verschluesselt}
+      <p class="klein"><b>Verschlüsselt:</b> Die Daten auf diesem Gerät sind mit deinem Passwort verschlüsselt (AES-256). Ohne Passwort sind sie nicht lesbar.</p>
+    {:else}
+      <p class="klein warn"><b>Nicht verschlüsselt:</b> {kannVerschluesseln() ? 'Beim nächsten Anmelden werden die Daten verschlüsselt.' : 'L.E.O. ist ohne HTTPS geöffnet, dann erlaubt der Browser keine Verschlüsselung. Über die HTTPS-Adresse geht es.'}</p>
+    {/if}
     <p class="klein leise">Automatisch sperren nach</p>
     <div class="zeile">
       {#each [[5, '5 Min.'], [15, '15 Min.'], [30, '30 Min.'], [60, '1 Std.'], [0, 'nie']] as [w, t]}
@@ -74,7 +75,7 @@
       <button class="knopf" onclick={() => datei.click()}>Sicherung einspielen</button>
       <input type="file" accept="application/json,.json" bind:this={datei} onchange={laden} hidden />
     </div>
-    <p class="klein leise">Mit einer Sicherung kannst du den Stand auch auf ein anderes Gerät übertragen. Einspielen ersetzt alles auf diesem Gerät.</p>
+    <p class="klein leise">Mit einer Sicherung kannst du den Stand auch auf ein anderes Gerät übertragen. Einspielen ersetzt alles auf diesem Gerät. Die Sicherungsdatei selbst ist noch nicht verschlüsselt, bewahre sie sicher auf.</p>
     <div class="zeile wrap">
       {#if !sicher}
         <button class="knopf leise" onclick={() => (sicher = true)}>Beispieldaten neu laden …</button>

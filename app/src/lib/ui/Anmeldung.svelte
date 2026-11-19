@@ -1,29 +1,36 @@
 <script lang="ts">
   // Anmeldung auch lokal (E81): ohne Passwort keine Daten sichtbar.
-  import { app, speichern } from '$lib/speicher.svelte';
-  import { hashen, neuesSalz } from '$lib/sicherheit';
+  // Ab F2 entschlüsselt das Passwort die Daten (über HTTPS bzw. localhost).
+  import { app, festlegen, entsperren, zeige, kannVerschluesseln } from '$lib/speicher.svelte';
   let { entsperrt = $bindable() }: { entsperrt: boolean } = $props();
-  const neu = $derived(!app.d?.einstellungen.passwort);
+  const neu = $derived(!app.verschluesselt && !app.d?.einstellungen.passwort);
+  let arbeitet = $state(false);
+  const kann = kannVerschluesseln();
   let pw = $state('');
   let pw2 = $state('');
   let fehler = $state('');
   let feld = $state<HTMLInputElement>();
   $effect(() => feld?.focus());
 
-  function los(e: Event) {
+  async function los(e: Event) {
     e.preventDefault();
-    const d = app.d!;
+    if (arbeitet) return;
+    fehler = '';
     if (neu) {
       if (pw.length < 4) return (fehler = 'Mindestens 4 Zeichen.');
       if (pw !== pw2) return (fehler = 'Die beiden Eingaben sind verschieden.');
-      const salz = neuesSalz();
-      d.einstellungen.passwort = { salz, hash: hashen(pw, salz) };
-      speichern();
+    }
+    arbeitet = true;
+    try {
+      if (neu) { await festlegen(pw); entsperrt = true; return; }
+      const r = await entsperren(pw);
+      if (!r.ok) { fehler = 'Passwort stimmt nicht.'; pw = ''; feld?.focus(); return; }
+      if (r.neuVerschluesselt) zeige('Deine Daten auf diesem Gerät sind jetzt verschlüsselt.');
       entsperrt = true;
-    } else {
-      const p = d.einstellungen.passwort!;
-      if (hashen(pw, p.salz) === p.hash) entsperrt = true;
-      else { fehler = 'Passwort stimmt nicht.'; pw = ''; }
+    } catch (err) {
+      fehler = 'Entsperren fehlgeschlagen: ' + (err as Error).message;
+    } finally {
+      arbeitet = false;
     }
   }
 </script>
@@ -34,7 +41,7 @@
     <img src="/wortmarke-dunkel.svg" alt="L.E.O." width="150" class="dunkel" />
     {#if neu}
       <h1>Passwort festlegen</h1>
-      <p class="leise klein">Schützt deine Daten auf diesem Gerät vor fremdem Zugriff, z. B. durch Schüler. Es gilt nur für dieses Gerät und diesen Browser.</p>
+      <p class="leise klein">Schützt deine Daten auf diesem Gerät vor fremdem Zugriff, z. B. durch Schüler. Es gilt nur für dieses Gerät und diesen Browser.{kann ? ' Mit dem Passwort werden die Daten verschlüsselt, ohne Passwort sind sie nicht lesbar.' : ''}</p>
       <label class="feld"><span>Neues Passwort</span><input type="password" bind:value={pw} bind:this={feld} autocomplete="new-password" /></label>
       <label class="feld"><span>Wiederholen</span><input type="password" bind:value={pw2} autocomplete="new-password" /></label>
     {:else}
@@ -42,8 +49,8 @@
       <label class="feld"><span>Passwort</span><input type="password" bind:value={pw} bind:this={feld} autocomplete="current-password" /></label>
     {/if}
     {#if fehler}<p class="warn klein">{fehler}</p>{/if}
-    <button class="knopf haupt" type="submit">{neu ? 'Festlegen und starten' : 'Entsperren'}</button>
-    {#if !neu}<p class="leise klein">Passwort vergessen? Im Prototyp hilft nur, die Browserdaten dieser Seite zu löschen (dabei gehen die Daten verloren).</p>{/if}
+    <button class="knopf haupt" type="submit" disabled={arbeitet}>{arbeitet ? 'Einen Moment …' : neu ? 'Festlegen und starten' : 'Entsperren'}</button>
+    {#if !neu}<p class="leise klein">Passwort vergessen? {app.verschluesselt ? 'Die Daten sind verschlüsselt und lassen sich ohne Passwort nicht öffnen. Dann hilft nur: Browserdaten dieser Seite löschen und eine Sicherung einspielen.' : 'Im Prototyp hilft nur, die Browserdaten dieser Seite zu löschen (dabei gehen die Daten verloren).'}</p>{/if}
   </form>
 </div>
 
