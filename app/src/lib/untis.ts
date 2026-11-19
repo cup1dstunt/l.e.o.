@@ -357,10 +357,12 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
   try { const f = liste(await r('getRooms')); ergebnis('raeume', { status: f.length ? 'ok' : 'leer', anzahl: f.length, felder: felder(f) }); } catch (e) { fang('raeume', e); }
 
   let schuelerNr = new Set<string>();
+  const schuelerFelder: Record<string, Set<string>> = { id: new Set(), key: new Set(), name: new Set(), externKey: new Set() };
   // 9 Schüler: nur Anzahl und welche Felder gefüllt sind (Geschlecht, Geburtsdatum?)
   try {
     const s = liste(await r('getStudents'));
     schuelerNr = new Set(s.map((x: any) => String(x?.id)));
+    for (const f of Object.keys(schuelerFelder)) schuelerFelder[f] = new Set(s.map((x: any) => String(x?.[f])));
     const f = felder(s);
     const anteil = (n: string) => f.find((x) => x.name === n)?.gefuellt;
     ergebnis('schueler', {
@@ -395,6 +397,11 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
       'verschiedene Schüler darin': schuelerEigene,
       ...kennungsBild(perZeit, eigeneStunden.size, kuerzelSp, String(person?.id ?? ''), 'u:' + z.benutzer.trim()),
       ...abgleichSchueler(a, perZeit, schuelerNr, 'u:' + z.benutzer.trim()),
+      ...Object.fromEntries(Object.entries(schuelerFelder).map(([f, w]) => {
+        const nr = [...new Set(a.map((x: any) => String(x?.studentId)))];
+        return [`studentId passt zu ${f}`, `${Math.round((nr.filter((n) => w.has(n)).length / (nr.length || 1)) * 100)} %`];
+      })),
+      'Muster studentId': verteilungVon(a.slice(0, 500).map((x: any) => String(x?.studentId).replace(/[A-ZÄÖÜ]/g, 'A').replace(/[a-zäöüß]/g, 'a').replace(/[0-9]/g, '9'))).slice(0, 3).map(([m, n]) => `${m} (${n})`).join(', '),
       'davon mit Abwesenheit': mitFehlzeit
     };
     for (const [n, w] of Object.entries(verteilung(a, 'excuseStatus'))) extra[`Status „${n}“`] = w;

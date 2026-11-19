@@ -1,6 +1,6 @@
 // Prüft die Übernahme aus WebUntis ohne Netz, mit erfundenen Daten (V11).
 // Aufruf: npm test
-import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, type Paket } from '../src/lib/untisimport.ts';
+import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, schuelerIndex, type Paket } from '../src/lib/untisimport.ts';
 import { beispielDaten } from '../src/lib/beispiel.ts';
 
 let ok = 0;
@@ -72,6 +72,12 @@ gleich('Kennung: Kürzel passt', kennungWaehlen(kn, 4, ['ABC', '77']), 'ABC');
 gleich('Kennung: Kürzel passt nicht, häufigste', kennungWaehlen(kn, 4, ['Müller', '77']), 'ABC');
 gleich('Kennung: nichts eindeutig', kennungWaehlen(new Map([['XYZ', new Set(['1'])]]), 4, ['']), '');
 gleich('Kennung: keine Stunden', kennungWaehlen(kn, 0, ['ABC']), '');
+
+// Klassenbuch-Nummer (Text) zur Schülerliste
+const fi = schuelerIndex([{ id: 5, key: 'S-17', name: 'Muster' }, { id: 6, key: 'S-18', name: 'Beispiel' }]);
+gleich('Schüler über id (Text)', fi('5')?.id, 5);
+gleich('Schüler über key', fi('S-18')?.id, 6);
+gleich('Schüler unbekannt', fi('S-99'), undefined);
 
 console.log(`${ok} Übernahme-Prüfungen bestanden, ${fehler} fehlgeschlagen`);
 if (fehler) process.exit(1);
