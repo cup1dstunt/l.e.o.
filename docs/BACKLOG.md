@@ -385,6 +385,8 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | FB13 | Schülerkarte: Kacheln klickbar, Reihenfolge Klausur 1, Klausur 2, AT, mündlich Ø, Tests Ø; Verlaufsgraph mündliche Noten | K | 1 | M | in 0.5 |
 | FB14 | Verspätungsübersicht mit Wochentagsanalyse | K | 1 | S | in 0.5 |
 | FB15 | Mitarbeitsverlauf kräftiger, Trendpfeil, Monat aufklappbar (E88) | K | 1 | S | in 0.5 |
+| FB-N1 | **Rechenweg aufklappbar mit allen Zahlen:** Klausuren, AT (darunter mündlich und Tests), Gesamt; jede Stufe zeigt Formel, Gewichte und warum ein Eintrag nicht zählt (E, leer, Gewicht 0). In Gesamtnote-Fenster und AT-Kachel der Schülerkarte. Gewichte-Fenster zeigt den Anteil an der Gesamtnote und Vorlagen 60:40, 50:50, 40:60 | K (Feedback 18.11.) | 1 | S | im Prototyp, 19.11.2026 |
+| FB-N2 | Was-wäre-wenn auch mit eingetragenen Noten („Klausur 1 eine 3 statt 5?“), Umschalter; Was-wäre-wenn auch an den Klausur-Kacheln der Schülerkarte | K (Feedback 18.11.) | 1 | S | im Prototyp, 19.11.2026 |
 
 ## Aus dem WebUntis-Abgleich (19.11.2026)
 
