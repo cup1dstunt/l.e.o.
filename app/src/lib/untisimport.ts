@@ -188,11 +188,13 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   }
   for (const [key, z] of raumZaehler) kurse.get(key)!.raum = [...z].sort((a, b) => b[1] - a[1])[0][0];
 
-  // Klassenbuch in 14-Tage-Stücken: Schülerlisten und Fehlzeiten der eigenen Stunden. Fremdes wird sofort verworfen.
-  const fehlzeiten: Paket['fehlzeiten'] = [];
-  const verspaetungen: Paket['verspaetungen'] = [];
-  const ich = new Set([kuerzel, String(sz.person.id)].filter(Boolean));
+  // Klassenbuch in 14-Tage-Stücken. Behalten werden nur Zeilen, die zeitlich in eine eigene Stunde fallen.
+  // Welche Kennung in teacherIds „ich“ bin, ist nicht dokumentiert: gezählt wird, welche Kennung in den
+  // eigenen Stunden fast immer vorkommt. Bevorzugt wird das Kürzel aus dem Stundenplan, wenn es passt.
   const ende = Math.min(heuteN, bis);
+  const inMeinenStunden: { z: any; stunde: { key: string; start: number; ende: number } }[] = [];
+  const kennungen = new Map<string, Set<string>>();
+  const slots = new Set<string>();
   let start = new Date(isoAusUntis(von) + 'T12:00');
   while (untisDatumAus(start) <= ende) {
     const stueckEnde = new Date(start.getTime() + 13 * 864e5);
@@ -201,23 +203,40 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     melde(`Klassenbuch ${isoAusUntis(a).slice(8, 10)}.${isoAusUntis(a).slice(5, 7)}. bis ${isoAusUntis(b).slice(8, 10)}.${isoAusUntis(b).slice(5, 7)}.`);
     const zeilen = alsListe(await sz.r('getTimetableWithAbsences', { options: { startDate: a, endDate: b } })) as any[];
     for (const z of zeilen) {
-      if (!Array.isArray(z.teacherIds) || !z.teacherIds.some((t: unknown) => ich.has(String(t)))) continue;
       const stunde = (stundenNachSchluessel.get(String(z.date)) ?? []).find((x) => x.start <= z.startTime && z.startTime < x.ende);
       if (!stunde) continue;
-      const k = kurse.get(stunde.key)!;
-      k.schueler.add(z.studentId);
-      const art = artAusUntis(z.excuseStatus, typeof z.absenceReason === 'object' ? z.absenceReason?.name : z.absenceReason, z.absentTime);
-      if (!art) continue;
-      const datum = isoAusUntis(z.date);
-      if (art === 'verspaetung') {
-        const min = Number(z.absentTime) || 0;
-        verspaetungen.push({ key: stunde.key, untisId: z.studentId, datum, minuten: min, ankunft: zeitAusMinuten(minutenVon(stunde.start) + min) });
-      } else {
-        fehlzeiten.push({ key: stunde.key, untisId: z.studentId, datum, beginn: zeitAusUntis(stunde.start), stunden: einheiten(stunde.start, stunde.ende), status: art, grund: String(z.absenceReason?.name ?? z.absenceReason ?? '') });
+      const slot = `${z.date}-${stunde.start}`;
+      slots.add(slot);
+      for (const t of Array.isArray(z.teacherIds) ? z.teacherIds : []) {
+        const k = String(t);
+        if (!kennungen.has(k)) kennungen.set(k, new Set());
+        kennungen.get(k)!.add(slot);
       }
+      inMeinenStunden.push({ z, stunde });
     }
+    zeilen.length = 0; // Rest der Schule sofort verwerfen
     start = new Date(stueckEnde.getTime() + 864e5);
   }
+  const ich = kennungWaehlen(kennungen, slots.size, [kuerzel, String(sz.person.id)]);
+
+  const fehlzeiten: Paket['fehlzeiten'] = [];
+  const verspaetungen: Paket['verspaetungen'] = [];
+  for (const { z, stunde } of inMeinenStunden) {
+    if (!ich || !Array.isArray(z.teacherIds) || !z.teacherIds.some((t: unknown) => String(t) === ich)) continue;
+    const k = kurse.get(stunde.key)!;
+    k.schueler.add(z.studentId);
+    const art = artAusUntis(z.excuseStatus, typeof z.absenceReason === 'object' ? z.absenceReason?.name : z.absenceReason, z.absentTime);
+    if (!art) continue;
+    const datum = isoAusUntis(z.date);
+    if (art === 'verspaetung') {
+      const min = Number(z.absentTime) || 0;
+      verspaetungen.push({ key: stunde.key, untisId: z.studentId, datum, minuten: min, ankunft: zeitAusMinuten(minutenVon(stunde.start) + min) });
+    } else {
+      fehlzeiten.push({ key: stunde.key, untisId: z.studentId, datum, beginn: zeitAusUntis(stunde.start), stunden: einheiten(stunde.start, stunde.ende), status: art, grund: String(z.absenceReason?.name ?? z.absenceReason ?? '') });
+    }
+  }
+  inMeinenStunden.length = 0;
+  if (ich) kuerzel = ich;
 
   melde('Schüler der eigenen Klassen');
   const alle = new Set([...kurse.values()].flatMap((k) => [...k.schueler]));
@@ -243,6 +262,15 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     kurse: [...kurse.values()].filter((k) => k.anzahl >= 3),
     schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, stammdaten
   };
+}
+
+/** Kennung, die in den eigenen Stunden am häufigsten vorkommt. Bevorzugt eine der Vorschläge, wenn sie in ≥ 30 % der Stunden steht. */
+export function kennungWaehlen(kennungen: Map<string, Set<string>>, slots: number, vorschlaege: string[]): string {
+  if (!slots) return '';
+  const anteil = (k: string) => (kennungen.get(k)?.size ?? 0) / slots;
+  for (const v of vorschlaege) if (v && anteil(v) >= 0.3) return v;
+  const beste = [...kennungen.keys()].sort((a, b) => anteil(b) - anteil(a))[0];
+  return beste && anteil(beste) >= 0.5 ? beste : '';
 }
 
 const zeitAusMinuten = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;

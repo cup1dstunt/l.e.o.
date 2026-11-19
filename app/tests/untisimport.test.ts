@@ -1,6 +1,6 @@
 // Prüft die Übernahme aus WebUntis ohne Netz, mit erfundenen Daten (V11).
 // Aufruf: npm test
-import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, type Paket } from '../src/lib/untisimport.ts';
+import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, type Paket } from '../src/lib/untisimport.ts';
 import { beispielDaten } from '../src/lib/beispiel.ts';
 
 let ok = 0;
@@ -65,6 +65,13 @@ const anna = d.schueler.find((s) => s.untisId === 9001)!;
 gleich('geburt', anna.geburt, '2006-02-05');
 gleich('keine Mail', [anna.mailPrivat, anna.mailDienst], [undefined, '']);
 gleich('nta', !!anna.nta, true);
+
+// Eigene Kennung im Klassenbuch (teacherIds): häufigste in den eigenen Stunden
+const kn = new Map([['ABC', new Set(['1', '2', '3', '4'])], ['XYZ', new Set(['1'])], ['QRS', new Set(['2', '3'])]]);
+gleich('Kennung: Kürzel passt', kennungWaehlen(kn, 4, ['ABC', '77']), 'ABC');
+gleich('Kennung: Kürzel passt nicht, häufigste', kennungWaehlen(kn, 4, ['Müller', '77']), 'ABC');
+gleich('Kennung: nichts eindeutig', kennungWaehlen(new Map([['XYZ', new Set(['1'])]]), 4, ['']), '');
+gleich('Kennung: keine Stunden', kennungWaehlen(kn, 0, ['ABC']), '');
 
 console.log(`${ok} Übernahme-Prüfungen bestanden, ${fehler} fehlgeschlagen`);
 if (fehler) process.exit(1);
