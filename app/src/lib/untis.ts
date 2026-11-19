@@ -356,9 +356,11 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
   try { const f = liste(await r('getSubjects')); ergebnis('faecher', { status: f.length ? 'ok' : 'leer', anzahl: f.length, felder: felder(f) }); } catch (e) { fang('faecher', e); }
   try { const f = liste(await r('getRooms')); ergebnis('raeume', { status: f.length ? 'ok' : 'leer', anzahl: f.length, felder: felder(f) }); } catch (e) { fang('raeume', e); }
 
+  let schuelerNr = new Set<string>();
   // 9 Schüler: nur Anzahl und welche Felder gefüllt sind (Geschlecht, Geburtsdatum?)
   try {
     const s = liste(await r('getStudents'));
+    schuelerNr = new Set(s.map((x: any) => String(x?.id)));
     const f = felder(s);
     const anteil = (n: string) => f.find((x) => x.name === n)?.gefuellt;
     ergebnis('schueler', {
@@ -391,7 +393,8 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
       'Einträge per Datum+Zeit': perZeit.length,
       'Typ teacherIds': [...new Set(a.slice(0, 50).flatMap((x: any) => (Array.isArray(x?.teacherIds) ? x.teacherIds.map((t: unknown) => typeof t) : [])))].join('/') || '–',
       'verschiedene Schüler darin': schuelerEigene,
-      ...kennungsBild(perZeit, eigeneStunden.size, kuerzelSp, String(person?.id ?? '')),
+      ...kennungsBild(perZeit, eigeneStunden.size, kuerzelSp, String(person?.id ?? ''), 'u:' + z.benutzer.trim()),
+      ...abgleichSchueler(a, perZeit, schuelerNr, 'u:' + z.benutzer.trim()),
       'davon mit Abwesenheit': mitFehlzeit
     };
     for (const [n, w] of Object.entries(verteilung(a, 'excuseStatus'))) extra[`Status „${n}“`] = w;
@@ -483,7 +486,7 @@ export function kennungenVon(z: any): string[] {
 }
 
 /** Für den Bericht: welche Kennung steht in den eigenen Stunden wie oft. Lehrkraft-Kennungen, keine Schülerdaten. */
-function kennungsBild(zeilen: any[], stunden: number, kuerzel: string, personId: string): Record<string, string | number> {
+function kennungsBild(zeilen: any[], stunden: number, kuerzel: string, personId: string, ichU: string): Record<string, string | number> {
   const proSlot = new Map<string, Set<string>>();
   let leer = 0;
   for (const z of zeilen) {
@@ -501,8 +504,32 @@ function kennungsBild(zeilen: any[], stunden: number, kuerzel: string, personId:
     'Stunden mit Klassenbuch-Zeilen': `${new Set(zeilen.map((z) => `${z?.date}-${z?.startTime}`)).size} von ${stunden}`,
     'Zeilen ohne teacherIds': leer,
     'Kürzel in eigenen Stunden': `${Math.round(((proSlot.get(kuerzel)?.size ?? 0) / slots) * 100)} %`,
-    'Personennr. in eigenen Stunden': `${Math.round(((proSlot.get(personId)?.size ?? 0) / slots) * 100)} %`
+    'Personennr. in eigenen Stunden': `${Math.round(((proSlot.get(personId)?.size ?? 0) / slots) * 100)} %`,
+    'Benutzername (user) in eigenen Stunden': `${Math.round(((proSlot.get(ichU)?.size ?? 0) / slots) * 100)} %`
   };
   top.forEach(([k, v], i) => (out[`Kennung ${i + 1}`] = `${k} (${Math.round((v.size / slots) * 100)} %)`));
   return out;
+}
+
+/** Für den Bericht: passen die Schüler-Nummern im Klassenbuch zur Schülerliste? Nur Anteile und Muster, keine Namen. */
+function abgleichSchueler(alle: any[], eigene: any[], liste: Set<string>, ichU: string): Record<string, string | number> {
+  const muster = (v: unknown) => String(v).replace(/[A-ZÄÖÜ]/g, 'A').replace(/[a-zäöüß]/g, 'a').replace(/[0-9]/g, '9');
+  const nr = new Set(alle.map((z) => String(z?.studentId)));
+  const drin = [...nr].filter((x) => liste.has(x)).length;
+  const meine = eigene.filter((z) => kennungenVon(z).includes(ichU));
+  const tMuster = verteilungVon(alle.flatMap((z) => (Array.isArray(z?.teacherIds) ? z.teacherIds.map(muster) : [])));
+  return {
+    'Typ studentId': [...new Set(alle.slice(0, 50).map((z) => typeof z?.studentId))].join('/'),
+    'Schüler-Nr. auch in Schülerliste': liste.size ? `${Math.round((drin / (nr.size || 1)) * 100)} %` : 'Schülerliste fehlt',
+    'Zeilen mit eigenem Benutzernamen': meine.length,
+    'davon Schüler': new Set(meine.map((z) => z?.studentId)).size,
+    'Typ user': [...new Set(alle.slice(0, 200).map((z) => (z?.user === null || z?.user === undefined ? null : typeof z.user)).filter(Boolean))].join('/') || '–',
+    'Muster teacherIds': tMuster.slice(0, 4).map(([m, n]) => `${m} (${n})`).join(', ') || '–'
+  };
+}
+
+function verteilungVon(werte: string[]): [string, number][] {
+  const m = new Map<string, number>();
+  for (const w of werte) m.set(w, (m.get(w) ?? 0) + 1);
+  return [...m].sort((a, b) => b[1] - a[1]);
 }
