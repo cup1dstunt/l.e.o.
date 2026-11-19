@@ -59,7 +59,7 @@
         schritt = 'Übernehmen';
         ergebnis = uebernehmen(d, paket, { beispielEntfernen: beispielDa && beispielEntfernen, benutzer, schule });
         speichern();
-        if (!ergebnis.schueler) fehler = `Keine Schüler gefunden. L.E.O. konnte deine Kennung im Klassenbuch nicht sicher erkennen${d.einstellungen.untis?.kuerzel ? ` (gewählt: ${d.einstellungen.untis.kuerzel})` : ''}. Bitte melde dich mit diesem Hinweis.`;
+        if (!ergebnis.schueler) fehler = `Keine Schüler gefunden. L.E.O. konnte deine Kennung im Klassenbuch nicht sicher erkennen${d.einstellungen.untis?.kuerzel ? ` (gewählt: ${d.einstellungen.untis.kuerzel})` : ''}. Bitte „Nur Verbindung testen“ laufen lassen und mir den Bericht schicken, er zeigt jetzt die Kennungen in deinen Stunden.`;
       } finally { await sz.abmelden(); }
     } catch (err) {
       fehler = fehlerMeldung(err);

@@ -3,7 +3,7 @@
 // alles andere wird direkt nach dem Abruf im Arbeitsspeicher verworfen und nie gespeichert.
 // Ehrlich: Die Zuordnung über das Lehrerkürzel ist aus dem Verbindungstest abgeleitet, aber noch nicht mit echten Daten geprüft.
 import type { Daten, Fehlzeit, Kurs, Leistung, Schueler, Stunde, Verspaetung } from './typen.ts';
-import { alsListe, type Sitzung } from './untis.ts';
+import { alsListe, kennungenVon, type Sitzung } from './untis.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
 
 // ---------- kleine, getestete Bausteine ----------
@@ -207,8 +207,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
       if (!stunde) continue;
       const slot = `${z.date}-${stunde.start}`;
       slots.add(slot);
-      for (const t of Array.isArray(z.teacherIds) ? z.teacherIds : []) {
-        const k = String(t);
+      for (const k of kennungenVon(z)) {
         if (!kennungen.has(k)) kennungen.set(k, new Set());
         kennungen.get(k)!.add(slot);
       }
@@ -217,12 +216,12 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     zeilen.length = 0; // Rest der Schule sofort verwerfen
     start = new Date(stueckEnde.getTime() + 864e5);
   }
-  const ich = kennungWaehlen(kennungen, slots.size, [kuerzel, String(sz.person.id)]);
+  const ich = kennungWaehlen(kennungen, slots.size, [kuerzel, String(sz.person.id), 'u:' + sz.benutzer]);
 
   const fehlzeiten: Paket['fehlzeiten'] = [];
   const verspaetungen: Paket['verspaetungen'] = [];
   for (const { z, stunde } of inMeinenStunden) {
-    if (!ich || !Array.isArray(z.teacherIds) || !z.teacherIds.some((t: unknown) => String(t) === ich)) continue;
+    if (!ich || !kennungenVon(z).includes(ich)) continue;
     const k = kurse.get(stunde.key)!;
     k.schueler.add(z.studentId);
     const art = artAusUntis(z.excuseStatus, typeof z.absenceReason === 'object' ? z.absenceReason?.name : z.absenceReason, z.absentTime);

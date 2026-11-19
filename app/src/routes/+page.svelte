@@ -63,7 +63,7 @@
         {@const vorbei = minuten(s.ende) <= plan.min}
         <a href="/stunde/{k.id}" class="stunde" class:jetzt={s === plan.laeuft} class:vorbei>
           <span class="zahl klein">{s.beginn}{s === plan.laeuft ? ' · läuft' : vorbei ? ' · ✓' : ''}</span>
-          <b>{k.fach} {k.klasse}</b>
+          <b>{k.klasse} {k.fach}</b>
           {#if s === plan.laeuft}<span class="mini-balken"><span style:width="{Math.min(100, ((plan.min - minuten(s.beginn)) / (minuten(s.ende) - minuten(s.beginn))) * 100)}%"></span></span>{/if}
         </a>
       {/each}

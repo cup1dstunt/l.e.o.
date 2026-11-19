@@ -240,6 +240,7 @@ const liste = (x: unknown): unknown[] => (Array.isArray(x) ? x : x && typeof x =
 
 export interface Sitzung {
   schule: string;
+  benutzer: string;
   person: { typ: number; id: number };
   rechte: number;
   r: (methode: string, params?: unknown) => Promise<any>;
@@ -266,7 +267,7 @@ export async function anmelden(z: Zugang): Promise<Sitzung> {
   }
   const r = (m: string, p: unknown = {}) => rpc('jsonrpc.do', schule, m, p);
   return {
-    schule, person, rechte, r,
+    schule, benutzer: z.benutzer.trim(), person, rechte, r,
     rest: (pfad, mehr = {}) => rest(pfad, undefined, mehr),
     abmelden: async () => { try { await r('logout'); } catch { /* egal */ } }
   };
@@ -373,9 +374,11 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
     // Weg 1: Lehrkraft-Nummer in teacherIds (als Zahl oder Text). Weg 2: Datum + Beginn wie im eigenen Stundenplan.
     const ich = String(person?.id);
     let eigeneStunden = new Set<string>();
+    let kuerzelSp = '';
     try {
-      const sp = liste(await r('getTimetable', { options: { element: { id: person!.id, type: person!.typ || 2 }, startDate: untisDatum(vor14), endDate: untisDatum(heute) } }));
+      const sp = liste(await r('getTimetable', { options: { element: { id: person!.id, type: person!.typ || 2 }, startDate: untisDatum(vor14), endDate: untisDatum(heute), teacherFields: ['id', 'name'] } }));
       eigeneStunden = new Set(sp.map((x: any) => `${x?.date}-${x?.startTime}`));
+      for (const x of sp as any[]) for (const t of x?.te ?? []) if (t?.id === person!.id && t?.name) kuerzelSp = String(t.name);
     } catch { /* dann nur Weg 1 */ }
     const perId = a.filter((x: any) => Array.isArray(x?.teacherIds) && x.teacherIds.map(String).includes(ich));
     const perZeit = a.filter((x: any) => eigeneStunden.has(`${x?.date}-${x?.startTime}`));
@@ -388,6 +391,7 @@ export async function verbindungstest(z: Zugang, melde: (p: Pruefung) => void): 
       'Einträge per Datum+Zeit': perZeit.length,
       'Typ teacherIds': [...new Set(a.slice(0, 50).flatMap((x: any) => (Array.isArray(x?.teacherIds) ? x.teacherIds.map((t: unknown) => typeof t) : [])))].join('/') || '–',
       'verschiedene Schüler darin': schuelerEigene,
+      ...kennungsBild(perZeit, eigeneStunden.size, kuerzelSp, String(person?.id ?? '')),
       'davon mit Abwesenheit': mitFehlzeit
     };
     for (const [n, w] of Object.entries(verteilung(a, 'excuseStatus'))) extra[`Status „${n}“`] = w;
@@ -467,4 +471,38 @@ export function bericht(ergebnisse: Pruefung[]): string {
     null,
     1
   );
+}
+
+/** Kennungen einer Klassenbuch-Zeile: Einträge aus teacherIds und, mit „u:“ davor, wer eingetragen hat (user). */
+export function kennungenVon(z: any): string[] {
+  const out = Array.isArray(z?.teacherIds) ? z.teacherIds.map((t: unknown) => String(t)).filter(Boolean) : [];
+  const u = z?.user;
+  const un = u === null || u === undefined || u === '' ? '' : typeof u === 'object' ? String(u.name ?? u.id ?? '') : String(u);
+  if (un) out.push('u:' + un);
+  return out;
+}
+
+/** Für den Bericht: welche Kennung steht in den eigenen Stunden wie oft. Lehrkraft-Kennungen, keine Schülerdaten. */
+function kennungsBild(zeilen: any[], stunden: number, kuerzel: string, personId: string): Record<string, string | number> {
+  const proSlot = new Map<string, Set<string>>();
+  let leer = 0;
+  for (const z of zeilen) {
+    const k = kennungenVon(z);
+    if (!Array.isArray(z?.teacherIds) || !z.teacherIds.length) leer++;
+    for (const x of k) {
+      if (!proSlot.has(x)) proSlot.set(x, new Set());
+      proSlot.get(x)!.add(`${z?.date}-${z?.startTime}`);
+    }
+  }
+  const slots = new Set(zeilen.map((z) => `${z?.date}-${z?.startTime}`)).size || 1;
+  const top = [...proSlot].sort((a, b) => b[1].size - a[1].size).slice(0, 5);
+  const out: Record<string, string | number> = {
+    'Kürzel im Stundenplan': kuerzel || '–',
+    'Stunden mit Klassenbuch-Zeilen': `${new Set(zeilen.map((z) => `${z?.date}-${z?.startTime}`)).size} von ${stunden}`,
+    'Zeilen ohne teacherIds': leer,
+    'Kürzel in eigenen Stunden': `${Math.round(((proSlot.get(kuerzel)?.size ?? 0) / slots) * 100)} %`,
+    'Personennr. in eigenen Stunden': `${Math.round(((proSlot.get(personId)?.size ?? 0) / slots) * 100)} %`
+  };
+  top.forEach(([k, v], i) => (out[`Kennung ${i + 1}`] = `${k} (${Math.round((v.size / slots) * 100)} %)`));
+  return out;
 }
