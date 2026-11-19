@@ -42,12 +42,13 @@
 
   const nav = [
     { href: '/', text: 'Heute', icon: 'M12 7v5l3 2 M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18' },
+    { href: '/stundenplan', text: 'Stundenplan', icon: 'M4 6h16v14H4z M4 10h16 M8 3v5 M16 3v5' },
     { href: '/klassen', text: 'Klassen', icon: 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z' },
     { href: '/schueler', text: 'Schüler', icon: 'M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M4 21c0-4 4-6 8-6s8 2 8 6' },
     { href: '/mehr', text: 'Mehr', icon: 'M5 12h.01 M12 12h.01 M19 12h.01' }
   ];
   const aktiv = (href: string) =>
-    href === '/' ? page.url.pathname === '/' || page.url.pathname.startsWith('/stunde')
+    href === '/' ? page.url.pathname === '/' || page.url.pathname.startsWith('/stunde/')
     : href === '/klassen' ? /^\/(klassen|kurs|planung|sitzplan)/.test(page.url.pathname)
     : page.url.pathname.startsWith(href);
   const lage = $derived(breite < 720 ? 'unten' : (app.d?.einstellungen.navigation ?? 'links'));
