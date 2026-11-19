@@ -20,7 +20,7 @@ Stand 19.11.2026. Konstantin hat das Fundament als nächsten Schritt gewählt. O
 
 | # | Abschnitt | Inhalt | Hängt ab von |
 |---|---|---|---|
-| F1 | Speicher je Objektart | IndexedDB mit einem Speicher je Objektart, Datensatz = `{id, v, quelle, geaendert, daten}`. Nur geänderte Datensätze werden geschrieben. Alter Block wird beim ersten Start übernommen und als Rückfall behalten. `app.d` bleibt für die Oberfläche gleich | – |
+| F1 ✓ | Speicher je Objektart (gebaut 19.11.) | IndexedDB mit einem Speicher je Objektart, Datensatz = `{id, v, quelle, geaendert, daten}`. Nur geänderte Datensätze werden geschrieben. Alter Block wird beim ersten Start übernommen und als Rückfall behalten. `app.d` bleibt für die Oberfläche gleich | – |
 | F2 | Verschlüsselung | Schlüssel aus dem L.E.O.-Passwort (PBKDF2), AES-GCM je Datensatz. Ohne Passwort kein Lesen | HTTPS (siehe unten) |
 | F3 | Sicherung | Verschlüsselte Sicherungsdatei, automatisch einmal täglich im Gerät die letzten 7 Stände, Wiederherstellen mit Vorschau | F1, F2 |
 | F4 | Abgleich | Kleiner Dienst im selben Container auf dem Unraid: speichert je Nutzer verschlüsselte Datensätze mit Änderungszeit, Gerät holt und schickt nur Neues. Konflikt: neuere Änderung gewinnt je Datensatz, Noten-Zellen einzeln | F1, F2, HTTPS |
