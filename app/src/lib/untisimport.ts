@@ -149,7 +149,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
 
   const kurse = new Map<string, Paket['kurse'][number]>();
   const raumZaehler = new Map<string, Map<string, number>>();
-  const stundenNachSchluessel = new Map<string, { key: string; start: number; ende: number }[]>();
+  const stundenNachSchluessel = new Map<string, { key: string; start: number; ende: number; lehrer: Set<string> }[]>();
   const muster = new Map<string, Paket['stunden'][number]>();
   const ausfaelle: Paket['ausfaelle'] = [];
   const in14 = untisDatumAus(new Date(heute.getTime() + 14 * 864e5));
@@ -157,11 +157,12 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
 
   for (const s of sp) {
     const kl = s.kl?.[0];
-    const su = s.su?.[0];
-    if (!kl?.id || !su?.id) continue;
+    // Stunden ohne Fach (z. B. manche Doppelsteckungen) zählen als „Unterricht“ der Klasse
+    const su = s.su?.[0] ?? { id: 0, name: s.lstext || 'Unterricht' };
+    if (!kl?.id) continue;
     const key = kursKey(kl.id, su.id);
     const klasse = s.kl.map((k: any) => k.name || klassen.get(k.id) || '').filter(Boolean).join(', ');
-    const fach = faecher.get(su.id) || su.longname || su.longName || su.name || '';
+    const fach = (su.id ? faecher.get(su.id) : '') || su.longname || su.longName || su.name || '';
     if (!kurse.has(key)) kurse.set(key, { klasseId: kl.id, fachId: su.id, name: `${klasse} ${fach}`.trim(), fach, klasse, raum: '', gehalten: 0, anzahl: 0, schueler: new Set() });
     const k = kurse.get(key)!;
     const raum = s.ro?.[0]?.name || raeume.get(s.ro?.[0]?.id) || '';
@@ -172,7 +173,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     }
     const tagKey = String(s.date);
     const liste = stundenNachSchluessel.get(tagKey) ?? [];
-    liste.push({ key, start: s.startTime, ende: s.endTime });
+    liste.push({ key, start: s.startTime, ende: s.endTime, lehrer: new Set((s.te ?? []).map((t: any) => t?.name).filter(Boolean).map((n: string) => 'u:' + n)) });
     stundenNachSchluessel.set(tagKey, liste);
     if (s.code === 'cancelled') {
       ausfaelle.push({ key, datum: isoAusUntis(s.date), beginn: zeitAusUntis(s.startTime) });
@@ -192,7 +193,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   // Welche Kennung in teacherIds „ich“ bin, ist nicht dokumentiert: gezählt wird, welche Kennung in den
   // eigenen Stunden fast immer vorkommt. Bevorzugt wird das Kürzel aus dem Stundenplan, wenn es passt.
   const ende = Math.min(heuteN, bis);
-  const inMeinenStunden: { z: any; stunde: { key: string; start: number; ende: number } }[] = [];
+  const inMeinenStunden: { z: any; stunde: { key: string; start: number; ende: number; lehrer: Set<string> } }[] = [];
   const kennungen = new Map<string, Set<string>>();
   const slots = new Set<string>();
   let start = new Date(isoAusUntis(von) + 'T12:00');
@@ -227,7 +228,9 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   // 1. Klassenlisten: Schüler aus Zeilen, die ich selbst eingetragen habe (bzw. mit meiner Kennung)
   const liste = new Map<string, Set<number>>();
   for (const { z, stunde } of inMeinenStunden) {
-    if (!ich || !kennungenVon(z).includes(ich)) continue;
+    // eigene Einträge, bei Doppelsteckung auch die der Kollegen, die laut Stundenplan in dieser Stunde stehen
+    const k = kennungenVon(z);
+    if (!(ich && k.includes(ich)) && !k.some((x) => stunde.lehrer.has(x))) continue;
     const s = finde(z.studentId);
     if (!s) continue;
     if (!liste.has(stunde.key)) liste.set(stunde.key, new Set());
