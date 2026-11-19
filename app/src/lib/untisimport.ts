@@ -218,28 +218,46 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   }
   const ich = kennungWaehlen(kennungen, slots.size, [kuerzel, String(sz.person.id), 'u:' + sz.benutzer]);
 
-  const fehlzeiten: Paket['fehlzeiten'] = [];
-  const verspaetungen: Paket['verspaetungen'] = [];
+  // Schülerliste: Die Nummer im Klassenbuch (studentId, Text) ist nicht immer die id aus getStudents.
+  // Deshalb über id, key, name und externKey nachschlagen. Der Rest der Schule wird danach verworfen.
+  melde('Schüler der eigenen Klassen');
+  const schuelerAlle = alsListe(await sz.r('getStudents')) as any[];
+  const finde = schuelerIndex(schuelerAlle);
+
+  // 1. Klassenlisten: Schüler aus Zeilen, die ich selbst eingetragen habe (bzw. mit meiner Kennung)
+  const liste = new Map<string, Set<number>>();
   for (const { z, stunde } of inMeinenStunden) {
     if (!ich || !kennungenVon(z).includes(ich)) continue;
-    const k = kurse.get(stunde.key)!;
-    k.schueler.add(z.studentId);
+    const s = finde(z.studentId);
+    if (!s) continue;
+    if (!liste.has(stunde.key)) liste.set(stunde.key, new Set());
+    liste.get(stunde.key)!.add(s.id);
+  }
+  // 2. Fehlzeiten: alle Zeilen in meinen Stunden von Schülern meiner Klassenliste (auch wenn jemand anderes eingetragen hat)
+  const fehlzeiten: Paket['fehlzeiten'] = [];
+  const verspaetungen: Paket['verspaetungen'] = [];
+  const gesehen = new Set<string>();
+  for (const { z, stunde } of inMeinenStunden) {
+    const s = finde(z.studentId);
+    if (!s || !liste.get(stunde.key)?.has(s.id)) continue;
+    const doppelt = `${s.id}-${z.date}-${stunde.start}`;
+    if (gesehen.has(doppelt)) continue;
+    gesehen.add(doppelt);
+    kurse.get(stunde.key)!.schueler.add(s.id);
     const art = artAusUntis(z.excuseStatus, typeof z.absenceReason === 'object' ? z.absenceReason?.name : z.absenceReason, z.absentTime);
     if (!art) continue;
     const datum = isoAusUntis(z.date);
     if (art === 'verspaetung') {
       const min = Number(z.absentTime) || 0;
-      verspaetungen.push({ key: stunde.key, untisId: z.studentId, datum, minuten: min, ankunft: zeitAusMinuten(minutenVon(stunde.start) + min) });
+      verspaetungen.push({ key: stunde.key, untisId: s.id, datum, minuten: min, ankunft: zeitAusMinuten(minutenVon(stunde.start) + min) });
     } else {
-      fehlzeiten.push({ key: stunde.key, untisId: z.studentId, datum, beginn: zeitAusUntis(stunde.start), stunden: einheiten(stunde.start, stunde.ende), status: art, grund: String(z.absenceReason?.name ?? z.absenceReason ?? '') });
+      fehlzeiten.push({ key: stunde.key, untisId: s.id, datum, beginn: zeitAusUntis(stunde.start), stunden: einheiten(stunde.start, stunde.ende), status: art, grund: String(z.absenceReason?.name ?? z.absenceReason ?? '') });
     }
   }
   inMeinenStunden.length = 0;
   if (ich) kuerzel = ich;
 
-  melde('Schüler der eigenen Klassen');
   const alle = new Set([...kurse.values()].flatMap((k) => [...k.schueler]));
-  const schuelerAlle = alsListe(await sz.r('getStudents')) as any[];
   const schueler: Paket['schueler'] = schuelerAlle
     .filter((s) => alle.has(s.id))
     .map((s) => ({ untisId: s.id, vorname: s.foreName ?? '', nachname: s.longName || s.name || '', geschlecht: geschlechtAus(s.gender) }));
@@ -261,6 +279,13 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     kurse: [...kurse.values()].filter((k) => k.anzahl >= 3),
     schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, stammdaten
   };
+}
+
+/** Sucht einen Schüler der Schülerliste zu einer Klassenbuch-Nummer: über id, key, name oder externKey. */
+export function schuelerIndex(liste: any[]): (nr: unknown) => any | undefined {
+  const m = new Map<string, any>();
+  for (const f of ['externKey', 'name', 'key', 'id']) for (const s of liste) if (s?.[f] !== undefined && s?.[f] !== null && s[f] !== '') m.set(String(s[f]), s);
+  return (nr) => m.get(String(nr));
 }
 
 /** Kennung, die in den eigenen Stunden am häufigsten vorkommt. Bevorzugt eine der Vorschläge, wenn sie in ≥ 30 % der Stunden steht. */
