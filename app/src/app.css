@@ -65,3 +65,9 @@ h2 { font-size: var(--leo-text-l); margin: 0; font-weight: 650; }
 .dialog { width: min(560px, 100%); max-height: calc(100dvh - 32px); overflow: auto; padding: 20px 24px; }
 .zeile { display: flex; align-items: center; gap: var(--leo-a3); }
 .raum { flex: 1; }
+
+/* Trendpfeil mündliche Leistungen (E88): Richtung trägt der Pfeil, die Farbe nur zusätzlich */
+.trend { font-weight: 700; font-size: 17px; line-height: 1; }
+.trend.besser { color: var(--leo-akzent); }
+.trend.schlechter { color: var(--leo-warnung); }
+.trend.gleich { color: var(--leo-leise); }

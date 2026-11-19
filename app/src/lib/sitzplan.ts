@@ -1,5 +1,5 @@
 // Vorlagen für Tischaufstellungen (E86). Jede Vorlage ist ein Raster; Tische lassen sich danach einzeln ein- und ausschalten.
-import type { Sitzplan } from './typen.ts';
+import type { EigeneVorlage, Sitzplan } from './typen.ts';
 
 export const VORLAGEN: { id: string; name: string; spalten: number; reihen: number; tisch: (s: number, r: number) => boolean }[] = [
   { id: 'reihen', name: 'Reihen (2er-Tische)', spalten: 8, reihen: 5, tisch: (s) => s !== 2 && s !== 5 },
@@ -14,6 +14,16 @@ export function ausVorlage(id: string): Sitzplan {
   const tische: boolean[] = [];
   for (let r = 0; r < v.reihen; r++) for (let s = 0; s < v.spalten; s++) tische.push(v.tisch(s, r));
   return { vorlage: v.id, spalten: v.spalten, reihen: v.reihen, tische, belegung: {} };
+}
+
+/** Sitzplan aus einer eigenen Vorlage; Tische werden kopiert, damit spätere Änderungen die Vorlage nicht verändern. */
+export function ausEigener(v: EigeneVorlage): Sitzplan {
+  return { vorlage: v.id, spalten: v.spalten, reihen: v.reihen, tische: [...v.tische], belegung: {} };
+}
+
+/** Aktuelle Tischaufstellung als eigene Vorlage (ohne Belegung). */
+export function alsVorlage(plan: Sitzplan, id: string, name: string): EigeneVorlage {
+  return { id, name, spalten: plan.spalten, reihen: plan.reihen, tische: [...plan.tische] };
 }
 
 /** Schüler der Reihe nach auf freie Tische setzen (vorne zuerst). */

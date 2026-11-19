@@ -124,6 +124,16 @@ export interface Einstellungen {
   sperreMinuten: number;
   passwort?: { salz: string; hash: string };
   untis?: UntisStand;
+  eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
+}
+
+/** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */
+export interface EigeneVorlage {
+  id: string;
+  name: string;
+  spalten: number;
+  reihen: number;
+  tische: boolean[];
 }
 
 /** Stand der letzten Übernahme aus WebUntis (V11). Zugangsdaten werden hier nie gespeichert. */

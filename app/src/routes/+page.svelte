@@ -61,8 +61,8 @@
       {#each plan.heute as s}
         {@const k = kurs(s.kursId)}
         {@const vorbei = minuten(s.ende) <= plan.min}
-        <a href="/stunde/{k.id}" class="stunde" class:jetzt={s === plan.laeuft} class:vorbei>
-          <span class="zahl klein">{s.beginn}{s === plan.laeuft ? ' · läuft' : vorbei ? ' · ✓' : ''}</span>
+        <a href={s.ausfall ? undefined : `/stunde/${k.id}`} class="stunde" class:jetzt={s === plan.laeuft} class:vorbei={vorbei && !s.ausfall} class:ausfall={s.ausfall} title={s.ausfall ? 'Ausfall laut WebUntis' : undefined}>
+          <span class="zahl klein">{s.beginn}{s.ausfall ? ' · Ausfall' : s === plan.laeuft ? ' · läuft' : vorbei ? ' · ✓' : ''}</span>
           <b>{k.klasse} {k.fach}</b>
           {#if s === plan.laeuft}<span class="mini-balken"><span style:width="{Math.min(100, ((plan.min - minuten(s.beginn)) / (minuten(s.ende) - minuten(s.beginn))) * 100)}%"></span></span>{/if}
         </a>
@@ -79,6 +79,10 @@
           <span class="leise">Raum {k.raum} · {k.schueler.length} Schüler</span>
         </div>
         <h2 class="kursname">{k.name}</h2>
+        {#if plan.ausfallJetzt && !plan.laeuft}
+          {@const a = kurs(plan.ausfallJetzt.kursId)}
+          <p class="ausfallhinweis klein">{a.klasse} {a.fach} ({plan.ausfallJetzt.beginn} bis {plan.ausfallJetzt.ende}) fällt laut WebUntis aus.</p>
+        {/if}
         {#if plan.laeuft}
           <Zeitbalken beginn={haupt.beginn} ende={haupt.ende} jetzt={plan.min} />
         {:else}
@@ -140,6 +144,9 @@
   .stunde b { font-size: 16px; }
   .stunde.jetzt { background: var(--leo-akzent); border-color: var(--leo-akzent); color: var(--leo-auf-akzent); }
   .stunde.vorbei { opacity: .6; }
+  .stunde.ausfall { background: transparent; border-style: dashed; color: var(--leo-leise); cursor: default; }
+  .stunde.ausfall b { text-decoration: line-through; }
+  .ausfallhinweis { margin: 0; padding: 8px 12px; border: 1px dashed var(--leo-linie); border-radius: var(--leo-r-m); color: var(--leo-leise); }
   .mini-balken { height: 4px; border-radius: 9px; background: rgba(255,255,255,.3); margin-top: 6px; overflow: hidden; }
   .mini-balken span { display: block; height: 100%; background: var(--leo-auf-akzent); }
   .zahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }

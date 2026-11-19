@@ -9,10 +9,7 @@ export const alter = (s: Schueler, heute = new Date()) => {
   if (heute < new Date(heute.getFullYear(), g.getMonth(), g.getDate())) a--;
   return a;
 };
-export const heuteISO = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+export const heuteISO = () => isoDatum(new Date());
 export const datumKurz = (iso: string) => new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
 export const datumWt = (iso: string) => new Date(iso).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
 export const minuten = (hhmm: string) => {
@@ -25,21 +22,37 @@ export function schuelerVon(d: Daten, k: Kurs) {
     .sort((a, b) => a.nachname.localeCompare(b.nachname, 'de'));
 }
 
-/** Stunden des heutigen Tages, dazu die laufende und die nächste. */
+export const isoDatum = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Ausgefallen laut WebUntis (WU1)? Schlüssel wie beim Import: `${kursId}|${datum}|${beginn}`. */
+export function istAusfall(d: Daten, s: Stunde, datum: string) {
+  return (d.einstellungen.untis?.ausfaelle ?? []).includes(`${s.kursId}|${datum}|${s.beginn}`);
+}
+
+export type StundeHeute = Stunde & { ausfall: boolean; tagText?: string };
+
+/** Stunden des heutigen Tages, dazu die laufende und die nächste. Ausgefallene Stunden laufen nie und kommen nie als Nächstes (WU1). */
 export function stundenHeute(d: Daten, jetzt = new Date()) {
   const t = jetzt.getDay();
   const min = jetzt.getHours() * 60 + jetzt.getMinutes();
-  const heute = d.stundenplan.filter((s) => s.tag === t).sort((a, b) => minuten(a.beginn) - minuten(b.beginn));
-  const laeuft = heute.find((s) => minuten(s.beginn) <= min && min < minuten(s.ende));
-  let naechste: (Stunde & { tagText?: string }) | undefined = heute.find((s) => minuten(s.beginn) > min);
+  const datum = isoDatum(jetzt);
+  const tagesplan = (tag: number, iso: string): StundeHeute[] =>
+    d.stundenplan.filter((s) => s.tag === tag).sort((a, b) => minuten(a.beginn) - minuten(b.beginn))
+      .map((s) => ({ ...s, ausfall: istAusfall(d, s, iso) }));
+  const heute = tagesplan(t, datum);
+  const laeuft = heute.find((s) => !s.ausfall && minuten(s.beginn) <= min && min < minuten(s.ende));
+  let naechste: StundeHeute | undefined = heute.find((s) => !s.ausfall && minuten(s.beginn) > min);
   if (!naechste) {
     for (let i = 1; i <= 7 && !naechste; i++) {
-      const tt = (t + i) % 7;
-      const s = d.stundenplan.filter((x) => x.tag === tt).sort((a, b) => minuten(a.beginn) - minuten(b.beginn))[0];
-      if (s) naechste = { ...s, tagText: i === 1 ? 'morgen' : ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][tt] };
+      const tag = new Date(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate() + i);
+      const s = tagesplan(tag.getDay(), isoDatum(tag)).find((x) => !x.ausfall);
+      if (s) naechste = { ...s, tagText: i === 1 ? 'morgen' : ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][tag.getDay()] };
     }
   }
-  return { heute, laeuft, naechste, min };
+  // Fällt die Stunde aus, die gerade laufen würde, zeigt die Startseite das an
+  const ausfallJetzt = heute.find((s) => s.ausfall && minuten(s.beginn) <= min && min < minuten(s.ende));
+  return { heute, laeuft, naechste, ausfallJetzt, min };
 }
 
 export function fehlzeitenVon(d: Daten, kursId: string, schuelerId: string) {
@@ -74,4 +87,22 @@ export const WOCHENTAGE = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
 export function nachWochentag(daten: string[]) {
   const tage = [...new Set(daten)];
   return WOCHENTAGE.map((_, i) => tage.filter((t) => new Date(t + 'T12:00').getDay() === i + 1).length);
+}
+
+/** Trendpfeil mündliche Leistungen (E88, PB5): Smiley-Schnitt im letzten Monat gegen den Monat davor; niedrig = besser. */
+export function mitarbeitTrend(d: Daten, kursId: string, schuelerId: string): '' | 'besser' | 'gleich' | 'schlechter' {
+  const m = new Map<string, number[]>();
+  for (const e of d.mitarbeit) if (e.kursId === kursId && e.schuelerId === schuelerId) m.set(e.zeit.slice(0, 7), [...(m.get(e.zeit.slice(0, 7)) ?? []), e.stufe]);
+  const r = [...m.entries()].sort().slice(-2).map(([, v]) => v.reduce((a, b) => a + b, 0) / v.length);
+  if (r.length < 2) return '';
+  return r[1] < r[0] - 0.3 ? 'besser' : r[1] > r[0] + 0.3 ? 'schlechter' : 'gleich';
+}
+export const PFEIL = { '': '', besser: '↗', gleich: '→', schlechter: '↘' } as const;
+
+/** Verspätungen einer Klasse nach Wochentag (FB14): Anzahl, Minuten und die konkreten Einträge je Tag Mo–Fr. */
+export function verspaetungenNachWochentag<T extends { datum: string; minuten: number }>(liste: T[]) {
+  return WOCHENTAGE.map((name, i) => {
+    const e = liste.filter((v) => new Date(v.datum + 'T12:00').getDay() === i + 1);
+    return { name, anzahl: e.length, minuten: e.reduce((a, v) => a + v.minuten, 0), eintraege: e };
+  });
 }
