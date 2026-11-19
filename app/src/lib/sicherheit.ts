@@ -1,6 +1,6 @@
 // Lokale Anmeldung (E81). Das Passwort wird nur als gesalzener Hash gespeichert.
-// Ehrlich: Das schützt vor neugierigen Schülern am Gerät, verschlüsselt die Daten aber noch nicht (FB1).
-// Eigene SHA-256-Funktion, weil crypto.subtle über http://IP (ohne HTTPS) im Browser fehlt.
+// Gilt nur noch ohne HTTPS (http://IP), dort fehlt crypto.subtle und damit die Verschlüsselung.
+// Über HTTPS prüft der Tresor (tresor.ts, F2) das Passwort und die Daten sind verschlüsselt.
 
 function sha256(bytes: Uint8Array): Uint8Array {
   const K = new Uint32Array([
