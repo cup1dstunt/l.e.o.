@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import { page } from '$app/state';
-  import { app, laden, sperren, lebenszeichen } from '$lib/speicher.svelte';
+  import { app, abgleich, laden, sperren, lebenszeichen, abgleichPlanen } from '$lib/speicher.svelte';
   import Hinweisleiste from '$lib/ui/Hinweisleiste.svelte';
   import Anmeldung from '$lib/ui/Anmeldung.svelte';
   import Suche from '$lib/ui/Suche.svelte';
@@ -23,7 +23,12 @@
       else if (sitzung.entsperrt && Date.now() - letzteAktivitaet < 20_000) lebenszeichen();
     }, 15_000);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, aktiv);
-    return () => clearInterval(t);
+    // Abgleich (F4): jede Minute, beim Zurückkehren in den Tab und wenn das Netz wieder da ist
+    const ab = setInterval(() => { if (sitzung.entsperrt && !document.hidden) abgleichPlanen(); }, 60_000);
+    const sichtbar = () => { if (!document.hidden && sitzung.entsperrt) abgleichPlanen(300); };
+    document.addEventListener('visibilitychange', sichtbar);
+    addEventListener('online', sichtbar);
+    return () => { clearInterval(t); clearInterval(ab); document.removeEventListener('visibilitychange', sichtbar); removeEventListener('online', sichtbar); };
   });
   $effect(() => {
     try { sessionStorage.setItem('leo-entsperrt', sitzung.entsperrt ? '1' : '0'); } catch {}
@@ -81,7 +86,11 @@
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
           <span>Sperren</span>
         </button>
-        <span class="status" title={app.gespeichert ? 'Alles lokal in diesem Browser gespeichert' : 'Speichert …'}>{app.gespeichert ? 'lokal ✓' : '…'}</span>
+        {#if abgleich.verbunden}
+          <a class="status" href="/mehr" class:warn={!!abgleich.fehler} title={abgleich.fehler || (abgleich.laeuft ? 'Gleicht ab …' : 'Gespeichert und mit deinen Geräten abgeglichen')}>{!app.gespeichert || abgleich.laeuft ? '…' : abgleich.fehler ? 'offline' : 'abgeglichen ✓'}</a>
+        {:else}
+          <span class="status" title={app.gespeichert ? 'Alles lokal in diesem Browser gespeichert' : 'Speichert …'}>{app.gespeichert ? 'lokal ✓' : '…'}</span>
+        {/if}
       {/if}
     </nav>
     <main>
@@ -100,16 +109,17 @@
   nav { width: 92px; flex: none; background: var(--leo-karte); border-right: 1px solid var(--leo-linie); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; position: sticky; top: 0; height: 100dvh; z-index: 20; }
   .rechts nav { border-right: 0; border-left: 1px solid var(--leo-linie); }
   .logo { margin-bottom: 14px; }
-  nav a:not(.logo) { width: 76px; padding: 10px 0 8px; border-radius: var(--leo-r-l); display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--leo-leise); text-decoration: none; font-size: 13px; }
+  nav a:not(.logo):not(.status) { width: 76px; padding: 10px 0 8px; border-radius: var(--leo-r-l); display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--leo-leise); text-decoration: none; font-size: 13px; }
   nav a.aktiv { background: var(--leo-akzent-hell); color: var(--leo-akzent); font-weight: 650; }
   .navknopf { width: 76px; padding: 10px 0 8px; border-radius: var(--leo-r-l); display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--leo-leise); background: none; border: 0; font-size: 13px; }
   .sperre { margin-top: auto; }
   .unten .navknopf { width: auto; flex: 1; border-radius: 0; padding: 8px 0; }
-  .status { font-size: 11px; color: var(--leo-leise); }
+  .status { font-size: 11px; color: var(--leo-leise); text-align: center; text-decoration: none; }
+  .status.warn { color: var(--leo-warnung); }
   main { flex: 1; min-width: 0; }
   .unten { flex-direction: column; }
   .unten nav { order: 2; position: fixed; bottom: 0; left: 0; right: 0; top: auto; width: auto; height: calc(64px + env(safe-area-inset-bottom)); padding: 0 0 env(safe-area-inset-bottom); flex-direction: row; justify-content: space-around; border-right: 0; border-top: 1px solid var(--leo-linie); }
-  .unten nav a:not(.logo) { width: auto; flex: 1; border-radius: 0; background: none; padding: 8px 0; }
+  .unten nav a:not(.logo):not(.status) { width: auto; flex: 1; border-radius: 0; background: none; padding: 8px 0; }
   .unten nav a.aktiv { background: none; }
   .unten main { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   .fehler { background: var(--leo-warnung-hell); color: var(--leo-warnung); padding: 10px 16px; }
