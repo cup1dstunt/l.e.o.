@@ -6,6 +6,7 @@
   import Anmeldung from '$lib/ui/Anmeldung.svelte';
   import Suche from '$lib/ui/Suche.svelte';
   import { sitzung } from '$lib/sitzung.svelte';
+  import { untisAutoVersuchen } from '$lib/untisauto.svelte';
   import { onMount, untrack } from 'svelte';
 
   let { children } = $props();
@@ -24,8 +25,9 @@
     }, 15_000);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, aktiv);
     // Abgleich (F4): jede Minute, beim Zurückkehren in den Tab und wenn das Netz wieder da ist
-    const ab = setInterval(() => { if (sitzung.entsperrt && !document.hidden) abgleichPlanen(); }, 60_000);
-    const sichtbar = () => { if (!document.hidden && sitzung.entsperrt) abgleichPlanen(300); };
+    // WebUntis (WU2): dieselben Anlässe; ob ein Abruf dran ist (30 Minuten), entscheidet untisAutoVersuchen selbst
+    const ab = setInterval(() => { if (sitzung.entsperrt && !document.hidden) { abgleichPlanen(); untisAutoVersuchen(); } }, 60_000);
+    const sichtbar = () => { if (!document.hidden && sitzung.entsperrt) { abgleichPlanen(300); untisAutoVersuchen(); } };
     document.addEventListener('visibilitychange', sichtbar);
     addEventListener('online', sichtbar);
     return () => { clearInterval(t); clearInterval(ab); document.removeEventListener('visibilitychange', sichtbar); removeEventListener('online', sichtbar); };
@@ -33,6 +35,7 @@
   $effect(() => {
     try { sessionStorage.setItem('leo-entsperrt', sitzung.entsperrt ? '1' : '0'); } catch {}
     if (!sitzung.entsperrt) untrack(sperren); // verschlüsselt: Schlüssel und Daten aus dem Arbeitsspeicher
+    else if (app.d) untrack(() => setTimeout(untisAutoVersuchen, 1500)); // beim Entsperren, wenn der Schlüssel bereitsteht
   });
   function tasten(e: KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && sitzung.entsperrt) {
