@@ -102,10 +102,10 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | P2 | Raumvorlagen schulweit teilen (Räume aus WebUntis) | C | 2 | S |
 | P3 | Sitzplan-Generator mit Regeln: nicht nebeneinander, weit auseinander, vorne, nah beieinander, fester Platz, Mischung Geschlecht/Leistung | B | 2 | M |
 | P4 | Klausur-Sitzplan (abwechselnd, Abstand, Nachteilsausgleich) | C | 3 | S |
-| P5 | Zufall ohne Wiederholung bis alle dran waren, optional gewichtet, nur Anwesende, Protokoll | K, B | 1 | S |
-| P6 | Beamer-Ansicht für Zufall und Gruppen | C | 2 | S |
-| P7 | Gruppen: zufällig, leistungsgemischt, geschlechterausgewogen, Konflikt- und Wunschlisten | K, B | 1 | M |
-| P8 | Gruppen im Sitzplan abbilden | B | 2 | S |
+| P5 | Zufall ohne Wiederholung bis alle dran waren, optional gewichtet, nur Anwesende, Protokoll (gebaut 20.11., E108) | K, B | 1 | S |
+| P6 | Beamer-Ansicht für Zufall und Gruppen (gebaut 20.11. mit Rad und Timer, E108) | C | 2 | S |
+| P7 | Gruppen: zufällig, leistungsgemischt, geschlechterausgewogen, Konflikt- und Wunschlisten (gebaut 20.11., E108) | K, B | 1 | M |
+| P8 | Gruppen im Sitzplan abbilden (gebaut 20.11.: G1, G2 … in der Live-Stunde, E108) | B | 2 | S |
 | P9 | **Projektgruppen** über mehrere Blöcke mit Bewertung des Beitrags je Mitglied | B | 2 | M |
 | P10 | Namen lernen mit Fotos (Karteikarten) am Schuljahresanfang | C | 3 | S |
 
