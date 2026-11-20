@@ -393,7 +393,7 @@ export async function einspielen(d: Daten) {
   await fertigSpeichern();
   if (app.d) await standAnlegen('vorher');
   const pw = app.d?.einstellungen.passwort;
-  app.d = migrieren(structuredClone(d));
+  app.d = migrieren(JSON.parse(JSON.stringify(d))); // d kann ein $state-Proxy sein (structuredClone geht damit nicht)
   if (pw) app.d.einstellungen.passwort = pw; // eigenes Passwort behalten
   if (tresor) delete app.d.einstellungen.passwort; // verschlüsselt prüft der Tresor das Passwort
   speichern();
