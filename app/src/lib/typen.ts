@@ -137,6 +137,7 @@ export interface Einstellungen {
   sperreMinuten: number;
   passwort?: { salz: string; hash: string };
   untis?: UntisStand;
+  untisAuto?: boolean; // WebUntis automatisch abgleichen (WU2), fehlt = an
   nachschreibMail?: { betreff: string; text: string }; // eigene Vorlage der Nachschreibe-Mail (E105)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
 }

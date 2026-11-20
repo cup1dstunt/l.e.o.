@@ -397,7 +397,7 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | # | Punkt | Herkunft | Prio | Aufwand | Status |
 |---|---|---|---|---|---|
 | WU1 | **Heute: ausgefallene Stunden** aus WebUntis nicht als „läuft gerade“ zeigen, sondern als Ausfall (im Stundenplan schon so); nächste Verbesserungsrunde | K | 1 | S | erledigt 19.11. (Heute und Live-Stunde) |
-| WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | Schlüssel liegt seit F3 verschlüsselt (E102); automatischer Abgleich beim Öffnen offen |
+| WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | ✅ umgesetzt 20.11. (E108): beim Entsperren, beim Zurückkehren in den Tab und alle 30 Minuten, Schalter unter Mehr › WebUntis |
 | WU3 | **Doppelsteckung:** beide Lehrkräfte dürfen Abwesenheiten eintragen, meist ist eine verantwortlich; Klassenliste kommt aus Einträgen aller Lehrkräfte der Stunde | K | 1 | S | im Prototyp (PR #15) |
 
 ## Offen
