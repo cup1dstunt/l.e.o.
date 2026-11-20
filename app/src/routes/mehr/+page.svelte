@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { app, speichern, zuruecksetzen, exportieren, importieren, zeige, passwortAendern, kannVerschluesseln } from '$lib/speicher.svelte';
+  import { app, abgleich, speichern, zeige, passwortAendern, kannVerschluesseln } from '$lib/speicher.svelte';
   import { sitzung } from '$lib/sitzung.svelte';
+  import SicherungKarte from '$lib/ui/SicherungKarte.svelte';
+  import AbgleichKarte from '$lib/ui/AbgleichKarte.svelte';
   const d = app.d!;
   let altPw = $state('');
   let neuPw = $state('');
@@ -13,13 +15,6 @@
     if (f) { zeige(f); return; }
     altPw = neuPw = neuPw2 = '';
     zeige('Passwort geändert');
-  }
-  let datei: HTMLInputElement;
-  let sicher = $state(false);
-  async function laden(e: Event) {
-    const f = (e.currentTarget as HTMLInputElement).files?.[0];
-    if (!f) return;
-    try { await importieren(f); zeige('Sicherung eingespielt'); location.href = '/'; } catch (err) { zeige((err as Error).message); }
   }
 </script>
 
@@ -45,7 +40,7 @@
 
   <section class="karte">
     <h2>Anmeldung</h2>
-    <p>Das Passwort schützt L.E.O. auf diesem Gerät, etwa wenn Schülerinnen und Schüler das iPad oder den Beamer sehen. Es verlässt das Gerät nie. Vergessen heißt: Daten nur über eine Sicherung zurückholen.</p>
+    <p>Das Passwort schützt L.E.O. auf diesem Gerät, etwa wenn Schülerinnen und Schüler das iPad oder den Beamer sehen. Es verlässt das Gerät nie. Vergessen heißt: Daten nur über eine Sicherung zurückholen.{abgleich.verbunden ? ' Mit Abgleich gilt es auf allen deinen Geräten, ändern geht dann nur mit Verbindung zum Server.' : ''}</p>
     {#if app.verschluesselt}
       <p class="klein"><b>Verschlüsselt:</b> Die Daten auf diesem Gerät sind mit deinem Passwort verschlüsselt (AES-256). Ohne Passwort sind sie nicht lesbar.</p>
     {:else}
@@ -67,25 +62,9 @@
     </form>
   </section>
 
-  <section class="karte">
-    <h2>Daten</h2>
-    <p>Alle Daten liegen <b>nur in diesem Browser auf diesem Gerät</b>. Der Server liefert nur die App aus und sieht keine Noten. Ein anderes Gerät oder ein anderer Browser hat eigene Daten.</p>
-    <div class="zeile wrap">
-      <button class="knopf haupt" onclick={exportieren}>Sicherung herunterladen</button>
-      <button class="knopf" onclick={() => datei.click()}>Sicherung einspielen</button>
-      <input type="file" accept="application/json,.json" bind:this={datei} onchange={laden} hidden />
-    </div>
-    <p class="klein leise">Mit einer Sicherung kannst du den Stand auch auf ein anderes Gerät übertragen. Einspielen ersetzt alles auf diesem Gerät. Die Sicherungsdatei selbst ist noch nicht verschlüsselt, bewahre sie sicher auf.</p>
-    <div class="zeile wrap">
-      {#if !sicher}
-        <button class="knopf leise" onclick={() => (sicher = true)}>Beispieldaten neu laden …</button>
-      {:else}
-        <span class="warn">Alle Änderungen gehen verloren.</span>
-        <button class="knopf leise warn" onclick={() => { zuruecksetzen(); sicher = false; zeige('Beispieldaten neu geladen'); }}>Ja, neu laden</button>
-        <button class="knopf leise" onclick={() => (sicher = false)}>Abbrechen</button>
-      {/if}
-    </div>
-  </section>
+  <SicherungKarte />
+
+  <AbgleichKarte />
 
   <section class="karte">
     <h2>WebUntis</h2>
@@ -95,7 +74,7 @@
 
   <section class="karte">
     <h2>Über diesen Prototyp</h2>
-    <p class="leise">L.E.O. Prototyp 0.5: Tagesübersicht, Notenbuch, Schülerkarte, Live-Stunde, Sitzplan, Planung. Erfundene Beispieldaten, WebUntis bisher nur als Verbindungstest, kein IServ. Anmeldung nur lokal auf diesem Gerät.</p>
+    <p class="leise">L.E.O. Prototyp 0.5: Tagesübersicht, Notenbuch, Schülerkarte, Live-Stunde, Sitzplan, Planung. Beispieldaten oder Übernahme aus WebUntis, kein IServ. Anmeldung lokal mit dem L.E.O.-Passwort, auf Wunsch Abgleich zwischen deinen Geräten über den eigenen Server.</p>
     <p class="leise">Als App installieren: im Browser „Zum Startbildschirm“ (iPad/iPhone) bzw. „Installieren“ (Chrome/Edge). Das geht nur über HTTPS oder auf localhost.</p>
   </section>
 </div>

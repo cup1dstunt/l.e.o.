@@ -64,6 +64,41 @@ export interface Ergebnis {
   weg: string[]; // Rechenweg in Worten
   fehlend: number; // leere Zellen in diesem Halbjahr
   nachschreiben: string[]; // Leistungen mit E
+  schritte: Schritt[]; // Rechenweg zum Aufklappen, mit allen Zahlen
+}
+
+/** Ein Posten im Rechenweg: was eingeht, mit welchem Gewicht, oder warum nicht. */
+export interface SchrittPosten {
+  name: string;
+  anzeige: string; // so wie eingetragen, z. B. „8“, „UE“, „E“, „·“
+  wert: number | null; // Wert für die Rechnung
+  gewicht: number;
+  zaehlt: boolean;
+  grund?: string; // warum er nicht zählt
+}
+
+export interface Schritt {
+  id: 'klausuren' | 'mitarbeit' | 'sl' | 'at' | 'gesamt';
+  titel: string;
+  roh: number | null;
+  wert: number | null; // FOS gerundet, OSZ wie roh
+  posten: SchrittPosten[];
+  formel: string; // z. B. „(8 × 1 + 6 × 0,5) : 1,5 = 7,33“
+}
+
+const dez = (x: number) => x.toLocaleString('de-DE', { maximumFractionDigits: 2 });
+
+/** Formel eines gewichteten Mittels in Worten, so wie man sie auf Papier nachrechnet. */
+export function formel(posten: SchrittPosten[], roh: number | null, gerundet: number | null, fos: boolean): string {
+  const z = posten.filter((p) => p.zaehlt);
+  if (roh === null || z.length === 0) return 'keine Note, zählt nicht';
+  const ende = fos && gerundet !== null ? `${zahl(roh)} → ${gerundet}` : zahl(roh);
+  if (z.length === 1) return `nur ${z[0].name}: ${dez(z[0].wert!)} = ${ende}`;
+  const summeG = z.reduce((a, p) => a + p.gewicht, 0);
+  const alleEins = z.every((p) => p.gewicht === z[0].gewicht);
+  const zaehler = z.map((p) => (alleEins ? dez(p.wert!) : `${dez(p.wert!)} × ${dez(p.gewicht)}`)).join(' + ');
+  const nenner = alleEins ? String(z.length) : dez(summeG);
+  return `(${zaehler}) : ${nenner} = ${ende}`;
 }
 
 export function zellSchluessel(leistungId: string, schuelerId: string) {
@@ -92,6 +127,15 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
   const kaRoh = mittel(gruppenPosten(kurs, schuelerId, 'klausuren'));
   const slRoh = mittel(gruppenPosten(kurs, schuelerId, 'sl'));
   const maRoh = mittel(gruppenPosten(kurs, schuelerId, 'mitarbeit'));
+  const schrittPosten = (gruppe: Gruppe): SchrittPosten[] =>
+    kurs.leistungen.filter((l) => l.gruppe === gruppe).map((l) => {
+      const z = kurs.zellen[zellSchluessel(l.id, schuelerId)];
+      const wert = zellWert(kurs.profil, z);
+      const gewicht = z?.gewicht ?? l.gewicht;
+      const anzeige = z?.status === 'UE' ? `UE = ${wert}` : z?.status ?? (z?.wert !== undefined ? String(z.wert) : '·');
+      const grund = z?.status === 'E' ? 'E, Nachschreiben offen' : wert === null ? 'noch leer' : gewicht <= 0 ? 'Gewicht 0' : undefined;
+      return { name: l.name, anzeige, wert, gewicht, zaehlt: !grund, grund };
+    });
   const ka = r(kaRoh);
   const sl = r(slRoh);
   const ma = r(maRoh);
@@ -139,6 +183,21 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
   if (fos) weg.push('FOS-Profil: jede Stufe wird kaufmännisch gerundet (wie UPZ).');
   else weg.push('OSZ-Profil (vereinfacht): Notenschnitt ohne Zwischenrundung, bei ,50 entscheidest du.');
 
+  const pk = schrittPosten('klausuren'), pm = schrittPosten('mitarbeit'), ps = schrittPosten('sl');
+  const zweig = (name: string, wert: number | null, gewicht: number): SchrittPosten => ({
+    name, anzeige: wert === null ? '·' : fos ? String(wert) : zahl(wert), wert, gewicht,
+    zaehlt: wert !== null && gewicht > 0, grund: wert === null ? 'leer, Zweig fällt weg' : gewicht <= 0 ? 'Gewicht 0' : undefined
+  });
+  const pa = [zweig('mündlich', ma, g.mitarbeit), zweig('Tests', sl, g.sl)];
+  const pg = [zweig('Klausuren', ka, 0.5), zweig('AT', sonstige, 0.5)];
+  const schritte: Schritt[] = [
+    { id: 'klausuren', titel: 'Klausuren', roh: kaRoh, wert: ka, posten: pk, formel: formel(pk, kaRoh, ka, fos) },
+    { id: 'mitarbeit', titel: 'Mündliche Leistungen', roh: maRoh, wert: ma, posten: pm, formel: formel(pm, maRoh, ma, fos) },
+    { id: 'sl', titel: 'Tests und Sonstiges', roh: slRoh, wert: sl, posten: ps, formel: formel(ps, slRoh, sl, fos) },
+    { id: 'at', titel: 'AT (Sonstige Leistungen)', roh: sonstRoh, wert: sonstige, posten: pa, formel: formel(pa, sonstRoh, sonstige, fos) },
+    { id: 'gesamt', titel: 'Gesamtnote', roh: gesRoh, wert: gesamt, posten: pg, formel: formel(pg, gesRoh, gesamt, fos) }
+  ];
+
   let fehlend = 0;
   const nachschreiben: string[] = [];
   for (const l of kurs.leistungen) {
@@ -147,7 +206,7 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
     if (z?.status === 'E') nachschreiben.push(l.name);
   }
 
-  return { klausuren: kaRoh, sl: slRoh, mitarbeit: maRoh, sonstige: sonstRoh, gesamt, gesamtExakt, vorschlag, weg, fehlend, nachschreiben };
+  return { klausuren: kaRoh, sl: slRoh, mitarbeit: maRoh, sonstige: sonstRoh, gesamt, gesamtExakt, vorschlag, weg, fehlend, nachschreiben, schritte };
 }
 
 /** Monatsnote aus Smileys vorschlagen (E68, E72): Mittel der Stufen = Note 1–5. FOS rechnet in Notenpunkte um. */

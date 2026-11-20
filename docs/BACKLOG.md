@@ -355,13 +355,13 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 | PB9 | **Gesprächsvorbereitung:** eine Seite je Schüler mit Noten, Fehlzeiten, Mitarbeit, Notizen für Eltern- oder Schülergespräch (verzahnt mit PF15 PDF-Report) | C, K bestätigt | 2 | M | offen |
 | PB10 | **Bausteine zu Formulierungen:** aus gesammelten Textbausteinen Sätze für Rückmeldung oder Gespräch vorschlagen, ohne Schülernamen an KI-Dienste | C, K bestätigt | 3 | M | offen |
 | PB11 | **Wochenrückblick:** was diese Woche erfasst wurde, wer ohne Mitarbeitseintrag blieb, offene Nachschreiber | C, K bestätigt | 2 | S | offen |
-| PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | offen (Export im Prototyp unverschlüsselt) |
+| PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | gebaut 20.11. (F3, E102): verschlüsselte Datei + 7 Tagesstände |
 | PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | Woche/Tag umschaltbar im Prototyp (19.11., Entwurf A+B), Quelle WebUntis |
 | PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | offen |
 | PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | einfache Fassung im Prototyp (Reiter „Planung“) |
 | PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | Zählung mit Beispiel-Ferien im Prototyp, Quelle WebUntis offen |
 | PB17 | **Live-Stunde: Werkzeuge für die Stunde** sammeln (Zufall, Gruppen, Timer, Beamer-Modus PF25, Lernstoff, Übergang); was fehlt noch? | K | 1 | M | teilweise im Prototyp |
-| PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | offen |
+| PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | gebaut 20.11. (F4, E103): eigener Dienst auf dem Unraid, Ende-zu-Ende-verschlüsselt; ungetestet auf Unraid/iPad |
 | PB19 | **App-Pakete** für Windows/macOS (Tauri) und Android/iOS (Capacitor) aus derselben Browser-App (E79) | C | 2 | M | offen |
 
 ## Aus dem Testinstanz-Feedback (18.11.2026)
@@ -370,7 +370,7 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 
 | # | Punkt | Herkunft | Prio | Aufwand | Status |
 |---|---|---|---|---|---|
-| FB1 | Lokale Anmeldung, Sperre, später IServ-SSO und Verschlüsselung der lokalen Daten mit dem Passwort (E81) | K | 1 | M | Passwort und Sperre in 0.5, Verschlüsselung offen |
+| FB1 | Lokale Anmeldung, Sperre, später IServ-SSO und Verschlüsselung der lokalen Daten mit dem Passwort (E81) | K | 1 | M | Passwort, Sperre, Verschlüsselung (F2) und verschlüsselt gemerkter WebUntis-Schlüssel gebaut; IServ-SSO offen |
 | FB2 | Tagesübersicht als Stundenleiste (E82) | K | 1 | S | in 0.5 |
 | FB3 | Suche Strg+K (E90) | K | 1 | S | in 0.5 |
 | FB4 | Sitzplan-Editor mit Vorlagen und Drag and Drop (E86), Raumvorlagen später je Raum teilen | K | 1 | L | Grundfassung in 0.5; eigene Vorlagen („Als Vorlage merken“, für alle Klassen) seit 19.11. |
@@ -385,13 +385,15 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | FB13 | Schülerkarte: Kacheln klickbar, Reihenfolge Klausur 1, Klausur 2, AT, mündlich Ø, Tests Ø; Verlaufsgraph mündliche Noten | K | 1 | M | in 0.5 |
 | FB14 | Verspätungsübersicht mit Wochentagsanalyse | K | 1 | S | je Schüler in 0.5; für die ganze Klasse im Reiter „Anwesenheit“ (19.11.) |
 | FB15 | Mitarbeitsverlauf kräftiger, Trendpfeil, Monat aufklappbar (E88) | K | 1 | S | in 0.5; Trendpfeil farbig, auch in Live-Stunde (19.11.) |
+| FB-N1 | **Rechenweg aufklappbar mit allen Zahlen:** Klausuren, AT (darunter mündlich und Tests), Gesamt; jede Stufe zeigt Formel, Gewichte und warum ein Eintrag nicht zählt (E, leer, Gewicht 0). In Gesamtnote-Fenster und AT-Kachel der Schülerkarte. Gewichte-Fenster zeigt den Anteil an der Gesamtnote und Vorlagen 60:40, 50:50, 40:60 | K (Feedback 18.11.) | 1 | S | im Prototyp, 19.11.2026 |
+| FB-N2 | Was-wäre-wenn auch mit eingetragenen Noten („Klausur 1 eine 3 statt 5?“), Umschalter; Was-wäre-wenn auch an den Klausur-Kacheln der Schülerkarte | K (Feedback 18.11.) | 1 | S | im Prototyp, 19.11.2026 |
 
 ## Aus dem WebUntis-Abgleich (19.11.2026)
 
 | # | Punkt | Herkunft | Prio | Aufwand | Status |
 |---|---|---|---|---|---|
 | WU1 | **Heute: ausgefallene Stunden** aus WebUntis nicht als „läuft gerade“ zeigen, sondern als Ausfall (im Stundenplan schon so); nächste Verbesserungsrunde | K | 1 | S | erledigt 19.11. (Heute und Live-Stunde) |
-| WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | offen |
+| WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | Schlüssel liegt seit F3 verschlüsselt (E102); automatischer Abgleich beim Öffnen offen |
 | WU3 | **Doppelsteckung:** beide Lehrkräfte dürfen Abwesenheiten eintragen, meist ist eine verantwortlich; Klassenliste kommt aus Einträgen aller Lehrkräfte der Stunde | K | 1 | S | im Prototyp (PR #15) |
 
 ## Offen

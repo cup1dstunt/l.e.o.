@@ -7,6 +7,8 @@
   import { STUFEN, bausteinStufe } from '$lib/bausteine';
   import Smiley from '$lib/ui/Smiley.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
+  import Rechenweg from '$lib/ui/Rechenweg.svelte';
+  import WasWaereWenn from '$lib/ui/WasWaereWenn.svelte';
 
   const d = app.d!;
   const s = $derived(d.schueler.find((x) => x.id === page.params.id)!);
@@ -124,8 +126,8 @@
       {#if notenOffen}
         <div class="detail">
           {#if notenOffen === 'at'}
-            <p class="klein leise">AT = mündliche Leistungen × {kurs.gewichte.mitarbeit} + Tests und Sonstiges × {kurs.gewichte.sl}</p>
-            <div class="weg">{#each erg.weg as w}<div>{w}</div>{/each}</div>
+            <Rechenweg {erg} profil={kurs.profil} nur={['mitarbeit', 'sl', 'at']} offen={['at']} />
+            <div class="abstand"><WasWaereWenn {kurs} sid={s.id} /></div>
           {:else if notenOffen === 'mitarbeit'}
             {#if graph.pkt.length}
               <svg viewBox="0 0 400 120" class="graph" role="img" aria-label="Verlauf der Monatsnoten">
@@ -149,6 +151,7 @@
                 {#if z?.gewicht !== undefined}<div><span class="leise">Einzelgewicht</span><b>{z.gewicht}</b></div>{/if}
                 {#if z?.stern}<div><span class="leise">★ Vorbehalt</span><b>{z.stern}</b></div>{/if}
               </div>
+              <div class="abstand"><WasWaereWenn {kurs} sid={s.id} gruppe="klausuren" /></div>
             {/if}
           {/if}
         </div>
@@ -251,7 +254,7 @@
   .detail { border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); padding: 12px; margin-bottom: 12px; }
   .zeilen div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--leo-linie-fein); gap: 12px; }
   .warn { color: var(--leo-warnung) !important; }
-  .weg { background: var(--leo-akzent-hell); border-radius: var(--leo-r-m); padding: 10px 14px; font-family: var(--leo-schrift-mono); font-size: 12px; line-height: 1.7; }
+  .abstand { margin-top: 10px; }
   .graph { width: 100%; height: auto; margin-bottom: 8px; }
   .linie { fill: none; stroke: var(--leo-akzent); stroke-width: 2.5; }
   .punkt { fill: var(--leo-karte); stroke: var(--leo-akzent); stroke-width: 2.5; }

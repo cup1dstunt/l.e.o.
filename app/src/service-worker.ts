@@ -21,7 +21,7 @@ sw.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (url.origin !== sw.location.origin) return;
-  if (url.pathname.startsWith('/WebUntis/')) return; // Durchreicher zu WebUntis: nie zwischenspeichern
+  if (url.pathname.startsWith('/WebUntis/') || url.pathname.startsWith('/abgleich/')) return; // Durchreicher und Abgleich: nie zwischenspeichern
   e.respondWith(
     (async () => {
       const cache = await caches.open(CACHE);
