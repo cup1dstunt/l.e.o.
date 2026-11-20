@@ -42,7 +42,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | S3 | Schalter „Bin ich Klassenleitung?“: ja → ganze Klasse, alle Fächer; nein → eigene Kurse | B | 1 | S |
 | S4 | Zentraler Import durch Admin für die ganze Schule | C | 2 | M |
 | S5 | Alternativquellen: IServ, CSV/Excel mit Spaltenzuordnung | K, B | 2 | M |
-| S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste | K, B | 2 | M |
+| S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4) | K, B | 2 | M |
 | S7 | Offizielle Untis-Platform-API (Stammdaten, Stundenplan, Fehlzeiten) | B | 2 | L |
 | S8 | Inoffizielle WebUntis-JSON-RPC mit Rückfall auf Datei-Import | B | 3 | M |
 | S9 | iDoceo-Import (nett, nicht entscheidend; Wechsel zum Semesterende) | B | 3 | M |
@@ -132,6 +132,10 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | F5 | Status E/UE zur Klausur automatisch aus WebUntis | K | 1 | S |
 | F6 | Frühwarnliste: Note fällt + Fehlzeiten steigen → „braucht Aufmerksamkeit“ | C | 2 | M |
 | F7 | Fehlzeiten-Zusammenfassung je Klasse als PDF für die Klassenleitung | C | 3 | S |
+| F8 | **Nachschreiben (Modul 1, geplant 20.11.):** Nachschreibeliste je Klasse für alle, die bei einer Klausur fehlen mit Status E **oder offen** (E104). Lehrkraft wählt Schüler per Antippen und legt Termin fest (Datum, Uhrzeit, Raum; ein Termin für mehrere Schüler, auch klassenübergreifend). Erinnerung sofort, nicht erst nach Ablauf der Entschuldigungsfrist | K | 1 | M |
+| F9 | **Mail erst nach festgelegtem Nachschreibetermin** (nie automatisch nach dem Fehlen): Entwurf mit Textbaustein, nur an die schulische Adresse, Versand erst nach Klick der Lehrkraft (E105) | K | 1 | S |
+| F10 | Checkliste je Nachschreibetermin (Klausur vorbereitet, gedruckt, Mail verschickt); Note eintragen schließt den Fall. Statusänderung in WebUntis danach (z. B. offen → UE bei schon eingetragener Note) nur als Hinweis, keine automatische Änderung. Oberfläche: Kachel „Nachschreiben“ auf Heute, Klausurzelle im Notenbuch zeigt E/offen/Termin, Fall in der Schülerübersicht bei den Fehlzeiten | C | 1 | S |
+| F11 | 30-%-Übersicht der ganzen Klasse als zweiter Teil von Modul 1 (eigene Planung) | C | 1 | M |
 
 ## Kalender & Organisation
 
