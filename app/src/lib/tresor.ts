@@ -58,6 +58,14 @@ export async function einrichten(passwort: string, runden = RUNDEN) {
   return { tresor: await verpacken(roh, passwort, runden), roh };
 }
 
+/** Nachweis für den Abgleich-Dienst (F4): aus Passwort und Benutzername abgeleitet, eigener Zweck.
+ *  Der Dienst bekommt nie das Passwort und kann aus dem Nachweis den Datenschlüssel nicht öffnen. */
+export async function nachweis(passwort: string, benutzer: string, runden = RUNDEN): Promise<string> {
+  const roh = await crypto.subtle.importKey('raw', text.encode(passwort), 'PBKDF2', false, ['deriveBits']);
+  const salz = text.encode('leo-abgleich-nachweis|' + benutzer.trim().toLowerCase());
+  return b64(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: salz, iterations: runden }, roh, 256));
+}
+
 /** Holt mit dem Passwort den Rohschlüssel aus dem Tresor. Falsches Passwort: null. */
 export async function oeffnen(t: Tresor, passwort: string): Promise<Bytes | null> {
   const kek = await ausPasswort(passwort, unb64(t.salz), t.runden);
@@ -96,3 +104,14 @@ export async function entschluesseln(k: Datenschluessel, art: string, g: GeheimS
 }
 
 export const istGeheim = (x: unknown): x is GeheimSatz => !!x && typeof (x as GeheimSatz).geheim === 'string';
+
+// Ganze Texte (Sicherung F3, gemerkte Zugangsdaten) mit dem Datenschlüssel; der Zweck geht in die Prüfsumme ein.
+export interface GeheimText { iv: string; geheim: string }
+export async function textVerschluesseln(k: Datenschluessel, zweck: string, inhalt: string): Promise<GeheimText> {
+  const iv = zufall(12);
+  const g = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: text.encode(zweck) }, k, text.encode(inhalt));
+  return { iv: b64(iv), geheim: b64(g) };
+}
+export async function textEntschluesseln(k: Datenschluessel, zweck: string, g: GeheimText): Promise<string> {
+  return lies.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(g.iv), additionalData: text.encode(zweck) }, k, unb64(g.geheim)));
+}

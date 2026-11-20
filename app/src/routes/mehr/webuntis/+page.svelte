@@ -1,22 +1,21 @@
 <script lang="ts">
   import { PRUEFUNGEN, verbindungstest, bericht, anmelden, fehlerMeldung, type Pruefung, type Zugang } from '$lib/untis';
   import { holen, uebernehmen, stammdatenEinlesen, type Ergebnis } from '$lib/untisimport';
-  import { app, zeige, speichern } from '$lib/speicher.svelte';
+  import { app, zeige, speichern, geheimHolen, geheimSetzen } from '$lib/speicher.svelte';
 
   const d = app.d!;
 
-  // Schule und Benutzer merkt sich das Gerät immer, Schlüssel bzw. Passwort nur auf Wunsch (unverschlüsselt im Browser).
+  // Schule und Benutzer merkt sich das Gerät immer, Schlüssel bzw. Passwort nur auf Wunsch,
+  // über HTTPS verschlüsselt mit dem L.E.O.-Passwort (F3), sonst unverschlüsselt im Browser.
   const MERK = 'leo-untis-zugang';
-  const MERK_GEHEIM = 'leo-untis-geheim';
-  let geheimGemerkt = '';
-  try { geheimGemerkt = localStorage.getItem(MERK_GEHEIM) ?? ''; } catch { /* privat */ }
   let gemerkt: Partial<Zugang> = {};
   try { gemerkt = JSON.parse(localStorage.getItem(MERK) ?? '{}'); } catch { /* privat */ }
 
   let schule = $state(gemerkt.schule ?? 'osz-lus');
   let benutzer = $state(gemerkt.benutzer ?? '');
   let art = $state<Zugang['art']>(gemerkt.art ?? 'schluessel');
-  let geheim = $state(geheimGemerkt);
+  let geheim = $state('');
+  geheimHolen('untis').then((g) => { if (g && !geheim) geheim = g; });
   let merken = $state(true);
   let laeuft = $state(false);
   let ergebnisse = $state<Pruefung[]>([]);
@@ -42,9 +41,8 @@
     if (!schule.trim() || !benutzer.trim() || !geheim) { zeige('Schule, Benutzer und Schlüssel bzw. Passwort ausfüllen'); return false; }
     try {
       localStorage.setItem(MERK, JSON.stringify({ schule, benutzer, art }));
-      if (merken) localStorage.setItem(MERK_GEHEIM, geheim);
-      else localStorage.removeItem(MERK_GEHEIM);
     } catch { /* egal */ }
+    geheimSetzen('untis', merken ? geheim : null).catch(() => {});
     return true;
   }
 
@@ -113,7 +111,7 @@
   <section class="karte">
     <h2>Mit WebUntis abgleichen</h2>
     <p>L.E.O. holt deinen Stundenplan, deine Klassen mit Schülern und die Fehlzeiten deiner Stunden im laufenden Halbjahr. Es liest nur und trägt nichts in WebUntis ein.</p>
-    <p class="klein leise">„Nur Verbindung testen“ prüft, welche Daten ankommen, und speichert nichts. Gemerkt werden Schule und Benutzername, auf Wunsch auch der Schlüssel. Er liegt dann unverschlüsselt in diesem Browser, also nur auf dem eigenen Gerät anhaken.</p>
+    <p class="klein leise">„Nur Verbindung testen“ prüft, welche Daten ankommen, und speichert nichts. Gemerkt werden Schule und Benutzername, auf Wunsch auch der Schlüssel. {app.verschluesselt ? 'Er liegt dann verschlüsselt mit deinem L.E.O.-Passwort in diesem Browser.' : 'Er liegt dann unverschlüsselt in diesem Browser (ohne HTTPS geht es nicht anders), also nur auf dem eigenen Gerät anhaken.'}</p>
 
     <form class="form" onsubmit={abgleichen}>
       <label class="feld"><span>Schule (in WebUntis die Adresszeile, hinter „school=“)</span>

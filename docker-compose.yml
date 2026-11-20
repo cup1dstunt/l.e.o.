@@ -8,4 +8,8 @@ services:
     container_name: leo-prototyp
     ports:
       - "8128:80"   # links den freien Port auf dem Server wählen
+    environment:
+      - LEO_EINLADUNG=bitte-aendern   # Einladungscode zum Anlegen eines Abgleich-Kontos (F4)
+    volumes:
+      - ./daten:/daten   # verschlüsselte Abgleich-Daten
     restart: unless-stopped

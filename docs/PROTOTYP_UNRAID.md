@@ -31,8 +31,14 @@ services:
     container_name: leo-prototyp
     ports:
       - "8128:80"
+    environment:
+      - LEO_EINLADUNG=hier-einen-eigenen-code-eintragen
+    volumes:
+      - /mnt/user/appdata/leo/daten:/daten
     restart: unless-stopped
 ```
+
+`LEO_EINLADUNG` und `volumes` braucht nur der Abgleich zwischen Geräten (siehe unten). Ohne sie läuft alles wie bisher.
 
 Soll das Paket privat bleiben, braucht der Unraid einmalig im Terminal `docker login ghcr.io -u cup1dstunt` mit einem Token (classic, Recht `read:packages`).
 
@@ -114,6 +120,18 @@ Jede Kachel klappt auf und zeigt, wofür L.E.O. die Daten braucht, und welche Fe
 - **App-Schlüssel:** in WebUntis › Profil (oben rechts) › **Freigaben** › „Zugriff über Untis Mobile“ › **Anzeigen**. Der Text unter dem QR-Code ist der Schlüssel. Er wird nur für den Test im Arbeitsspeicher gehalten.
 - **So kommt der Browser an WebUntis:** Der nginx im Container reicht `/WebUntis/` an `osz-lus.webuntis.com` durch (ohne Zwischenspeicher und ohne Zugriffsprotokoll). Für eine andere Schule im Compose unter `environment:` `UNTIS_SERVER=<schule>.webuntis.com` setzen.
 - **Ungetestet:** Ich konnte weder WebUntis erreichen noch das nginx-Image starten. Wenn der Test „Durchreicher antwortet mit 502“ meldet, liegt es am Container (DNS oder Zertifikat), bei „Benutzer oder Schlüssel falsch“ an der Anmeldung. Die Uhr des Geräts muss stimmen, sonst passt der Einmalcode des Schlüssels nicht.
+
+## Sicherung und Abgleich zwischen Geräten (F3, F4, E102, E103)
+
+**Sicherung:** Mehr › Sicherung › „Sicherung herunterladen“ gibt eine verschlüsselte Datei (über HTTPS). Auf einem anderen Gerät fragt „Sicherung einspielen …“ nach dem Passwort, das beim Herunterladen galt, und zeigt vor dem Einspielen eine Vorschau. Zusätzlich legt L.E.O. jeden Tag beim ersten Anmelden einen Stand im Gerät ab (die letzten 7) und vor jedem Einspielen den bisherigen Stand.
+
+**Abgleich** (nur über HTTPS):
+1. Im Compose-Stack `LEO_EINLADUNG` auf einen eigenen Code setzen und `/daten` auf einen Unraid-Ordner legen (siehe oben), **Compose Up**.
+2. Erstes Gerät (z. B. PC): Mehr › Abgleich › Benutzername (z. B. IServ-Name) und dein L.E.O.-Passwort › Verbinden › Einladungscode › „Konto anlegen und verbinden“. Dieses Gerät bringt seine Daten mit.
+3. Jedes weitere Gerät: beim ersten Öffnen „Ich nutze L.E.O. schon auf einem anderen Gerät“ und mit Benutzername + Passwort anmelden. Hat das Gerät schon eigene Daten: Mehr › Abgleich › Verbinden, dann gilt der Stand vom Server (der bisherige bleibt unter „Automatisch gesichert“).
+4. Danach gleicht L.E.O. jede Minute und kurz nach jeder Änderung ab. Links unten steht „abgeglichen ✓“ oder „offline“; offline Erfasstes geht beim nächsten Mal mit.
+
+Der Server speichert je Konto eine Datei unter `/daten/konten/`, darin nur verschlüsselte Datensätze, nicht das Passwort. Die Datei gehört in die Unraid-Sicherung. Passwort vergessen heißt auch hier: Daten nur über eine eigene Sicherungsdatei zurück.
 
 ## HTTPS über Nginx Proxy Manager (E100)
 
