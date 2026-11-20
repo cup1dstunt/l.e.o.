@@ -6,6 +6,7 @@
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
   import WasWaereWenn from '$lib/ui/WasWaereWenn.svelte';
+  import Rechenweg from '$lib/ui/Rechenweg.svelte';
   import type { Gruppe, Leistung, Schueler, Zelle } from '$lib/typen';
 
   const d = app.d!;
@@ -365,6 +366,13 @@
             <label class="feld"><span>Mündliche Leistungen</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.mitarbeit} oninput={speichern} /></label>
             <label class="feld"><span>Tests und Sonstiges</span><input type="number" min="0" step="0.05" bind:value={kurs.gewichte.sl} oninput={speichern} /></label>
           </div>
+          {@const sa = (g.mitarbeit + g.sl) || 1}
+          <p class="klein anteile">Anteil an der Gesamtnote: <b>Klausuren 50 %</b> · <b>mündlich {Math.round((g.mitarbeit / sa) * 500) / 10} %</b> · <b>Tests und Sonstiges {Math.round((g.sl / sa) * 500) / 10} %</b></p>
+          <div class="zeile vorlagen">
+            {#each [[0.6, 0.4, 'UPZ 60 : 40'], [0.5, 0.5, '50 : 50'], [0.4, 0.6, '40 : 60']] as [m, t, txt]}
+              <button class="pille" aria-pressed={Math.abs(g.mitarbeit / sa - (m as number)) < 1e-9} onclick={() => { kurs.gewichte.mitarbeit = m as number; kurs.gewichte.sl = t as number; speichern(); }}>{txt}</button>
+            {/each}
+          </div>
           <label class="feld"><span>Rechenprofil</span>
             <select bind:value={kurs.profil} onchange={speichern}>
               <option value="FOS">FOS: Notenpunkte 0–15, Rundung in Stufen (UPZ)</option>
@@ -408,8 +416,8 @@
           {@const s = dlg.s}
           {@const e = ergebnisse[s.id]}
           <div class="zeile"><h2 class="raum">{name(s)}</h2><a class="klein" href="/schueler/{s.id}?kurs={kurs.id}">Schülerkarte</a></div>
-          <p class="klein leise">Rechenweg</p>
-          <div class="weg">{#each e.weg as w}<div>{w}</div>{/each}</div>
+          <p class="klein leise">Rechenweg · Stufe antippen für die Zahlen</p>
+          <Rechenweg erg={e} profil={kurs.profil} offen={['gesamt']} />
           {#if e.nachschreiben.length}<p class="klein">Nachschreiben offen: {e.nachschreiben.join(', ')}</p>{/if}
           {#each Object.entries(kurs.zellen).filter(([k, z]) => k.endsWith(':' + s.id) && z.stern) as [k, z]}
             <p class="klein"><span class="stern-i">★</span> {kurs.leistungen.find((l) => k.startsWith(l.id + ':'))?.name}: {z.stern}</p>
@@ -492,7 +500,8 @@
   .formular { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
   .formular.zwei { display: grid; grid-template-columns: 1fr 1fr; }
   .ende { justify-content: flex-end; margin-top: 16px; }
-  .weg { background: var(--leo-akzent-hell); border-radius: var(--leo-r-m); padding: 10px 14px; font-family: var(--leo-schrift-mono); font-size: 12.5px; line-height: 1.7; }
+  .anteile { margin: 8px 0 4px; }
+  .vorlagen { gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .stern-i { color: var(--leo-stern); }
   .w-unter { color: var(--leo-warnung); font-weight: 600; }
   .w-kippe { color: #8a6200; font-weight: 600; }

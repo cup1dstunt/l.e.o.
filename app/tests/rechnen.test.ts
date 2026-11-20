@@ -85,5 +85,34 @@ for (const s of ref.profile.fos.schueler) {
   gleich('fest 50:50', rechne({ ...kurs, gewichte: { ...kurs.gewichte, klausuren: 0.9, sonstige: 0.1 } }, 'S').gesamt, rechne(kurs, 'S').gesamt);
 }
 
+
+// Aufklappbarer Rechenweg: Formel mit allen Zahlen, Gewichte und übersprungene Posten
+{
+  const kurs: Kurs = {
+    id: 'r', name: '', fach: '', klasse: '', raum: '', profil: 'OSZ', schueler: ['S'], endnoten: {}, stundenGehalten: 0, lernstoff: {}, uebergang: null, sitzplan: { vorlage: 'leer', spalten: 0, reihen: 0, tische: [], belegung: {} },
+    gewichte: { klausuren: 0.3, sonstige: 0.7, mitarbeit: 0.6, sl: 0.4 }, // falsche 30 : 70 aus alten Daten müssen ignoriert werden
+    leistungen: [
+      { id: 'k1', name: 'Klausur 1', gruppe: 'klausuren', art: 'Klausur', gewicht: 1 },
+      { id: 'k2', name: 'Klausur 2', gruppe: 'klausuren', art: 'Klausur', gewicht: 1 },
+      { id: 't1', name: 'Test 1', gruppe: 'sl', art: 'Test', gewicht: 1 },
+      { id: 't2', name: 'Test 2', gruppe: 'sl', art: 'Test', gewicht: 1 },
+      { id: 't3', name: 'Test 3', gruppe: 'sl', art: 'Test', gewicht: 1 },
+      { id: 'm1', name: 'Okt', gruppe: 'mitarbeit', art: 'Monatsnote', gewicht: 1 }
+    ],
+    zellen: { 'k1:S': { wert: 2 }, 'k2:S': { status: 'E' }, 't1:S': { wert: 3 }, 't2:S': { wert: 1, gewicht: 0.5 }, 't3:S': { status: 'UE' }, 'm1:S': { wert: 2 } }
+  };
+  const e = rechne(kurs, 'S');
+  const s = Object.fromEntries(e.schritte.map((x) => [x.id, x]));
+  gleich('Rechenweg Klausuren', s.klausuren.formel, 'nur Klausur 1: 2 = 2,00');
+  gleich('Rechenweg Klausur 2 E', s.klausuren.posten[1].grund, 'E, Nachschreiben offen');
+  gleich('Rechenweg Tests', s.sl.formel, '(3 × 1 + 1 × 0,5 + 6 × 1) : 2,5 = 3,80');
+  gleich('Rechenweg UE', s.sl.posten[2].anzeige, 'UE = 6');
+  gleich('Rechenweg AT', s.at.formel, '(2 × 0,6 + 3,8 × 0,4) : 1 = 2,72');
+  gleich('Rechenweg Gesamt 50:50', s.gesamt.formel, '(2 + 2,72) : 2 = 2,36');
+  gleich('Gesamt fest 50:50', e.gesamt, 2.36);
+  // Was-wäre-wenn mit geänderter eingetragener Note: Klausur 1 = 4 statt 2
+  gleich('Was-wäre-wenn eingetragen', rechneAngenommen(kurs, 'S', { k1: 4 }).gesamt, 3.36);
+}
+
 console.log(`${ok} bestanden, ${fehler} fehlgeschlagen`);
 if (fehler) process.exit(1);

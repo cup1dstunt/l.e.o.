@@ -11,11 +11,14 @@
     { g: 'mitarbeit', text: 'Mündliche Leistungen' },
     { g: 'sl', text: 'Tests und Sonstiges' }
   ];
+  // Standard: nur offene Leistungen. Umschalter: auch eingetragene Noten probeweise ändern (Feedback 18.11.)
+  let alle = $state(false);
+  const eingetragen = (lid: string) => { const z = kurs.zellen[zellSchluessel(lid, sid)]; return z?.status === 'UE' ? 'UE' : z?.wert !== undefined ? String(z.wert) : ''; };
   const offen = $derived(
-    kurs.leistungen.filter((l) => (!gruppe || l.gruppe === gruppe) && (() => {
+    kurs.leistungen.filter((l) => (!gruppe || l.gruppe === gruppe) && (alle || (() => {
       const z = kurs.zellen[zellSchluessel(l.id, sid)];
       return !z || z.status === 'E' || (z.wert === undefined && z.status !== 'UE');
-    })())
+    })()))
   );
   let annahmen = $state<Record<string, string>>({});
   let extra = $state<{ gruppe: Gruppe; wert: string; gewicht: string }[]>([]);
@@ -44,10 +47,11 @@
     </label>
   </div>
   {#each offen as l}
-    {@const n = noetigeNote(kurs, sid, l.id, zielWert)}
+    {@const ist = eingetragen(l.id)}
+    {@const n = ist ? null : noetigeNote(kurs, sid, l.id, zielWert)}
     <div class="zeile zl">
-      <span class="raum">{l.name}{#if !gruppe}<span class="leise klein"> · {GRUPPEN.find((x) => x.g === l.gruppe)?.text}</span>{/if}</span>
-      <span class="klein leise">{n === 'schon' ? 'Ziel schon erreicht' : n === 'unmoeglich' ? 'allein nicht erreichbar' : `nötig: ${n}`}</span>
+      <span class="raum">{l.name}{#if !gruppe}<span class="leise klein">&nbsp;· {GRUPPEN.find((x) => x.g === l.gruppe)?.text}</span>{/if}</span>
+      <span class="klein leise">{ist ? `eingetragen: ${ist}` : n === 'schon' ? 'Ziel schon erreicht' : n === 'unmoeglich' ? 'allein nicht erreichbar' : `nötig: ${n}`}</span>
       <select class="eingabe kl" bind:value={annahmen[l.id]} aria-label="Annahme {l.name}">
         <option value="">–</option>{#each skala.werte as w}<option value={String(w)}>{w}</option>{/each}
       </select>
@@ -63,7 +67,11 @@
       <button class="x" onclick={() => extra.splice(i, 1)} aria-label="entfernen">×</button>
     </div>
   {/each}
-  <button class="link klein" onclick={() => extra.push({ gruppe: gruppe ?? 'sl', wert: '', gewicht: '1' })}>+ weitere Leistung annehmen</button>
+  <div class="zeile zl">
+    <button class="link klein" onclick={() => extra.push({ gruppe: gruppe ?? 'sl', wert: '', gewicht: '1' })}>+ weitere Leistung annehmen</button>
+    <span class="raum"></span>
+    <label class="klein leise"><input type="checkbox" bind:checked={alle} onchange={() => { if (!alle) for (const l of kurs.leistungen) if (eingetragen(l.id)) delete annahmen[l.id]; }} /> auch eingetragene Noten ändern</label>
+  </div>
   {#if offen.length === 0 && extra.length === 0}<p class="klein leise">Keine offene Leistung. Nimm eine weitere an.</p>{/if}
   <div class="ergebnis zahl">
     {#if gruppe}<span>Ø {zahl(gw(vorher, gruppe))} → <b class={ost(gw(nachher, gruppe))}>{zahl(gw(nachher, gruppe))}</b></span>{/if}
