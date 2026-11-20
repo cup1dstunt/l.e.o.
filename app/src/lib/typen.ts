@@ -29,7 +29,7 @@ export interface Leistung {
 
 export interface Zelle {
   wert?: number;
-  status?: 'E' | 'UE';
+  status?: 'E' | 'UE' | 'offen'; // offen = gefehlt, Entschuldigung noch ungeklärt; darf nachschreiben (E104)
   gewicht?: number; // Einzelgewicht, ersetzt das Spaltengewicht für diesen Schüler
   stern?: string; // Vorbehalt (E42)
 }
@@ -101,6 +101,19 @@ export interface Fehlzeit {
   beginn?: string; // HH:MM der Stunde (WebUntis)
 }
 
+/** Nachschreibetermin (F8–F10): Fälle `${kursId}|${leistungId}|${schuelerId}`, auch klassenübergreifend. */
+export interface NachTermin {
+  id: string;
+  datum: string; // ISO-Datum
+  beginn: string; // HH:MM
+  raum: string;
+  faelle: string[];
+  vorbereitet: boolean; // Checkliste: Nachschreibeklausur erstellt
+  gedruckt: boolean;
+  mails: Record<string, string>; // Fall → Datum, an dem die Mail geöffnet wurde (E105)
+  notiz?: string;
+}
+
 export interface Notiz {
   id: string;
   schuelerId: string;
@@ -124,6 +137,7 @@ export interface Einstellungen {
   sperreMinuten: number;
   passwort?: { salz: string; hash: string };
   untis?: UntisStand;
+  nachschreibMail?: { betreff: string; text: string }; // eigene Vorlage der Nachschreibe-Mail (E105)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
 }
 
@@ -155,6 +169,7 @@ export interface Daten {
   fehlzeiten: Fehlzeit[];
   verspaetungen: Verspaetung[];
   notizen: Notiz[];
+  nachschreiben: NachTermin[];
   stundenplan: Stunde[];
   einstellungen: Einstellungen;
 }

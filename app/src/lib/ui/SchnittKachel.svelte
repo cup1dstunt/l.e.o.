@@ -23,7 +23,7 @@
         <td>{r.l.name}{#if r.z?.stern}<span class="stern" title={r.z.stern}> ★</span>{/if}</td>
         <td class:warn={r.w !== null && !bestanden(kurs.profil, r.w)}>{r.z?.status ? r.z.status : (r.z?.wert ?? '·')}{r.z?.status === 'UE' ? ` (= ${r.w})` : ''}</td>
         <td>{r.gew.toLocaleString('de-DE')}{r.z?.gewicht !== undefined ? ' (einzeln)' : ''}</td>
-        <td>{r.zaehlt ? Math.round((r.gew / summeG) * 100) + ' %' : r.z?.status === 'E' ? 'Nachschreiben' : 'zählt nicht'}</td>
+        <td>{r.zaehlt ? Math.round((r.gew / summeG) * 100) + ' %' : r.z?.status === 'E' || r.z?.status === 'offen' ? 'Nachschreiben' : 'zählt nicht'}</td>
       </tr>
     {/each}
   </tbody>

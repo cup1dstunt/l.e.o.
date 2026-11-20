@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from '$lib/speicher.svelte';
-  import { stundenHeute, datumKurz, name, minuten, heuteISO } from '$lib/hilfen';
+  import { stundenHeute, datumKurz, datumWt, name, minuten, heuteISO } from '$lib/hilfen';
+  import { nachschreibLage, terminSicht } from '$lib/nachschreiben';
   import { sitzung } from '$lib/sitzung.svelte';
   import { zellSchluessel, rechne, warnungen } from '$lib/rechnen';
   import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
@@ -30,14 +31,27 @@
   const heuteFehlt = $derived(d.fehlzeiten.filter((f) => f.datum === hISO).length);
   const heuteZuSpaet = $derived(d.verspaetungen.filter((v) => v.datum === hISO).length);
 
-  // Offene Punkte: Nachschreiben (E bei Klausuren, I44) und offene Monatsnoten
+  // Nachschreiben (F8–F10): Erinnerung sofort, auch bei Status offen (E104)
+  const nach = $derived(nachschreibLage(d));
+  const nachTermine = $derived((d.nachschreiben ?? []).map((t) => terminSicht(d, t)).filter((t) => !t.erledigt && t.eintraege.length)
+    .sort((a, b) => (a.termin.datum + a.termin.beginn).localeCompare(b.termin.datum + b.termin.beginn)));
+  const nachKlassen = $derived([...new Set(nach.ohneTermin.map((f) => f.kurs.klasse))]);
+  const terminAufgaben = (t: (typeof nachTermine)[number]) => {
+    const aktiv = t.eintraege.filter((e) => e.stand !== 'entfaellt').length;
+    const a: string[] = [];
+    if (t.termin.datum < hISO) a.push(`${aktiv - t.notenFertig} Noten fehlen`);
+    else {
+      if (t.mailsFertig < aktiv) a.push(`${aktiv - t.mailsFertig} Mails offen`);
+      if (!t.termin.vorbereitet) a.push('Klausur erstellen');
+      else if (!t.termin.gedruckt) a.push('drucken');
+    }
+    return a.join(' · ');
+  };
+
+  // Offene Punkte: offene Monatsnoten
   const offen = $derived.by(() => {
     const liste: { text: string; href: string }[] = [];
     for (const k of d.kurse) {
-      let e = 0;
-      for (const l of k.leistungen.filter((l) => l.gruppe === 'klausuren'))
-        for (const s of k.schueler) if (k.zellen[zellSchluessel(l.id, s)]?.status === 'E') e++;
-      if (e) liste.push({ text: `${k.name}: ${e} × Nachschreiben offen`, href: `/kurs/${k.id}` });
       const monat = jetzt.toISOString().slice(0, 7);
       const ml = k.leistungen.find((l) => l.monat === monat);
       if (ml && k.schueler.some((s) => k.zellen[zellSchluessel(ml.id, s)]?.wert === undefined))
@@ -111,6 +125,20 @@
     </section>
 
     <section class="karte">
+      <a class="titelzeile" href="/nachschreiben"><h2 class="raum">Nachschreiben</h2><span class="klein">öffnen ›</span></a>
+      <div class="zahlen">
+        <a href="/nachschreiben"><b class="zahl" class:warn={nach.ohneTermin.length > 0}>{nach.ohneTermin.length}</b><span class="klein leise">ohne Termin{nachKlassen.length ? ` · ${nachKlassen.join(', ')}` : ''}</span></a>
+        <a href="/nachschreiben"><b class="zahl">{nachTermine.length}</b><span class="klein leise">Termine geplant</span></a>
+        {#if nach.hinweise.length}<a href="/nachschreiben"><b class="zahl">{nach.hinweise.length}</b><span class="klein leise">Status geändert</span></a>{/if}
+      </div>
+      <ul class="liste">
+        {#each nachTermine.slice(0, 3) as t}
+          <li><a href="/nachschreiben">{t.termin.datum === hISO ? 'Heute' : datumWt(t.termin.datum)} {t.termin.beginn} · Raum {t.termin.raum}</a><span class="klein leise">{t.eintraege.length} Schüler</span><span class="klein {t.termin.datum < hISO ? 'rot' : 'gold'}">{terminAufgaben(t)}</span></li>
+        {/each}
+      </ul>
+    </section>
+
+    <section class="karte">
       <h2>Offen</h2>
       {#if offen.length === 0}<p class="leise">Nichts offen.</p>{/if}
       <ul class="liste">
@@ -150,7 +178,9 @@
   .mini-balken { height: 4px; border-radius: 9px; background: rgba(255,255,255,.3); margin-top: 6px; overflow: hidden; }
   .mini-balken span { display: block; height: 100%; background: var(--leo-auf-akzent); }
   .zahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-  .zahlen div { display: flex; flex-direction: column; }
+  .zahlen div, .zahlen a { display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+  .titelzeile { display: flex; align-items: baseline; gap: 8px; text-decoration: none; color: inherit; }
+  .titelzeile .klein { color: var(--leo-akzent); }
   .zahlen b { font-size: 26px; font-weight: 750; }
   .raster { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
   .laeuft { grid-row: span 2; display: flex; flex-direction: column; gap: 14px; padding: 22px 26px; }

@@ -4,6 +4,8 @@
   import { app } from '$lib/speicher.svelte';
   import { schuelerVon, kurzname, name, fehlzeitenVon, verspaetungenVon, verspaetungenNachWochentag, prozent, datumWt } from '$lib/hilfen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
+  import { fristAbgelaufen, quotenStufe, FRIST_TAGE } from '$lib/nachschreiben';
+  import { heuteISO } from '$lib/hilfen';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -35,6 +37,26 @@
     const i = wt.findIndex((x) => x.anzahl === Math.max(...wt.map((y) => y.anzahl)));
     return wt[i].anzahl / g >= 0.4 ? `${wt[i].anzahl} von ${g} Verspätungen an einem ${['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'][i]}.` : '';
   });
+  // ---------- Fehlzeiten der Klasse (F11): 30-%-Regel (E62), offene Entschuldigungen mit Frist ----------
+  const heute = heuteISO();
+  const fzZeilen = $derived(zeilen.map((z) => {
+    const st = (s: string) => z.fz.liste.filter((f) => f.status === s).reduce((a, f) => a + f.stunden, 0);
+    const offenListe = z.fz.liste.filter((f) => f.status === 'offen');
+    return { ...z, stufe: quotenStufe(z.fz.quote), stE: st('E'), stUE: st('UE'), stOffen: st('offen'), ueberfaellig: offenListe.filter((f) => fristAbgelaufen(kurs.profil, f.datum, heute)).length };
+  }));
+  let fzFilter = $state<'' | 'hoch' | 'mittel' | 'offen' | 'frist'>('');
+  let fzOffen = $state<string | null>(null);
+  const fzListe = $derived([...fzZeilen]
+    .filter((z) => !fzFilter || (fzFilter === 'offen' ? z.stOffen > 0 : fzFilter === 'frist' ? z.ueberfaellig > 0 : z.stufe === fzFilter))
+    .sort((a, b) => b.fz.quote - a.fz.quote || a.s.nachname.localeCompare(b.s.nachname, 'de')));
+  const fzZahl = $derived({
+    hoch: fzZeilen.filter((z) => z.stufe === 'hoch').length,
+    mittel: fzZeilen.filter((z) => z.stufe === 'mittel').length,
+    offen: fzZeilen.reduce((a, z) => a + z.fz.tageOffen, 0),
+    frist: fzZeilen.reduce((a, z) => a + z.ueberfaellig, 0)
+  });
+  const filtern = (f: typeof fzFilter) => (fzFilter = fzFilter === f ? '' : f);
+  const breite = (stunden: number) => `${Math.min(1, stunden / (kurs.stundenGehalten || 1) / 0.4) * 100}%`;
   const detail = $derived(tagOffen !== null ? wt[tagOffen].eintraege : offen === 'alle' ? alle : []);
 </script>
 
@@ -43,6 +65,43 @@
 {#if kurs}
   <KursKopf {kurs} aktiv="anwesenheit" />
   <div class="seite">
+    <section class="karte breit">
+      <div class="zeile"><h2 class="raum">Fehlzeiten</h2><span class="klein leise">Basis {kurs.stundenGehalten} gehaltene Stunden · Verspätungen zählen nicht mit</span></div>
+      <div class="kacheln">
+        <button class="kz" aria-expanded={fzFilter === 'hoch'} onclick={() => filtern('hoch')}><b class="zahl" class:warn={fzZahl.hoch > 0}>{fzZahl.hoch}</b><span class="klein leise">über 30 %</span></button>
+        <button class="kz" aria-expanded={fzFilter === 'mittel'} onclick={() => filtern('mittel')}><b class="zahl" class:gold={fzZahl.mittel > 0}>{fzZahl.mittel}</b><span class="klein leise">20 bis 30 %</span></button>
+        <button class="kz" aria-expanded={fzFilter === 'offen'} onclick={() => filtern('offen')}><b class="zahl">{fzZahl.offen}</b><span class="klein leise">Tage noch offen</span></button>
+        <button class="kz" aria-expanded={fzFilter === 'frist'} onclick={() => filtern('frist')}><b class="zahl" class:warn={fzZahl.frist > 0}>{fzZahl.frist}</b><span class="klein leise">davon Frist vorbei ({FRIST_TAGE[kurs.profil]} Tage)</span></button>
+      </div>
+      {#if fzZahl.hoch}<p class="klein warn">Über 30 %: „N“ im Halbjahreszeugnis möglich, die Zeugniskonferenz entscheidet (E62).</p>{/if}
+      <ul class="fzl">
+        {#each fzListe as z (z.s.id)}
+          <li>
+            <button class="fzz" aria-expanded={fzOffen === z.s.id} onclick={() => (fzOffen = fzOffen === z.s.id ? null : z.s.id)}>
+              <span class="fzn">{name(z.s)}</span>
+              <span class="balken" aria-hidden="true">
+                <span class="seg e" style:width={breite(z.stE)}></span><span class="seg ue" style:width={breite(z.stUE)}></span><span class="seg of" style:width={breite(z.stOffen)}></span>
+                <span class="mk" style:left="50%"></span><span class="mk" style:left="75%"></span>
+              </span>
+              <b class="zahl fzq" class:warn={z.stufe === 'hoch'} class:gold={z.stufe === 'mittel'}>{z.fz.stunden ? prozent(z.fz.quote) : '·'}</b>
+              <span class="klein leise fzs">{z.fz.stunden} Std.{z.ueberfaellig ? ` · ${z.ueberfaellig} Frist vorbei` : ''}</span>
+            </button>
+            {#if fzOffen === z.s.id}
+              <ul class="fl tage">
+                {#each [...z.fz.liste].reverse() as f}
+                  <li><span class="dt">{datumWt(f.datum)}</span><span class="kennz" class:ue={f.status === 'UE'}>{f.status === 'offen' ? '?' : f.status}</span><span class="leise klein">{f.stunden} Std.{f.status === 'offen' ? (fristAbgelaufen(kurs.profil, f.datum, heute) ? ' · Frist vorbei' : ' · Frist läuft') : ''}{f.grund ? ` · ${f.grund}` : ''}{f.quelle === 'untis' ? ' · WebUntis' : ' · eigene Erfassung'}</span></li>
+                {/each}
+                {#if z.fz.liste.length === 0}<li class="leise klein">Keine Fehltage.</li>{/if}
+              </ul>
+              <a class="klein" href="/schueler/{z.s.id}?kurs={kurs.id}">Schülerkarte öffnen ›</a>
+            {/if}
+          </li>
+        {/each}
+        {#if fzListe.length === 0}<li class="leise klein">Niemand in dieser Auswahl.</li>{/if}
+      </ul>
+      <p class="klein leise legende"><span class="seg e"></span> entschuldigt <span class="seg ue"></span> unentschuldigt <span class="seg of"></span> offen · Striche bei 20 und 30 % · Frist in Kalendertagen, bitte prüfen</p>
+    </section>
+
     <section class="karte">
       <div class="zeile"><h2 class="raum">Verspätungen</h2><span class="klein leise">zählen nicht zu den Fehlzeiten, Minuten werden trotzdem gezählt</span></div>
       <div class="kacheln">
@@ -139,5 +198,22 @@
   .r { text-align: right; white-space: nowrap; }
   .kl { min-height: 34px; padding: 4px 8px; }
   .warn { color: var(--leo-warnung); font-weight: 600; }
-  @media (max-width: 900px) { .seite { grid-template-columns: 1fr; padding: 12px 16px 40px; } td, th { padding: 6px 4px; } }
+  .gold { color: #8a6200; font-weight: 600; }
+  .breit { grid-column: 1 / -1; }
+  .fzl { list-style: none; padding: 0; margin: 8px 0 0; }
+  .fzl > li { border-top: 1px dashed var(--leo-linie-fein); padding: 2px 0; }
+  .fzl > li:first-child { border-top: 0; }
+  .fzz { display: grid; grid-template-columns: minmax(120px, 200px) 1fr 70px 150px; gap: 12px; align-items: center; width: 100%; background: none; border: 0; padding: 8px 0; text-align: left; }
+  .fzn { font-weight: 600; }
+  .fzq { text-align: right; }
+  .balken { position: relative; display: flex; height: 12px; background: var(--leo-flaeche-leise); border: 1px solid var(--leo-linie-fein); border-radius: 6px; overflow: hidden; }
+  .seg { display: inline-block; height: 100%; }
+  .seg.e { background: #c9d9da; }
+  .seg.ue { background: var(--leo-warnung); }
+  .seg.of { background: var(--leo-stern); }
+  .mk { position: absolute; top: -2px; bottom: -2px; width: 1.5px; background: var(--leo-tinte); opacity: .5; }
+  .tage { margin: 0 0 6px; padding-left: 8px; }
+  .legende { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .legende .seg { width: 14px; height: 10px; border-radius: 3px; }
+  @media (max-width: 900px) { .seite { grid-template-columns: 1fr; padding: 12px 16px 40px; } td, th { padding: 6px 4px; } .fzz { grid-template-columns: 1fr 64px; row-gap: 4px; } .balken { grid-column: 1 / -1; grid-row: 2; } .fzs { grid-column: 1 / -1; } }
 </style>

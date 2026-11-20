@@ -35,7 +35,7 @@ Lange drücken (Touch) oder Rechtsklick (PC) öffnet ein kleines Zellmenü, kein
 | **NB9** | **Anmerkung** mit Textbausteinen (Q10), ein kleines Zeichen in der Ecke zeigt, dass es eine gibt. |
 | **NB10** | **Stern / Vorbehalt** mit kurzem Kommentar (E42). |
 | **NB11** | **Einzelgewicht** für diesen Schüler, z. B. ×0,5, sichtbar als kleines Abzeichen an der Zelle (E41). |
-| **NB12** | **Status E / UE**, bei Klassenarbeiten mit Nachschreiberliste (I44). |
+| **NB12** | **Status E / UE / offen**, bei Klausuren mit Nachschreibeliste (I44, E104). „offen“ = gefehlt, Status ungeklärt: Eingabe `?` oder Taste „offen“, zählt wie E nicht mit. |
 | **NB13** | **Herkunft:** Datum, Art, wer eingetragen hat (Doppelsteckung), wann geändert. |
 
 ## 4 Berechnete Noten verstehen

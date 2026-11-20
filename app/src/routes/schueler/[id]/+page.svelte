@@ -5,6 +5,7 @@
   import { name, alter, fehlzeitenVon, verspaetungenVon, prozent, datumWt, datumKurz, heuteISO, nachWochentag, WOCHENTAGE } from '$lib/hilfen';
   import { rechne, zahl, zellSchluessel, bestanden, zellWert, mittel } from '$lib/rechnen';
   import { STUFEN, bausteinStufe } from '$lib/bausteine';
+  import { nachschreibLage, schulAdresse } from '$lib/nachschreiben';
   import Smiley from '$lib/ui/Smiley.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
   import Rechenweg from '$lib/ui/Rechenweg.svelte';
@@ -47,6 +48,12 @@
   const fehlListe = $derived(
     fehlOffen === 'E' || fehlOffen === 'UE' || fehlOffen === 'offen' ? fz?.liste.filter((f) => f.status === fehlOffen) ?? [] : fz?.liste ?? []
   );
+  // Nachschreiben (F8): Fälle dieses Schülers in dieser Klasse
+  const meineFaelle = $derived(kurs ? nachschreibLage(d).faelle.filter((f) => f.schueler.id === s.id && f.kurs.id === kurs.id) : []);
+  const fallZu = (lid: string) => meineFaelle.find((f) => f.leistung.id === lid);
+  // Schulische Adresse: hinterlegt oder Vorschlag nach Muster (E106)
+  const adr = $derived(schulAdresse(s, d.schueler));
+  function adresseSetzen(wert: string) { s.mailDienst = wert.trim(); speichern(); }
   const STATUS: Record<string, string> = { E: 'entschuldigt', UE: 'unentschuldigt', offen: 'noch offen (E/UE folgt)' };
 
   // ---------- Mitarbeit (Smileys) ----------
@@ -109,7 +116,12 @@
     <section class="karte person">
       <h1>{name(s)} {#if s.nta}<span class="nta" title={s.nta}>N</span>{/if}</h1>
       <p class="leise">{s.geschlecht === 'w' ? 'weiblich' : s.geschlecht === 'm' ? 'männlich' : 'divers'} · {alter(s) === null ? 'Alter unbekannt' : `${alter(s)} Jahre`} · {kurs.klasse}</p>
-      <p>{#if s.mailDienst}{s.mailDienst} <span class="leise">(dienstlich)</span>{:else}<span class="leise">Dienstmail nicht hinterlegt</span>{/if}<br />{#if s.mailPrivat}{s.mailPrivat} <span class="leise">(privat)</span>{:else}<span class="leise">privat nicht hinterlegt</span>{/if}</p>
+      <label class="feld adresse"><span>Schulische Adresse{adr.vorschlag ? ' · Vorschlag nach Muster' : ''}</span>
+        <span class="zeile"><input class="raum" value={s.mailDienst} placeholder={adr.adresse} onchange={(e) => adresseSetzen((e.currentTarget as HTMLInputElement).value)} aria-label="Schulische Mailadresse" />
+          {#if adr.vorschlag && adr.adresse}<button class="knopf leise" onclick={() => adresseSetzen(adr.adresse)}>übernehmen</button>{/if}</span>
+      </label>
+      {#if adr.pruefen.length}<p class="klein gold">Bitte prüfen: {adr.pruefen.join(', ')}</p>{/if}
+      <p>{#if s.mailPrivat}{s.mailPrivat} <span class="leise">(privat)</span>{:else}<span class="leise">privat nicht hinterlegt</span>{/if}</p>
       {#if s.nta}<p class="akzent">{s.nta} · von Klassenleitung</p>{/if}
     </section>
 
@@ -144,9 +156,11 @@
             {@const l = klausuren.find((x) => x.id === notenOffen)}
             {#if l}
               {@const z = zelle(l.id)}
+              {@const f = fallZu(l.id)}
               <div class="zeilen">
                 <div><span class="leise">Datum</span><b>{l.datum ? datumWt(l.datum) : '–'}</b></div>
-                <div><span class="leise">Eintrag</span><b>{z?.status ? (z.status === 'E' ? 'E · Nachschreiben offen' : 'UE · zählt als ' + zellWert(kurs.profil, z)) : (z?.wert ?? 'noch leer')}</b></div>
+                <div><span class="leise">Eintrag</span><b>{z?.status === 'UE' ? 'UE · zählt als ' + zellWert(kurs.profil, z) : z?.status ? `${z.status === 'E' ? 'E' : 'offen'} · Nachschreiben` : f ? `fehlte (${f.status}) · Nachschreiben` : (z?.wert ?? 'noch leer')}</b></div>
+                {#if f}<div><span class="leise">Nachschreibetermin</span><b><a href="/nachschreiben?{f.termin ? `kurs=${kurs.id}` : `fall=${encodeURIComponent(f.key)}`}">{f.termin ? `${datumWt(f.termin.datum)} ${f.termin.beginn}, Raum ${f.termin.raum}` : 'noch keiner, festlegen ›'}</a></b></div>{/if}
                 <div><span class="leise">Klassen-Ø</span><b>{zahl(klassenSchnitt(l.id), 1)}</b></div>
                 {#if z?.gewicht !== undefined}<div><span class="leise">Einzelgewicht</span><b>{z.gewicht}</b></div>{/if}
                 {#if z?.stern}<div><span class="leise">★ Vorbehalt</span><b>{z.stern}</b></div>{/if}
@@ -167,6 +181,14 @@
         <button class="kz" aria-expanded={fehlOffen === 'alle'} onclick={() => (fehlOffen = fehlOffen === 'alle' ? null : 'alle')}><b class="zahl" class:warn={fz.quote > 0.3}>{prozent(fz.quote)}</b><span class="klein leise">{fz.stunden} von {kurs.stundenGehalten} Std.</span></button>
         <button class="kz" aria-expanded={fehlOffen === 'spaet'} onclick={() => (fehlOffen = fehlOffen === 'spaet' ? null : 'spaet')}><b class="zahl">{verspaetungen.length}</b><span class="klein leise">Verspätungen · {minutenGesamt} min</span></button>
       </div>
+      {#if meineFaelle.length}
+        <ul class="nachliste">
+          {#each meineFaelle as f (f.key)}
+            <li><span class="kennz">{f.status === 'offen' ? '?' : 'E'}</span><span class="raum">{f.leistung.name}{f.leistung.datum ? ` am ${datumWt(f.leistung.datum)}` : ''} verpasst</span>
+              <a href="/nachschreiben?{f.termin ? `kurs=${kurs.id}` : `fall=${encodeURIComponent(f.key)}`}">{f.termin ? `Nachschreiben ${datumWt(f.termin.datum)} ${f.termin.beginn}` : 'Termin festlegen ›'}</a></li>
+          {/each}
+        </ul>
+      {/if}
       {#if fehlOffen}
         <div class="detail">
           {#if fehlOffen === 'spaet'}
@@ -296,4 +318,10 @@
   .x { border: 0; background: none; color: var(--leo-leise); font-size: 18px; min-width: 36px; min-height: 36px; }
   section p.klein.leise { margin: 14px 0 6px; }
   @media (max-width: 900px) { .seite { grid-template-columns: 1fr; padding: 12px 16px 40px; } .kopf { padding: 12px 16px 0; } }
+  .adresse { margin: 8px 0 4px; }
+  .adresse input { min-height: 38px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); padding: 6px 10px; background: var(--leo-karte); min-width: 0; }
+  .gold { color: #8a6200; font-weight: 600; }
+  .nachliste { list-style: none; padding: 8px 12px; margin: 10px 0 0; border: 1px solid var(--leo-stern); background: var(--leo-stern-hell); border-radius: var(--leo-r-m); }
+  .nachliste li { display: flex; gap: 10px; align-items: center; padding: 4px 0; flex-wrap: wrap; }
+  .nachliste a { font-weight: 600; }
 </style>
