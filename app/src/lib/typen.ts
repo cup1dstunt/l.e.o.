@@ -58,6 +58,36 @@ export interface Kurs {
   uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
   sitzplan: Sitzplan;
   untis?: { klasseId: number; fachId: number }; // Herkunft WebUntis: Klasse + Fach
+  zufall?: ZufallStand; // fairer Zufall über mehrere Stunden (P5, E108)
+  gruppenRegeln?: GruppenRegeln; // „nicht zusammen“ / „gern zusammen“ (P7)
+  gruppensaetze?: Gruppensatz[]; // gespeicherte Gruppen, neueste zuerst (P8)
+  gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
+}
+
+/** Ein Aufruf aus dem Zufallsgenerator. */
+export interface Aufruf {
+  schuelerId: string;
+  zeit: string; // ISO-Zeitpunkt
+}
+
+/** Laufende Runde: wer wie oft dran war. Neue Runde, wenn alle ihre Lose verbraucht haben. */
+export interface ZufallStand {
+  runde: Record<string, number>; // Schüler → Aufrufe in dieser Runde
+  rundeSeit: string; // ISO-Zeitpunkt
+  gewichtet: boolean; // schwächere Mitarbeit und „zwischen zwei Noten“ öfter (E108)
+  protokoll: Aufruf[]; // neueste zuletzt, höchstens 400
+}
+
+export interface GruppenRegeln {
+  nicht: [string, string][];
+  gern: [string, string][];
+}
+
+export interface Gruppensatz {
+  id: string;
+  name: string;
+  datum: string; // ISO-Datum
+  gruppen: string[][]; // Schüler-ids je Gruppe
 }
 
 /** Sitzplan als Raster (E86): Zellen sind Tisch oder frei, Belegung je Zellennummer. */
