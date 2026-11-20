@@ -113,6 +113,7 @@ Neue Entscheidungen oben anfügen, mit Datum. **Vorschläge** (V…) gelten erst
 
 | # | Vorschlag | Begründung |
 |---|---|---|
+| V13 | **Reiter „Anwesenheit“ je Klasse** (19.11.2026): Verspätungen der ganzen Klasse mit Wochentagsanalyse und Fehlzeitquote je Schüler; in der Live-Stunde startet der Sitzplan im Modus „Anwesenheit“ (Antippen = fehlt, nochmal = kommt später), über „Mitarbeit/Anwesenheit“ auf Heute im Modus „Mündlich“ | Verspätungen ließen sich bisher nur je Schüler auswerten; Anwesenheit ist das Erste, was in der Stunde passiert |
 | V10 | **Abgleich ohne Notenserver:** Erst Sicherungsdatei (im Prototyp), danach optional ein kleiner Sync-Dienst auf dem eigenen Unraid, bei dem die Daten im Gerät **verschlüsselt** werden, bevor sie es verlassen (der Server sieht nur verschlüsselte Blöcke). So bleibt E29 gewahrt und Handy, iPad und PC sehen denselben Stand | Ohne Abgleich hat jedes Gerät eigene Daten; das ist im Unterricht mit Handy und PC unpraktisch |
 | V9 | **Platzhalter für die Startseite (Heute)** früh gestalten, mit einer ruhigen Kachel „Kalender folgt später“. Das Kalendermodul selbst kommt viel später (E76) | Konstantin fragte danach. Die Startseite hängt an „Läuft gerade“ (E50), der Platz für den Kalender sollte von Anfang an eingeplant sein, damit später nichts umgebaut werden muss |
 

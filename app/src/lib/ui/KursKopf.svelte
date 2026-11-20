@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Kurs } from '$lib/typen';
   import type { Snippet } from 'svelte';
-  let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan'; info?: string; rechts?: Snippet } = $props();
+  let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan' | 'anwesenheit'; info?: string; rechts?: Snippet } = $props();
 </script>
 
 <header class="kopf">
@@ -15,6 +15,7 @@
     <a href="/kurs/{kurs.id}" class:aktiv={aktiv === 'noten'}>Noten</a>
     <a href="/stunde/{kurs.id}" class:aktiv={aktiv === 'stunde'}>Stunde</a>
     <a href="/sitzplan/{kurs.id}" class:aktiv={aktiv === 'sitzplan'}>Sitzplan</a>
+    <a href="/anwesenheit/{kurs.id}" class:aktiv={aktiv === 'anwesenheit'}>Anwesenheit</a>
     <a href="/planung/{kurs.id}" class:aktiv={aktiv === 'planung'}>Planung</a>
   </nav>
 </header>

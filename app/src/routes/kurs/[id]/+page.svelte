@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { schuelerVon, name, alter, datumKurz } from '$lib/hilfen';
+  import { schuelerVon, name, alter, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, warnungen } from '$lib/rechnen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
@@ -193,14 +193,6 @@
     if (n === null) delete kurs.endnoten[s.id]; else kurs.endnoten[s.id] = n;
     speichern();
   }
-  // Trendpfeil Mitarbeit: Smiley-Schnitt im letzten Monat gegen den Monat davor (niedrig = besser)
-  function trend(sid: string) {
-    const m = new Map<string, number[]>();
-    for (const e of d.mitarbeit) if (e.kursId === kurs.id && e.schuelerId === sid) m.set(e.zeit.slice(0, 7), [...(m.get(e.zeit.slice(0, 7)) ?? []), e.stufe]);
-    const r = [...m.entries()].sort().slice(-2).map(([, v]) => v.reduce((a, b) => a + b, 0) / v.length);
-    if (r.length < 2) return '';
-    return r[1] < r[0] - 0.3 ? '↗' : r[1] > r[0] + 0.3 ? '↘' : '→';
-  }
   const ost = (x: number | null) => (x !== null && !bestanden(kurs.profil, x) ? 'warn' : '');
   const spaltenSchnitt = (l: Leistung) => mittel(liste.map((s) => ({ wert: zellWert(kurs.profil, zelle(l, s)), gewicht: 1 })));
 </script>
@@ -223,7 +215,7 @@
         {#each liste as s}
           {@const e = ergebnisse[s.id]}
           <a class="lz" href="/schueler/{s.id}?kurs={kurs.id}">
-            <div><b>{name(s)}</b>{#if s.nta}&nbsp;<span class="nta">N</span>{/if}<div class="klein leise">Kl. {zahl(e.klausuren)} · mündl. {zahl(e.mitarbeit)} {trend(s.id)} · Tests {zahl(e.sl)}{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></div>
+            <div><b>{name(s)}</b>{#if s.nta}&nbsp;<span class="nta">N</span>{/if}<div class="klein leise">Kl. {zahl(e.klausuren)} · mündl. {zahl(e.mitarbeit)} {#if mitarbeitTrend(d, kurs.id, s.id)}{@const tr = mitarbeitTrend(d, kurs.id, s.id)}<span class="trend {tr}" title="{tr} als im Vormonat">{PFEIL[tr]}</span>{/if} · Tests {zahl(e.sl)}{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></div>
             <div class="lnote zahl {ost(e.gesamt)}">{fos ? (e.gesamt ?? '–') : zahl(e.gesamt)}</div>
           </a>
         {/each}

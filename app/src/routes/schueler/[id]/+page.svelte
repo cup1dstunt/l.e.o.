@@ -206,7 +206,7 @@
           <span class="mn">{m.name}</span>
           <span class="mb">{#each m.anteile as a, i}{#if a > 0}<span style:width="{a * 100}%" style:background="var(--leo-mitv-{i + 1})"></span>{/if}{/each}</span>
           <span class="klein leise zahl mzahl">{m.n} · <b class="tinte">{zahl(m.schnitt)}</b></span>
-          <span class="trend" title={m.trend === '↗' ? 'besser als Vormonat' : m.trend === '↘' ? 'schlechter als Vormonat' : 'gleich'}>{m.trend}</span>
+          <span class="trend {m.trend === '↗' ? 'besser' : m.trend === '↘' ? 'schlechter' : 'gleich'}" title={m.trend === '↗' ? 'besser als Vormonat' : m.trend === '↘' ? 'schlechter als Vormonat' : m.trend ? 'gleich wie Vormonat' : ''}>{m.trend}</span>
         </button>
         {#if monatOffen === m.k}
           <ul class="le eingerueckt">
@@ -281,7 +281,7 @@
   .mn { width: 34px; font-size: 13px; text-align: left; }
   .mb { flex: 1; display: flex; height: 20px; border-radius: 5px; overflow: hidden; gap: 2px; }
   .mzahl { width: 64px; text-align: right; }
-  .trend { width: 22px; font-size: 18px; font-weight: 700; color: var(--leo-akzent); }
+  .mz .trend { width: 22px; font-size: 18px; }
   .tinte { color: var(--leo-tinte); }
   .eingerueckt { margin: 0 0 8px 44px; }
   .legende { display: flex; gap: 12px; flex-wrap: wrap; margin: 8px 0; }

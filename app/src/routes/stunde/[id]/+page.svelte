@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { schuelerVon, kurzname, name, heuteISO, minuten, stundenHeute, datumKurz } from '$lib/hilfen';
+  import { schuelerVon, kurzname, name, heuteISO, minuten, stundenHeute, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { BAUSTEINE, STUFEN, bausteinStufe } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -27,10 +27,11 @@
   const minJetzt = $derived(jetzt.getHours() * 60 + jetzt.getMinutes());
   const slot = $derived.by(() => {
     const p = stundenHeute(d, jetzt);
-    if (p.laeuft?.kursId === kurs.id) return { beginn: p.laeuft.beginn, ende: p.laeuft.ende, plan: true };
+    if (p.laeuft?.kursId === kurs.id) return { beginn: p.laeuft.beginn, ende: p.laeuft.ende, plan: true, ausfall: false };
+    const ausfall = p.ausfallJetzt?.kursId === kurs.id;
     const b = geoeffnet.getHours() * 60 + geoeffnet.getMinutes();
     const f = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
-    return { beginn: f(b), ende: f(b + 90), plan: false };
+    return { beginn: f(b), ende: f(b + 90), plan: false, ausfall };
   });
 
   // Einträge dieser Stunde = heute in diesem Kurs
@@ -82,6 +83,17 @@
       fehltSetzen(s);
       zeige(`${kurzname(s)} fehlt · nochmal tippen für Verspätung`, () => daSetzen(s));
     }
+  }
+  // Zeitvorschläge (E84): jetzt oder Minuten nach Stundenbeginn, eigene Zeit über das Feld
+  const vorschlaege = $derived([5, 10, 15, 20, 30].map((m) => {
+    const t = minuten(slot.beginn) + m;
+    return { m, zeit: `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}` };
+  }));
+  // Sitzplan-Ansicht: Antippen erfasst Anwesenheit oder öffnet die mündlichen Leistungen
+  let sitzModus = $state<'anwesenheit' | 'mitarbeit'>(page.url.searchParams.has('mitarbeit') ? 'mitarbeit' : 'anwesenheit');
+  function platzKlick(s: Schueler) {
+    if (sitzModus === 'anwesenheit') anwesenheitKlick(s);
+    else oeffnen(s);
   }
   function verspaetungSpeichern() {
     if (!verspaetung) return;
@@ -169,7 +181,7 @@
   <KursKopf {kurs} aktiv="stunde" info="Live-Stunde · Raum {kurs.raum} · {anwesend.length} von {liste.length} da">
     {#snippet rechts()}
       <div class="umschalter" role="group" aria-label="Ansicht">
-        <button aria-pressed={d.einstellungen.liveAnsicht === 'liste'} onclick={() => { d.einstellungen.liveAnsicht = 'liste'; speichern(); }}>Liste</button>
+        <button aria-pressed={d.einstellungen.liveAnsicht === 'liste'} onclick={() => { d.einstellungen.liveAnsicht = 'liste'; speichern(); }}>Alphabet</button>
         <button aria-pressed={d.einstellungen.liveAnsicht === 'sitzplan'} onclick={() => { d.einstellungen.liveAnsicht = 'sitzplan'; speichern(); }}>Sitzplan</button>
       </div>
       <button class="pille" aria-pressed={nurOhne} onclick={() => (nurOhne = !nurOhne)}>Noch nicht bewertet <b>{ohneEintrag}</b></button>
@@ -181,7 +193,8 @@
   <div class="seite">
     <div class="balken karte">
       <Zeitbalken beginn={slot.beginn} ende={slot.ende} jetzt={minJetzt} />
-      {#if !slot.plan}<span class="klein leise">Keine Stunde laut Plan, Zeitbalken zum Testen ab Öffnen.</span>{/if}
+      {#if slot.ausfall}<span class="klein leise">Diese Stunde fällt laut WebUntis aus. Zeitbalken zum Testen ab Öffnen.</span>
+      {:else if !slot.plan}<span class="klein leise">Keine Stunde laut Plan, Zeitbalken zum Testen ab Öffnen.</span>{/if}
     </div>
     {#if kurs.uebergang && kurs.uebergang.datum !== heute}
       <div class="stehen"><b>Wo wir stehengeblieben sind</b> <span class="leise klein">({datumKurz(kurs.uebergang.datum)})</span><p>{kurs.uebergang.text}</p></div>
@@ -191,6 +204,13 @@
       <section class="karte schueler">
         {#if d.einstellungen.liveAnsicht === 'sitzplan'}
           {@const sp = kurs.sitzplan}
+          <div class="zeile sitzkopf">
+            <div class="umschalter" role="group" aria-label="Antippen bedeutet">
+              <button aria-pressed={sitzModus === 'anwesenheit'} onclick={() => (sitzModus = 'anwesenheit')}>Anwesenheit</button>
+              <button aria-pressed={sitzModus === 'mitarbeit'} onclick={() => (sitzModus = 'mitarbeit')}>Mündlich</button>
+            </div>
+            <span class="klein leise">{sitzModus === 'anwesenheit' ? 'Antippen: fehlt · nochmal: kommt später' : 'Antippen: Smiley, Bausteine, Kommentar'}</span>
+          </div>
           <div class="sitze" style:grid-template-columns="repeat({sp.spalten}, minmax(0, 1fr))">
             {#each lehrersicht(sp.tische.length) as i (i)}
               {@const tisch = sp.tische[i]}
@@ -202,7 +222,8 @@
                 {@const f = fehlt(s.id)}
                 {@const v = zuSpaet(s.id)}
                 {@const e = letzter(s.id)}
-                <button class="platz" class:fehlt={!!f} class:gewaehlt={zufallName?.id === s.id} onclick={() => oeffnen(s)}>
+                <button class="platz" class:fehlt={!!f} class:spaet={!!v} class:gewaehlt={zufallName?.id === s.id} onclick={() => platzKlick(s)}
+                  aria-label="{name(s)}: {f ? 'fehlt' : v ? `${v.minuten} min verspätet` : 'da'}">
                   <span class="pn">{kurzname(s)}</span>
                   <span class="pu">
                     {#if f}<span class="kennz ue">fehlt</span>{:else if v}<span class="kennz">+{v.minuten}′</span>{/if}
@@ -215,16 +236,18 @@
           <div class="tafel klein leise">Lehrertisch · Tafel</div>
           {@const ohnePlatz = liste.filter((x) => !Object.values(sp.belegung).includes(x.id))}
           {#if ohnePlatz.length}<p class="klein leise">Ohne Platz: {ohnePlatz.map(kurzname).join(', ')} · <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>{/if}
-          <p class="klein leise hilfe">Platz antippen: Mitarbeit, Bausteine und Anwesenheit. <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>
+          <p class="klein leise hilfe">Oben umschalten, was Antippen bedeutet. <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>
         {:else}
         <div class="raster">
           {#each (nurOhne ? liste.filter((x) => !letzter(x.id) && !fehlt(x.id)) : liste) as s (s.id)}
             {@const f = fehlt(s.id)}
             {@const e = letzter(s.id)}
             {@const v = zuSpaet(s.id)}
+            {@const tr = mitarbeitTrend(d, kurs.id, s.id)}
             <div class="sk" class:fehlt={!!f} class:gewaehlt={zufallName?.id === s.id}>
               <div class="zeile">
                 <button class="nm" onclick={() => oeffnen(s)} title="Bausteine, Kommentar, Anwesenheit">{kurzname(s)}</button>
+                {#if tr}<span class="trend {tr}" title="mündlich {tr} als im Vormonat">{PFEIL[tr]}</span>{/if}
                 <button class="anw" class:fehlt={!!f} class:spaet={!!v} onclick={() => anwesenheitKlick(s)} aria-label="Anwesenheit {name(s)}">{f ? 'fehlt' : v ? `+${v.minuten}′` : 'da'}</button>
               </div>
               {#if f}
@@ -294,9 +317,13 @@
     <div class="hintergrund" role="presentation" onclick={(ev) => ev.target === ev.currentTarget && (verspaetung = null)}>
       <div class="schweben dialog klein-dlg" role="dialog" aria-modal="true" aria-label="Verspätung">
         <h2>{name(verspaetung.s)} kommt später</h2>
-        <p class="klein leise">Ankunft (Vorschlag: jetzt). Stundenbeginn {slot.beginn}.</p>
+        <p class="klein leise">Ankunft antippen oder eigene Zeit eingeben. Stundenbeginn {slot.beginn}. Verspätungen zählen nicht zu den Fehlzeiten.</p>
+        <div class="chips vorschlag" role="group" aria-label="Zeitvorschläge">
+          <button class="chip" aria-pressed={verspaetung.zeit === hhmm()} onclick={() => verspaetung && (verspaetung.zeit = hhmm())}>jetzt · {hhmm()}</button>
+          {#each vorschlaege as v}<button class="chip" aria-pressed={verspaetung.zeit === v.zeit} onclick={() => verspaetung && (verspaetung.zeit = v.zeit)}>+{v.m} min</button>{/each}
+        </div>
         <div class="zeile">
-          <input class="eingabe zeitfeld" type="time" bind:value={verspaetung.zeit} />
+          <input class="eingabe zeitfeld" type="time" bind:value={verspaetung.zeit} aria-label="eigene Ankunftszeit" />
           <span class="leise">= {Math.max(0, minuten(verspaetung.zeit || '00:00') - minuten(slot.beginn))} min</span>
         </div>
         <div class="zeile ende wrap">
@@ -379,6 +406,11 @@
   .platz { min-height: 64px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); background: var(--leo-karte); padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; }
   .platz.frei { background: var(--leo-flaeche-leise); border-style: dashed; }
   .platz.fehlt { background: var(--leo-taste); color: var(--leo-leise); }
+  .platz.spaet { border-color: #e3bf3c; }
+  .sitzkopf { margin-bottom: 10px; flex-wrap: wrap; }
+  .vorschlag { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 12px; }
+  .vorschlag .chip[aria-pressed='true'] { background: var(--leo-akzent-hell); }
+
   .platz.gewaehlt { background: var(--leo-auswahl); border: 2px solid var(--leo-akzent); }
   .pn { font-weight: 650; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pu { display: flex; justify-content: flex-end; align-items: center; gap: 4px; line-height: 0; }

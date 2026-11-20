@@ -1,9 +1,9 @@
 <script lang="ts">
   // Sitzplan-Editor (E86): Vorlage wählen, Tische ein-/ausschalten, Schüler ziehen (Maus) oder antippen und Platz antippen (Touch, Stift).
   import { page } from '$app/state';
-  import { app, speichern, zeige } from '$lib/speicher.svelte';
+  import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { schuelerVon, kurzname, name } from '$lib/hilfen';
-  import { VORLAGEN, ausVorlage, verteilen, lehrersicht } from '$lib/sitzplan';
+  import { VORLAGEN, ausVorlage, ausEigener, alsVorlage, verteilen, lehrersicht } from '$lib/sitzplan';
   import KursKopf from '$lib/ui/KursKopf.svelte';
 
   const d = app.d!;
@@ -39,13 +39,35 @@
     const p = platzVon(sid);
     if (p !== undefined) { delete sp.belegung[Number(p)]; speichern(); }
   }
+  const eigene = $derived(d.einstellungen.eigeneVorlagen ?? []);
+  const vorlagenName = (id: string) => eigene.find((v) => v.id === id)?.name ?? VORLAGEN.find((v) => v.id === id)?.name;
   function vorlage(id: string) {
     const alt = JSON.parse(JSON.stringify(kurs.sitzplan));
-    const neu = ausVorlage(id);
+    const ev = eigene.find((v) => v.id === id);
+    const neu = ev ? ausEigener(ev) : ausVorlage(id);
     verteilen(neu, liste.map((s) => s.id).filter((x) => Object.values(alt.belegung).includes(x)).concat(liste.map((s) => s.id).filter((x) => !Object.values(alt.belegung).includes(x))));
     kurs.sitzplan = neu;
     speichern();
-    zeige(`Vorlage „${VORLAGEN.find((v) => v.id === id)?.name}“`, () => { kurs.sitzplan = alt; speichern(); });
+    zeige(`Vorlage „${vorlagenName(id)}“`, () => { kurs.sitzplan = alt; speichern(); });
+  }
+  // Eigene Vorlagen (E86): aktuelle Tische unter einem Namen merken, ohne Dialog direkt in der Werkzeugleiste
+  let neuerName = $state<string | null>(null);
+  function vorlageSpeichern() {
+    const n = neuerName?.trim();
+    if (!n) return;
+    const vorhanden = eigene.find((v) => v.name.toLowerCase() === n.toLowerCase());
+    const v = alsVorlage(sp, vorhanden?.id ?? 'eigen-' + neueId(), n);
+    d.einstellungen.eigeneVorlagen = [...eigene.filter((x) => x.id !== v.id), v];
+    sp.vorlage = v.id;
+    speichern();
+    zeige(vorhanden ? `Vorlage „${n}“ aktualisiert` : `Vorlage „${n}“ gespeichert, gilt für alle Klassen`);
+    neuerName = null;
+  }
+  function vorlageLoeschen(id: string) {
+    const alt = [...eigene];
+    d.einstellungen.eigeneVorlagen = eigene.filter((v) => v.id !== id);
+    speichern();
+    zeige(`Vorlage gelöscht, der Sitzplan bleibt`, () => { d.einstellungen.eigeneVorlagen = alt; speichern(); });
   }
   function neuVerteilen(art: 'abc' | 'zufall') {
     const alt = { ...sp.belegung };
@@ -81,9 +103,21 @@
     <div class="werkzeug karte">
       <label class="feld"><span>Vorlage</span>
         <select value={sp.vorlage} onchange={(e) => vorlage((e.currentTarget as HTMLSelectElement).value)}>
-          {#each VORLAGEN as v}<option value={v.id}>{v.name}</option>{/each}
+          <optgroup label="Vorlagen">{#each VORLAGEN as v}<option value={v.id}>{v.name}</option>{/each}</optgroup>
+          {#if eigene.length}<optgroup label="Eigene">{#each eigene as v}<option value={v.id}>{v.name}</option>{/each}</optgroup>{/if}
         </select>
       </label>
+      {#if neuerName === null}
+        <button class="pille" onclick={() => (neuerName = vorlagenName(sp.vorlage) && eigene.some((v) => v.id === sp.vorlage) ? vorlagenName(sp.vorlage)! : '')}>Als Vorlage merken</button>
+        {#if eigene.some((v) => v.id === sp.vorlage)}<button class="pille" onclick={() => vorlageLoeschen(sp.vorlage)}>Vorlage löschen</button>{/if}
+      {:else}
+        <form class="zeile klein" onsubmit={(e) => { e.preventDefault(); vorlageSpeichern(); }}>
+          <!-- svelte-ignore a11y_autofocus -->
+          <input class="eingabe vname" bind:value={neuerName} placeholder="z. B. Raum 204" aria-label="Name der Vorlage" autofocus />
+          <button class="knopf" type="submit" disabled={!neuerName.trim()}>Merken</button>
+          <button class="knopf leise" type="button" onclick={() => (neuerName = null)}>Abbrechen</button>
+        </form>
+      {/if}
       <button class="pille" aria-pressed={tischeBearbeiten} onclick={() => { tischeBearbeiten = !tischeBearbeiten; gewaehlt = null; }}>{tischeBearbeiten ? 'Tische bearbeiten: an' : 'Tische bearbeiten'}</button>
       <div class="zeile klein">Raster
         <button class="mini" onclick={() => groesse(-1, 0)} aria-label="Spalte weniger">−</button>{sp.spalten}<button class="mini" onclick={() => groesse(1, 0)} aria-label="Spalte mehr">+</button>
@@ -141,6 +175,7 @@
 <style>
   .seite { padding: 18px 32px 40px; display: flex; flex-direction: column; gap: 16px; }
   .werkzeug { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .vname { width: 160px; min-height: 36px; }
   .mini { width: 32px; height: 32px; border: 1px solid var(--leo-linie); background: var(--leo-karte); border-radius: var(--leo-r-s); margin: 0 4px; }
   .bereich { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: start; }
   .tafel { text-align: center; border-top: 3px solid var(--leo-linie); margin: 16px 20% 12px; padding-top: 4px; }
