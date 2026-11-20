@@ -1,7 +1,8 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { schuelerVon, name, alter, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { schuelerVon, name, alter, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { nachschreibLage, fallSchluessel } from '$lib/nachschreiben';
   import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, warnungen } from '$lib/rechnen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
@@ -34,6 +35,9 @@
   const zelle = (l: Leistung, s: Schueler): Zelle | undefined => kurs.zellen[zellSchluessel(l.id, s.id)];
   const anzeige = (z?: Zelle) => (z?.status ? z.status : z?.wert !== undefined ? String(z.wert) : '');
   let aktiv = $state<{ l: Leistung; s: Schueler } | null>(null);
+  // Nachschreiben (F8): Fälle dieser Klasse, auch aus den Fehlzeiten bei noch leerer Zelle
+  const faelle = $derived(new Map(nachschreibLage(d).faelle.filter((f) => f.kurs.id === kurs.id).map((f) => [f.key, f])));
+  const fallVon = (l: Leistung, s: Schueler) => faelle.get(fallSchluessel(kurs.id, l.id, s.id));
   const grob = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
 
   function setzen(l: Leistung, s: Schueler, eingabe: string): boolean {
@@ -44,10 +48,11 @@
     let neu: Zelle | undefined;
     if (t === '') neu = behalte.gewicht || behalte.stern ? { ...behalte } : undefined;
     else if (t === 'E' || t === 'UE') neu = { ...behalte, status: t };
+    else if (t === '?' || t === 'OFFEN') neu = { ...behalte, status: 'offen' }; // gefehlt, Status ungeklärt (E104)
     else {
       const n = Number(t);
       if (!Number.isInteger(n) || n < skala.min || n > skala.max) {
-        zeige(`Bitte ${skala.min} bis ${skala.max}, E oder UE eingeben`);
+        zeige(`Bitte ${skala.min} bis ${skala.max}, E, UE oder ? (offen) eingeben`);
         return false;
       }
       neu = { ...behalte, wert: n };
@@ -253,10 +258,12 @@
                   {#each gruppe as l}
                     {@const z = zelle(l, s)}
                     {@const li = eingabeSpalten.indexOf(l)}
-                    <td class="zelle" class:ue={z?.status === 'UE'} class:e={z?.status === 'E'} class:rot={z?.wert !== undefined && !bestanden(kurs.profil, z.wert)}>
+                    {@const fall = l.gruppe === 'klausuren' ? fallVon(l, s) : undefined}
+                    <td class="zelle" class:ue={z?.status === 'UE'} class:e={z?.status === 'E' || z?.status === 'offen' || fall?.quelle === 'fehlzeit'} class:rot={z?.wert !== undefined && !bestanden(kurs.profil, z.wert)}>
                       <input data-p="{li}-{si}" value={anzeige(z)} inputmode={grob ? 'none' : 'text'} autocomplete="off" aria-label="{l.name} {name(s)}"
                         onfocus={(ev) => { aktiv = { l, s }; sternText = z?.stern ?? ''; (ev.currentTarget as HTMLInputElement).select(); }}
-                        onblur={(ev) => verlassen(ev, l, s)} onkeydown={(ev) => taste(ev, li, si)} placeholder="·" />
+                        onblur={(ev) => verlassen(ev, l, s)} onkeydown={(ev) => taste(ev, li, si)} placeholder={fall?.quelle === 'fehlzeit' ? 'fehlte' : '·'} title={fall ? (fall.termin ? `Nachschreiben ${datumWt(fall.termin.datum)} ${fall.termin.beginn}` : 'Nachschreiben: noch kein Termin') : undefined} />
+                      {#if fall?.termin}<span class="nt" aria-hidden="true">{datumKurz(fall.termin.datum)}</span>{/if}
                       {#if z?.stern}<span class="stern" title={z.stern}>★</span>{/if}
                       {#if z?.gewicht !== undefined}<span class="eg">{gewText(z.gewicht) || '×1'}</span>{/if}
                     </td>
@@ -292,14 +299,17 @@
           </tfoot>
         </table>
       </div>
-      <p class="klein leise">Eintippen wie in Excel: Zahl, E oder UE, Enter oder Pfeiltasten springen weiter. Klick auf eine Spalte ändert Name, Datum und Gewicht, Klick auf die Gesamtnote zeigt den Rechenweg.</p>
+      <p class="klein leise">Eintippen wie in Excel: Zahl, E, UE oder ? (offen = gefehlt, Status ungeklärt, darf nachschreiben), Enter oder Pfeiltasten springen weiter. Klick auf eine Spalte ändert Name, Datum und Gewicht, Klick auf die Gesamtnote zeigt den Rechenweg.</p>
     {/if}
   </div>
 
   {#if aktiv}
     {@const z = zelle(aktiv.l, aktiv.s)}
+    {@const fall = aktiv.l.gruppe === 'klausuren' ? fallVon(aktiv.l, aktiv.s) : undefined}
     <div class="notenleiste schweben" role="toolbar" aria-label="Notenleiste" tabindex="-1" onmousedown={(e) => e.preventDefault()}>
-      <div class="kopfzeile klein"><b>{name(aktiv.s)}</b> · {aktiv.l.name}</div>
+      <div class="kopfzeile klein"><b>{name(aktiv.s)}</b> · {aktiv.l.name}
+        {#if fall}· <a href="/nachschreiben?{fall.termin ? `kurs=${kurs.id}` : `fall=${encodeURIComponent(fall.key)}`}">{fall.termin ? `Nachschreiben ${datumWt(fall.termin.datum)} ${fall.termin.beginn}, Raum ${fall.termin.raum}` : `${fall.quelle === 'fehlzeit' ? `fehlte (${fall.status === 'offen' ? 'offen' : 'E'})` : fall.status === 'offen' ? 'offen' : 'E'}: Nachschreibetermin festlegen ›`}</a>{/if}
+      </div>
       <div class="tasten">
         {#each skala.werte as w}
           <button class="taste" class:rot={!bestanden(kurs.profil, w)} class:an={z?.wert === w} onclick={() => leiste(String(w))}>{w}</button>
@@ -307,6 +317,7 @@
       </div>
       <div class="tasten sonder">
         <button class="taste rahmen" onclick={() => leiste('E')}>E</button>
+        <button class="taste rahmen" onclick={() => leiste('?')}>offen</button>
         <button class="taste rahmen rot" onclick={() => leiste('UE')}>UE</button>
         <button class="taste rahmen" onclick={() => leiste('')}>leeren</button>
         <button class="taste rahmen" class:an={!!z?.stern} onclick={() => (sternOffen = !sternOffen)}>★ Vorbehalt</button>
@@ -455,6 +466,8 @@
   .zelle.rot input, .zelle.ue input { color: var(--leo-warnung); }
   .zelle.ue input { background: var(--leo-warnung-hell); font-size: 12px; }
   .zelle.e input { font-size: 12px; color: var(--leo-leise); }
+  .zelle.e input::placeholder { color: var(--leo-leise); }
+  .nt { position: absolute; left: 3px; bottom: 2px; font-size: 9px; color: var(--leo-akzent); font-weight: 700; pointer-events: none; }
   .stern { position: absolute; top: 2px; right: 4px; color: var(--leo-stern); font-size: 12px; pointer-events: none; }
   .eg { position: absolute; bottom: 2px; right: 4px; color: var(--leo-akzent); font-size: 10px; font-weight: 700; pointer-events: none; }
   .ber { color: var(--leo-berechnet); font-size: 13px; font-weight: 500; text-decoration: underline dotted; text-underline-offset: 3px; }

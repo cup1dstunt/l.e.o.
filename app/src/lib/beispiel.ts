@@ -115,6 +115,12 @@ export function beispielDaten(heute = new Date()): Daten {
         const neu = heute.getTime() - d.getTime() < 10 * 864e5; // letzte Tage: E/UE noch offen (E84)
         fehlzeiten.push({ id: neueId('f', n++), kursId: k.id, schuelerId: sid, datum: tag(d), stunden: 2, status: neu ? 'offen' : rnd() < 0.8 ? 'E' : 'UE' });
       }
+      // Nachschreiben (E104): gefehlt bei Klausur 1, Status in den Fehlzeiten noch offen, Zelle leer; ein weiterer mit „offen“ im Notenbuch
+      if (i === 9) {
+        delete k.zellen[`${k.id}-k1:${sid}`];
+        fehlzeiten.push({ id: neueId('f', n++), kursId: k.id, schuelerId: sid, datum: '2026-10-08', stunden: 2, status: 'offen' });
+      }
+      if (i === 10) k.zellen[`${k.id}-k1:${sid}`] = { status: 'offen' };
       // Verspätungen
       const zuSpaet = i === 3 || i === 9 ? 5 : Math.floor(rnd() * 3);
       for (let v = 0; v < zuSpaet; v++) {
@@ -151,7 +157,7 @@ export function beispielDaten(heute = new Date()): Daten {
   ]);
 
   return {
-    version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, stundenplan,
+    version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, nachschreiben: [], stundenplan,
     einstellungen: { navigation: 'links', theme: 'system', stundenendeHinweis: true, liveAnsicht: 'liste', sperreMinuten: 15 }
   };
 }

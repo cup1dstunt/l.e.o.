@@ -32,7 +32,7 @@ export function npZuNote(np: number): number {
 export function zellWert(profil: Profil, z: Zelle | undefined): number | null {
   if (!z) return null;
   if (z.status === 'UE') return profil === 'FOS' ? 0 : 6;
-  if (z.status === 'E') return null;
+  if (z.status === 'E' || z.status === 'offen') return null; // Nachschreiben möglich (E104)
   return z.wert ?? null;
 }
 
@@ -133,7 +133,7 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
       const wert = zellWert(kurs.profil, z);
       const gewicht = z?.gewicht ?? l.gewicht;
       const anzeige = z?.status === 'UE' ? `UE = ${wert}` : z?.status ?? (z?.wert !== undefined ? String(z.wert) : '·');
-      const grund = z?.status === 'E' ? 'E, Nachschreiben offen' : wert === null ? 'noch leer' : gewicht <= 0 ? 'Gewicht 0' : undefined;
+      const grund = z?.status === 'E' ? 'E, Nachschreiben offen' : z?.status === 'offen' ? 'Status offen, Nachschreiben möglich' : wert === null ? 'noch leer' : gewicht <= 0 ? 'Gewicht 0' : undefined;
       return { name: l.name, anzeige, wert, gewicht, zaehlt: !grund, grund };
     });
   const ka = r(kaRoh);
@@ -203,7 +203,7 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
   for (const l of kurs.leistungen) {
     const z = kurs.zellen[zellSchluessel(l.id, schuelerId)];
     if (!z || (z.wert === undefined && !z.status)) fehlend++;
-    if (z?.status === 'E') nachschreiben.push(l.name);
+    if (z?.status === 'E' || z?.status === 'offen') nachschreiben.push(l.name);
   }
 
   return { klausuren: kaRoh, sl: slRoh, mitarbeit: maRoh, sonstige: sonstRoh, gesamt, gesamtExakt, vorschlag, weg, fehlend, nachschreiben, schritte };

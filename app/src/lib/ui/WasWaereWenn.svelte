@@ -17,7 +17,7 @@
   const offen = $derived(
     kurs.leistungen.filter((l) => (!gruppe || l.gruppe === gruppe) && (alle || (() => {
       const z = kurs.zellen[zellSchluessel(l.id, sid)];
-      return !z || z.status === 'E' || (z.wert === undefined && z.status !== 'UE');
+      return !z || z.status === 'E' || z.status === 'offen' || (z.wert === undefined && z.status !== 'UE');
     })()))
   );
   let annahmen = $state<Record<string, string>>({});

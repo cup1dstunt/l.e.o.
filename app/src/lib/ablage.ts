@@ -3,7 +3,7 @@
 import type { Daten } from './typen.ts';
 
 export const SCHEMA = 1;
-export const ARTEN = ['schueler', 'kurse', 'mitarbeit', 'fehlzeiten', 'verspaetungen', 'notizen', 'stundenplan', 'einstellungen'] as const;
+export const ARTEN = ['schueler', 'kurse', 'mitarbeit', 'fehlzeiten', 'verspaetungen', 'notizen', 'nachschreiben', 'stundenplan', 'einstellungen'] as const;
 export type Art = (typeof ARTEN)[number];
 
 export interface Datensatz {
@@ -61,7 +61,7 @@ export function zusammensetzen(saetze: Map<Art, Datensatz[]>): Daten | undefined
   return {
     version: 1,
     schueler: liste('schueler'), kurse: liste('kurse'), mitarbeit: liste('mitarbeit'),
-    fehlzeiten: liste('fehlzeiten'), verspaetungen: liste('verspaetungen'), notizen: liste('notizen'),
+    fehlzeiten: liste('fehlzeiten'), verspaetungen: liste('verspaetungen'), notizen: liste('notizen'), nachschreiben: liste('nachschreiben'),
     stundenplan: liste('stundenplan'), einstellungen: e
   };
 }
