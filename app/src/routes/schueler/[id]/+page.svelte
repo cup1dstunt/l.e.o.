@@ -17,6 +17,7 @@
   let kursId = $state(page.url.searchParams.get('kurs') ?? '');
   const kurs = $derived(kurse.find((k) => k.id === kursId) ?? kurse[0]);
   const erg = $derived(kurs ? rechne(kurs, s.id) : null);
+  const aufrufe = $derived(kurs?.zufall?.protokoll.filter((a) => a.schuelerId === s.id) ?? []); // Zufall (P5)
   const fz = $derived(kurs ? fehlzeitenVon(d, kurs.id, s.id) : null);
   const fos = $derived(kurs?.profil === 'FOS');
   const ost = (x: number | null) => (kurs && x !== null && !bestanden(kurs.profil, x) ? 'warn' : '');
@@ -247,6 +248,7 @@
 
     <section class="karte notizen">
       <h2>Notizen</h2>
+      {#if aufrufe.length}<p class="klein leise">Zufall: {aufrufe.length} Aufrufe, zuletzt {datumKurz(aufrufe.at(-1)!.zeit)}</p>{/if}
       <div class="zeile neu">
         <textarea class="eingabe raum" rows="2" bind:value={neueNotiz} placeholder="Neue Notiz (Stift und Diktat gehen auch)"></textarea>
         <button class="knopf" onclick={notizSpeichern} disabled={!neueNotiz.trim()}>+ Notiz</button>

@@ -8,9 +8,9 @@
   import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import type { MitarbeitEintrag, Stufe, Schueler } from '$lib/typen';
-  import { rechne } from '$lib/rechnen';
   import { onMount } from 'svelte';
   import { lehrersicht } from '$lib/sitzplan';
+  import Werkzeuge from '$lib/ui/Werkzeuge.svelte';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -134,14 +134,15 @@
   );
   const chipArt = (t: string) => { const s = bausteinStufe(t) ?? 3; return s <= 2 ? 'pos' : s >= 4 ? 'neg' : 'neu'; };
 
-  // Zufall: nur Anwesende, niemand doppelt in dieser Stunde
-  let gezogen = $state<string[]>([]);
-  const zufallName = $derived(gezogen.length ? d.schueler.find((s) => s.id === gezogen.at(-1)) : undefined);
-  function ziehen() {
-    let pool = anwesend.filter((s) => !gezogen.includes(s.id));
-    if (pool.length === 0) { gezogen = []; pool = anwesend; }
-    if (pool.length) gezogen = [...gezogen, pool[Math.floor(Math.random() * pool.length)].id];
-  }
+  // Zufall und Gruppen (P5–P8, E109) als eigener Baustein
+  let gewaehltId = $state<string | undefined>();
+  const zufallName = $derived(gewaehltId ? d.schueler.find((s) => s.id === gewaehltId) : undefined);
+  const gruppeVon = $derived.by(() => {
+    const satz = kurs.gruppenAktiv ? kurs.gruppensaetze?.find((x) => x.id === kurs.gruppenAktiv) : undefined;
+    const m = new Map<string, number>();
+    satz?.gruppen.forEach((g, i) => g.forEach((id) => m.set(id, i + 1)));
+    return m;
+  });
 
   // Lernstoff und Übergang (E70, E78)
   $effect.pre(() => {
@@ -157,22 +158,6 @@
   let nurMitarbeit = $state(page.url.searchParams.has('mitarbeit'));
   let nurOhne = $state(false);
 
-  // Schnellgruppen: zufällig oder leistungsgemischt (nach Gesamtnote reihum verteilt), nur Anwesende
-  let groesse = $state(4);
-  let gemischt = $state(false);
-  let gruppen = $state<Schueler[][]>([]);
-  function gruppenBilden() {
-    let pool = [...anwesend];
-    if (gemischt) {
-      const w = (x: Schueler) => rechne(kurs, x.id).gesamtExakt ?? 0;
-      pool.sort((a, b) => (kurs.profil === 'FOS' ? w(b) - w(a) : w(a) - w(b)));
-    } else pool.sort(() => Math.random() - 0.5);
-    const anzahl = Math.max(1, Math.round(pool.length / groesse));
-    const g: Schueler[][] = Array.from({ length: anzahl }, () => []);
-    // Schlangenreihenfolge, damit jede Gruppe starke und schwächere Schüler bekommt
-    pool.forEach((x, i) => { const runde = Math.floor(i / anzahl); const j = i % anzahl; g[runde % 2 ? anzahl - 1 - j : j].push(x); });
-    gruppen = g;
-  }
 </script>
 
 <svelte:head><title>{kurs?.name} · Stunde</title></svelte:head>
@@ -224,7 +209,7 @@
                 {@const e = letzter(s.id)}
                 <button class="platz" class:fehlt={!!f} class:spaet={!!v} class:gewaehlt={zufallName?.id === s.id} onclick={() => platzKlick(s)}
                   aria-label="{name(s)}: {f ? 'fehlt' : v ? `${v.minuten} min verspätet` : 'da'}">
-                  <span class="pn">{kurzname(s)}</span>
+                  <span class="pn">{#if gruppeVon.get(s.id)}<b class="gnr">G{gruppeVon.get(s.id)}</b> {/if}{kurzname(s)}</span>
                   <span class="pu">
                     {#if f}<span class="kennz ue">fehlt</span>{:else if v}<span class="kennz">+{v.minuten}′</span>{/if}
                     {#if e && !f}<Smiley stufe={e.stufe} groesse={24} />{/if}
@@ -277,24 +262,7 @@
 
       {#if !nurMitarbeit}
         <aside>
-          <section class="karte">
-            <h2>Zufall</h2>
-            <p class="klein leise">nur Anwesende, niemand doppelt</p>
-            <p class="zufall">{zufallName ? kurzname(zufallName) : '…'}</p>
-            <p class="klein leise">{gezogen.length} von {anwesend.length} waren dran</p>
-            <button class="knopf haupt" onclick={ziehen}>{gezogen.length ? 'Nächster' : 'Ziehen'}</button>
-          </section>
-          <section class="karte">
-            <h2>Gruppen</h2>
-            <div class="zeile gz">
-              <label class="klein">je <select class="eingabe kl" bind:value={groesse}>{#each [2, 3, 4, 5, 6] as n}<option value={n}>{n}</option>{/each}</select></label>
-              <button class="pille" aria-pressed={gemischt} onclick={() => (gemischt = !gemischt)}>leistungsgemischt</button>
-            </div>
-            <button class="knopf" onclick={gruppenBilden}>Gruppen bilden</button>
-            {#if gruppen.length}
-              <ol class="gl">{#each gruppen as gr}<li>{gr.map(kurzname).join(', ')}</li>{/each}</ol>
-            {/if}
-          </section>
+          <Werkzeuge {kurs} {anwesend} bind:gewaehlt={gewaehltId} />
           {#if lernstoff}
           <section class="karte stapel">
             <h2>Lernstoff</h2>
@@ -419,10 +387,7 @@
   .wrap { flex-wrap: wrap; }
   .stehen { background: var(--leo-stern-hell); border: 1px solid #ecd28a; border-radius: var(--leo-r-l); padding: 12px 18px; }
   .stehen p { margin: 4px 0 0; font-size: 15px; }
-  .gz { margin: 10px 0; flex-wrap: wrap; }
-  .kl { min-height: 34px; padding: 4px 8px; }
-  .gl { margin: 12px 0 0; padding-left: 20px; line-height: 1.6; font-size: 13px; }
-  .zufall { font-size: 34px; font-weight: 800; margin: 10px 0 2px; }
+  .gnr { color: var(--leo-akzent); font-size: 11px; margin-right: 3px; }
   .stapel { display: flex; flex-direction: column; gap: 10px; }
   .stapel h2 { margin-bottom: 2px; }
   .anwzeile { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 6px; }
