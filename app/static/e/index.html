@@ -1,0 +1,146 @@
+<!doctype html>
+<!-- L.E.O. Selbsteinschätzung für Schüler (FB7b, E114).
+     Eigenständige Seite ohne die App: keine Anmeldung, keine Daten im Gerät, keine fremden Dienste.
+     Der Link enthält hinter # einen Einmal-Token. Die Antwort wird hier im Browser mit dem öffentlichen Schlüssel
+     der Runde verschlüsselt (ECDH P-256 + AES-GCM, Gegenstück: src/lib/selbst.ts antwortLesen).
+     Farben aus design/tokens.css (Richtung A), hier abgeschrieben, weil die Seite ohne App-Bundle auskommt. -->
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="referrer" content="no-referrer" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Selbsteinschätzung · L.E.O.</title>
+<style>
+  :root {
+    --leo-papier: #f5f3ee; --leo-karte: #ffffff; --leo-flaeche-leise: #fbfaf7; --leo-taste: #f1efe9;
+    --leo-tinte: #1d2125; --leo-leise: #6b7074; --leo-linie: #e3dfd6; --leo-linie-fein: #ece9e2;
+    --leo-akzent: #2f5d62; --leo-akzent-hell: #e3eeee; --leo-auf-akzent: #ffffff;
+    --leo-warnung: #b23a2a; --leo-warnung-hell: #fbeae6; --leo-stern-hell: #fff8e3;
+    --leo-schrift: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --leo-papier: #15181b; --leo-karte: #1d2125; --leo-flaeche-leise: #22272b; --leo-taste: #2a3035;
+      --leo-tinte: #eceae4; --leo-leise: #9aa0a4; --leo-linie: #343b40; --leo-linie-fein: #2b3136;
+      --leo-akzent: #7fb5b9; --leo-akzent-hell: #233638; --leo-auf-akzent: #10181a;
+      --leo-warnung: #ec8b7c; --leo-warnung-hell: #3a2420; --leo-stern-hell: #33301f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--leo-papier); color: var(--leo-tinte); font-family: var(--leo-schrift); font-size: 16px; line-height: 1.45; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+  .marke { font-size: 12px; color: var(--leo-leise); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; margin: 8px 0 12px; }
+  h1 { font-size: 22px; margin: 0 0 4px; line-height: 1.25; }
+  .leise { color: var(--leo-leise); }
+  .klein { font-size: 13px; }
+  .karte { background: var(--leo-karte); border: 1px solid var(--leo-linie); border-radius: 12px; padding: 16px; margin: 12px 0; }
+  .hinweis { background: var(--leo-akzent-hell); border-color: transparent; }
+  h2 { font-size: 16px; margin: 0 0 10px; display: flex; justify-content: space-between; gap: 8px; }
+  h2 .nr { color: var(--leo-leise); font-weight: 500; font-size: 13px; }
+  .wahl { display: flex; flex-direction: column; gap: 8px; }
+  .wahl button { text-align: left; font: inherit; color: inherit; background: var(--leo-taste); border: 1px solid var(--leo-linie); border-radius: 10px; padding: 12px 14px; min-height: 48px; cursor: pointer; }
+  .wahl button[aria-pressed="true"] { background: var(--leo-akzent); border-color: var(--leo-akzent); color: var(--leo-auf-akzent); font-weight: 600; }
+  .wahl button:focus-visible, .los:focus-visible, textarea:focus-visible { outline: 3px solid var(--leo-akzent); outline-offset: 2px; }
+  textarea { width: 100%; font: inherit; color: inherit; background: var(--leo-flaeche-leise); border: 1px solid var(--leo-linie); border-radius: 10px; padding: 10px; min-height: 90px; resize: vertical; }
+  .fuss { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--leo-papier) 30%); padding: 20px 0 8px; display: flex; align-items: center; gap: 12px; }
+  .los { flex: 1; font: inherit; font-weight: 600; min-height: 50px; border-radius: 10px; border: 0; background: var(--leo-akzent); color: var(--leo-auf-akzent); cursor: pointer; }
+  .los:disabled { opacity: .45; cursor: default; }
+  .stand { font-size: 13px; color: var(--leo-leise); white-space: nowrap; }
+  .fehler { background: var(--leo-warnung-hell); color: var(--leo-warnung); border-color: transparent; }
+  .fertig { text-align: center; padding: 32px 16px; }
+  .fertig .haken { font-size: 44px; color: var(--leo-akzent); line-height: 1; }
+</style>
+</head>
+<body>
+<main id="seite">
+  <p class="marke">L.E.O. · Selbsteinschätzung</p>
+  <p class="leise" id="laden">Bogen wird geladen …</p>
+</main>
+<script type="module">
+  import { linkHash, verschluesseln } from '/e/krypto.js';
+  const $ = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstElementChild; };
+  const esc = (x) => String(x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const seite = document.getElementById('seite');
+  const token = decodeURIComponent(location.hash.slice(1));
+  // Token aus der Adresszeile nehmen, damit er nicht im Verlauf geteilter Bildschirme steht
+  history.replaceState(null, '', location.pathname);
+
+  async function rufen(pfad, body) {
+    let r;
+    try { r = await fetch('/abgleich/selbst/' + pfad, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' }); }
+    catch { throw new Error('Keine Verbindung. Bitte prüfe dein Internet und versuche es noch einmal.'); }
+    let j = {};
+    try { j = await r.json(); } catch {}
+    if (!r.ok) { const e = new Error(j.fehler || `Fehler ${r.status}`); e.status = r.status; throw e; }
+    return j;
+  }
+  function meldung(titel, text, art = 'fehler') {
+    seite.replaceChildren($(`<p class="marke">L.E.O. · Selbsteinschätzung</p>`), $(`<section class="karte ${art}"><h2>${esc(titel)}</h2><p style="margin:0">${esc(text)}</p></section>`));
+  }
+  function fertig() {
+    seite.replaceChildren($(`<p class="marke">L.E.O. · Selbsteinschätzung</p>`), $(`<section class="karte fertig"><div class="haken">✓</div><h1>Danke!</h1><p class="leise">Deine Einschätzung ist angekommen. Du kannst dieses Fenster schließen.</p></section>`));
+  }
+  const fristLang = (f) => new Date(f + 'T12:00').toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  async function start() {
+    if (!crypto?.subtle) return meldung('Bitte über https öffnen', 'Dieser Bogen braucht eine sichere Verbindung. Öffne den Link aus der Mail direkt.');
+    if (!/^[0-9a-f]{16}\.[\w-]{20,}$/.test(token)) return meldung('Link unvollständig', 'Bitte öffne den Link genau so, wie er in der Mail steht. Manchmal hilft es, ihn zu kopieren und in den Browser einzufügen.');
+    let bogen;
+    try { bogen = await rufen('bogen', { t: token }); }
+    catch (e) { return meldung('Bogen nicht verfügbar', e.message); }
+    if (bogen.abgegeben) return meldung('Schon abgegeben', 'Du hast diese Selbsteinschätzung schon abgeschickt. Ändern geht nicht mehr.', 'hinweis');
+    if (bogen.abgelaufen) return meldung('Frist abgelaufen', `Die Selbsteinschätzung ging bis ${fristLang(bogen.frist)}. Sprich bitte deine Lehrkraft an.`);
+    const hash = await linkHash(token);
+    const wahl = {};
+    const n = bogen.kriterien.length;
+    const knopf = $(`<button class="los" disabled>Abschicken</button>`);
+    const stand = $(`<span class="stand">0 von ${n}</span>`);
+    const kommentar = $(`<textarea maxlength="500" placeholder="Zum Beispiel: Was lief gut? Was willst du ändern?"></textarea>`);
+    const neu = () => { const k = Object.keys(wahl).length; stand.textContent = `${k} von ${n}`; knopf.disabled = k < n; };
+    const teile = [
+      $(`<p class="marke">L.E.O. · Selbsteinschätzung</p>`),
+      $(`<h1>${esc(bogen.titel)}</h1>`),
+      $(`<p class="leise klein" style="margin:0">Bis ${esc(fristLang(bogen.frist))}</p>`),
+      $(`<section class="karte hinweis klein">Wähle bei jedem Punkt den Satz, der am besten zu dir passt. Sei ehrlich, das ist <b>keine Note</b>. Deine Lehrkraft vergleicht deine Einschätzung mit ihrer. Du kannst nur einmal abschicken.</section>`)
+    ];
+    bogen.kriterien.forEach((k, i) => {
+      const karte = $(`<section class="karte"><h2>${esc(k.name)}<span class="nr">${i + 1}/${n}</span></h2><div class="wahl" role="group" aria-label="${esc(k.name)}"></div></section>`);
+      const box = karte.querySelector('.wahl');
+      [4, 3, 2, 1].forEach((st, j) => {
+        const b = $(`<button type="button" aria-pressed="false">${esc(k.stufen[j])}</button>`);
+        b.onclick = () => {
+          wahl[k.id] = st;
+          box.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+          neu();
+          const naechste = karte.nextElementSibling;
+          if (naechste && Object.keys(wahl).length < n && !wahl[bogen.kriterien[i + 1]?.id]) naechste.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        box.append(b);
+      });
+      teile.push(karte);
+    });
+    const kk = $(`<section class="karte"><h2>Möchtest du noch etwas sagen? <span class="nr">freiwillig</span></h2></section>`);
+    kk.append(kommentar);
+    teile.push(kk);
+    const fuss = $(`<div class="fuss"></div>`);
+    fuss.append(knopf, stand);
+    teile.push(fuss);
+    seite.replaceChildren(...teile);
+    knopf.onclick = async () => {
+      knopf.disabled = true; knopf.textContent = 'Wird gesendet …';
+      try {
+        const antwort = await verschluesseln(bogen.schluessel, hash, { stufen: wahl, kommentar: kommentar.value.trim().slice(0, 500) });
+        await rufen('abgeben', { t: token, antwort });
+        fertig();
+      } catch (e) {
+        if (e.status === 409) return meldung('Schon abgegeben', e.message, 'hinweis');
+        knopf.textContent = 'Noch einmal versuchen'; knopf.disabled = false;
+        fuss.before($(`<section class="karte fehler klein">${esc(e.message)}</section>`));
+      }
+    };
+  }
+  start();
+</script>
+</body>
+</html>

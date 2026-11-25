@@ -802,3 +802,9 @@ export function zeige(text: string, rueck?: () => void) {
   clearTimeout(hz);
   hz = setTimeout(() => (hinweis.text = ''), 5000);
 }
+
+/** Aufruf an den eigenen Server mit der Anmeldung des Abgleichs, z. B. für die Selbsteinschätzung (E114). */
+export async function dienstRufen<T>(pfad: string, body: unknown): Promise<T> {
+  if (!verbindung) throw new DienstFehler(401, 'Nicht mit dem Server verbunden (Mehr › Abgleich)');
+  return rufen<T>(pfad, { token: verbindung.token, body });
+}

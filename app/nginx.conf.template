@@ -15,6 +15,16 @@ server {
   }
   location = /service-worker.js { add_header Cache-Control "no-cache"; }
 
+  # Selbsteinschätzung der Schüler (FB7b, E114): eigenständige Seite, Token steht hinter # und erreicht den Server nie.
+  location /e/ {
+    try_files $uri $uri/index.html =404;
+    add_header Cache-Control "no-store" always;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+    add_header Referrer-Policy no-referrer always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" always;
+  }
+
   # Abgleich-Dienst (F4) im selben Container. Bekommt nur verschlüsselte Datensätze.
   location /abgleich/ {
     access_log off;

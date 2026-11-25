@@ -64,6 +64,7 @@ export interface Kurs {
   gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
   muendlich?: MuendlichEinstellung; // Raster und Schwelle für die mündlichen Leistungen (FB7, E110)
   einschaetzungen?: Record<string, RasterEinschaetzung>; // Schlüssel `${monat}:${schuelerId}`
+  selbst?: Record<string, SelbstRunde>; // Selbsteinschätzung per Link (FB7b, E114), Schlüssel = Monat
 }
 
 /** Wie die Klasse mündlich bewertet wird (E110): Smileys, Raster springt ein, wenn zu wenige da sind. */
@@ -72,7 +73,28 @@ export interface MuendlichEinstellung {
   mindestSmileys: number; // weniger Smileys im Monat = L.E.O. bietet das Raster an
   zusatz?: string[]; // eingeschaltete optionale Kriterien, z. B. Hausaufgaben (E112)
   gewichte?: Record<string, number>; // Gewicht je Kriterium-id in dieser Klasse (E113), fehlt = aus dem Raster
+  selbst?: boolean; // Selbsteinschätzung per Link in dieser Klasse an (FB7b, E114)
 }
+
+/** Eine Runde Selbsteinschätzung (FB7b, E114): ein Monat, ein Raster, ein Einmal-Link je Schüler.
+ *  Auf dem Server liegen nur Bogen (Kriterien ohne Namen), Hashes der Links und verschlüsselte Antworten.
+ *  Wer zu welchem Link gehört und der Schlüssel zum Lesen stehen nur hier. */
+export interface SelbstRunde {
+  id: string; // Runde auf dem Server (Zufall, verrät nichts über die Klasse)
+  monat: string;
+  rasterId: string;
+  kriterien: string[]; // ids der Kriterien im Bogen
+  frist: string; // JJJJ-MM-TT, letzter Tag zum Abgeben
+  basis: string; // Adresse, unter der die Schüler den Bogen öffnen, z. B. https://leo.example.de
+  privat: JsonWebKey; // privater Schlüssel zum Lesen der Antworten
+  links: Record<string, SelbstLink>; // Schüler-id → Link
+  antworten: Record<string, SelbstAntwort>; // Schüler-id → entschlüsselte Antwort
+  erstellt: string;
+  geholt?: string; // letzter Abruf der Antworten
+  beendet?: string; // Runde auf dem Server gelöscht, Antworten bleiben hier
+}
+export interface SelbstLink { token: string; mail?: string; erinnert?: string }
+export interface SelbstAntwort { stufen: Record<string, 1 | 2 | 3 | 4>; kommentar?: string; zeit: string }
 
 /** Kriterienraster (E110): Bereiche mit Gewicht, Kriterien mit 4 Stufen (Index 0 = Stufe 4 = beste). */
 export interface Raster {
@@ -216,6 +238,9 @@ export interface Einstellungen {
   untis?: UntisStand;
   untisAuto?: boolean; // WebUntis automatisch abgleichen (WU2), fehlt = an
   nachschreibMail?: { betreff: string; text: string }; // eigene Vorlage der Nachschreibe-Mail (E105)
+  selbstMail?: { betreff: string; text: string }; // eigene Vorlage der Einladung zur Selbsteinschätzung (E114)
+  selbstErinnerung?: { betreff: string; text: string }; // eigene Vorlage der Erinnerung (E114)
+  selbstAdresse?: string; // Adresse für Schüler-Links, fehlt = Adresse dieser App (E114)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
   bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
   raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
