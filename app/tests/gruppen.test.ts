@@ -1,4 +1,4 @@
-// Prüft fairen Zufall (P5, E108) und Gruppenbildung (P7). Aufruf: npm test
+// Prüft fairen Zufall (P5, E109) und Gruppenbildung (P7). Aufruf: npm test
 import { ziehe, zuruecknehmen, neuerStand, rundenStand } from '../src/lib/zufall.ts';
 import { bilden, verstoesse, kosten, tauschen, regelUmschalten, gruppenAnzahl, type Mitglied } from '../src/lib/gruppen.ts';
 

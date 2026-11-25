@@ -102,10 +102,10 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | P2 | Raumvorlagen schulweit teilen (Räume aus WebUntis) | C | 2 | S |
 | P3 | Sitzplan-Generator mit Regeln: nicht nebeneinander, weit auseinander, vorne, nah beieinander, fester Platz, Mischung Geschlecht/Leistung | B | 2 | M |
 | P4 | Klausur-Sitzplan (abwechselnd, Abstand, Nachteilsausgleich) | C | 3 | S |
-| P5 | Zufall ohne Wiederholung bis alle dran waren, optional gewichtet, nur Anwesende, Protokoll (gebaut 20.11., E108) | K, B | 1 | S |
-| P6 | Beamer-Ansicht für Zufall und Gruppen (gebaut 20.11. mit Rad und Timer, E108) | C | 2 | S |
-| P7 | Gruppen: zufällig, leistungsgemischt, geschlechterausgewogen, Konflikt- und Wunschlisten (gebaut 20.11., E108) | K, B | 1 | M |
-| P8 | Gruppen im Sitzplan abbilden (gebaut 20.11.: G1, G2 … in der Live-Stunde, E108) | B | 2 | S |
+| P5 | Zufall ohne Wiederholung bis alle dran waren, optional gewichtet, nur Anwesende, Protokoll (gebaut 20.11., E109) | K, B | 1 | S |
+| P6 | Beamer-Ansicht für Zufall und Gruppen (gebaut 20.11. mit Rad und Timer, E109) | C | 2 | S |
+| P7 | Gruppen: zufällig, leistungsgemischt, geschlechterausgewogen, Konflikt- und Wunschlisten (gebaut 20.11., E109) | K, B | 1 | M |
+| P8 | Gruppen im Sitzplan abbilden (gebaut 20.11.: G1, G2 … in der Live-Stunde, E109) | B | 2 | S |
 | P9 | **Projektgruppen** über mehrere Blöcke mit Bewertung des Beitrags je Mitglied | B | 2 | M |
 | P10 | Namen lernen mit Fotos (Karteikarten) am Schuljahresanfang | C | 3 | S |
 
@@ -397,7 +397,7 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | # | Punkt | Herkunft | Prio | Aufwand | Status |
 |---|---|---|---|---|---|
 | WU1 | **Heute: ausgefallene Stunden** aus WebUntis nicht als „läuft gerade“ zeigen, sondern als Ausfall (im Stundenplan schon so); nächste Verbesserungsrunde | K | 1 | S | erledigt 19.11. (Heute und Live-Stunde) |
-| WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | Schlüssel liegt seit F3 verschlüsselt (E102); automatischer Abgleich beim Öffnen offen |
+| WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | ✅ umgesetzt 20.11. (E108): beim Entsperren, beim Zurückkehren in den Tab und alle 30 Minuten, Schalter unter Mehr › WebUntis |
 | WU3 | **Doppelsteckung:** beide Lehrkräfte dürfen Abwesenheiten eintragen, meist ist eine verantwortlich; Klassenliste kommt aus Einträgen aller Lehrkräfte der Stunde | K | 1 | S | im Prototyp (PR #15) |
 
 ## Offen

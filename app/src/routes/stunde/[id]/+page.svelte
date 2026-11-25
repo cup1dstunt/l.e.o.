@@ -134,7 +134,7 @@
   );
   const chipArt = (t: string) => { const s = bausteinStufe(t) ?? 3; return s <= 2 ? 'pos' : s >= 4 ? 'neg' : 'neu'; };
 
-  // Zufall und Gruppen (P5–P8, E108) als eigener Baustein
+  // Zufall und Gruppen (P5–P8, E109) als eigener Baustein
   let gewaehltId = $state<string | undefined>();
   const zufallName = $derived(gewaehltId ? d.schueler.find((s) => s.id === gewaehltId) : undefined);
   const gruppeVon = $derived.by(() => {

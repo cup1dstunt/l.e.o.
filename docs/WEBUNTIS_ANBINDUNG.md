@@ -110,6 +110,8 @@ Weil das ein amtlicher Eintrag ist, gelten strenge Regeln:
    Abgänge werden **nie gelöscht**, sondern als „abgemeldet“ markiert (Noten bleiben). Kein unterbrechender Dialog.
 4. **Fehlzeiten laufend:** Abruf beim Öffnen der App, beim Entsperren und alle 30 Minuten, solange sie offen ist,
    dazu ein Knopf „Jetzt abgleichen“. Im Browser gibt es keinen Abruf im Hintergrund, in der nativen App später schon.
+   Umgesetzt seit 20.11.2026 (E108, `app/src/lib/untisauto.ts`): nur mit gemerktem Schlüssel und nach der ersten Übernahme von Hand,
+   abschaltbar unter Mehr › WebUntis.
 5. **Ohne Netz:** alles läuft weiter mit dem letzten Stand; die Kachel zeigt „Stand: heute 07:41“.
 
 ## 5 Datenmodell (Fundament, gilt auch für die spätere App)

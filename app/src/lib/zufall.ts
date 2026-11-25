@@ -1,4 +1,4 @@
-// Fairer Zufall (P5, E108): nur Anwesende, über mehrere Stunden, bis alle dran waren.
+// Fairer Zufall (P5, E109): nur Anwesende, über mehrere Stunden, bis alle dran waren.
 // Gewichtet bekommt, wer mündlich mittel oder schwächer steht oder zwischen zwei Noten liegt, mehr Lose je Runde.
 import type { Kurs, MitarbeitEintrag, ZufallStand } from './typen.ts';
 import { rechne } from './rechnen.ts';

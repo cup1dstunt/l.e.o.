@@ -58,7 +58,7 @@ export interface Kurs {
   uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
   sitzplan: Sitzplan;
   untis?: { klasseId: number; fachId: number }; // Herkunft WebUntis: Klasse + Fach
-  zufall?: ZufallStand; // fairer Zufall über mehrere Stunden (P5, E108)
+  zufall?: ZufallStand; // fairer Zufall über mehrere Stunden (P5, E109)
   gruppenRegeln?: GruppenRegeln; // „nicht zusammen“ / „gern zusammen“ (P7)
   gruppensaetze?: Gruppensatz[]; // gespeicherte Gruppen, neueste zuerst (P8)
   gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
@@ -74,7 +74,7 @@ export interface Aufruf {
 export interface ZufallStand {
   runde: Record<string, number>; // Schüler → Aufrufe in dieser Runde
   rundeSeit: string; // ISO-Zeitpunkt
-  gewichtet: boolean; // schwächere Mitarbeit und „zwischen zwei Noten“ öfter (E108)
+  gewichtet: boolean; // schwächere Mitarbeit und „zwischen zwei Noten“ öfter (E109)
   protokoll: Aufruf[]; // neueste zuletzt, höchstens 400
 }
 
@@ -167,6 +167,7 @@ export interface Einstellungen {
   sperreMinuten: number;
   passwort?: { salz: string; hash: string };
   untis?: UntisStand;
+  untisAuto?: boolean; // WebUntis automatisch abgleichen (WU2), fehlt = an
   nachschreibMail?: { betreff: string; text: string }; // eigene Vorlage der Nachschreibe-Mail (E105)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
 }

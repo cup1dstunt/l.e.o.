@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Werkzeuge der Live-Stunde: fairer Zufall (P5, E108) und Gruppen (P7, P8), dazu die Beamer-Ansicht (P6, PF25).
+  // Werkzeuge der Live-Stunde: fairer Zufall (P5, E109) und Gruppen (P7, P8), dazu die Beamer-Ansicht (P6, PF25).
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { kurzname, name, datumKurz, heuteISO } from '$lib/hilfen';
   import { rechne } from '$lib/rechnen';
