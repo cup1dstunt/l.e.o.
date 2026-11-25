@@ -16,6 +16,7 @@ import { entscheiden, kursMischen, rufen, geraetName, DienstFehler, type FernSat
 function migrieren(d: Daten): Daten {
   d.verspaetungen ??= [];
   d.nachschreiben ??= [];
+  d.termine ??= [];
   d.einstellungen.liveAnsicht ??= 'liste';
   d.einstellungen.sperreMinuten ??= 15;
   for (const k of d.kurse) kursMigrieren(k);
@@ -49,7 +50,7 @@ function oeffnenAlt(): Promise<IDBDatabase> {
 let dbOffen: Promise<IDBDatabase> | undefined;
 function oeffnen(): Promise<IDBDatabase> {
   dbOffen ??= new Promise((res, rej) => {
-    const r = indexedDB.open(DB, 4); // 2: tresor (F2), 3: staende + ausgang (F3, F4), 4: nachschreiben (F8)
+    const r = indexedDB.open(DB, 5); // 2: tresor (F2), 3: staende + ausgang (F3, F4), 4: nachschreiben (F8), 5: termine (E115)
     r.onupgradeneeded = () => {
       for (const s of [...ARTEN, 'tresor', 'staende']) if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s, { keyPath: 'id' });
       if (!r.result.objectStoreNames.contains('ausgang')) r.result.createObjectStore('ausgang', { keyPath: 'key' });
