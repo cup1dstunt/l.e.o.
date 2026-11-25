@@ -4,7 +4,8 @@
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { name, alter, fehlzeitenVon, verspaetungenVon, prozent, datumWt, datumKurz, heuteISO, nachWochentag, WOCHENTAGE } from '$lib/hilfen';
   import { rechne, zahl, zellSchluessel, bestanden, zellWert, mittel } from '$lib/rechnen';
-  import { STUFEN, bausteinStufe } from '$lib/bausteine';
+  import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
+  import { mindestSmileys, einschaetzungVon } from '$lib/raster';
   import { nachschreibLage, schulAdresse } from '$lib/nachschreiben';
   import Smiley from '$lib/ui/Smiley.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
@@ -63,12 +64,17 @@
   const monate = $derived.by(() => {
     const m = new Map<string, number[]>();
     for (const e of eintraege) { const k = e.zeit.slice(0, 7); m.set(k, [...(m.get(k) ?? []), e.stufe]); }
+    // Monate mit Notenspalte bis heute auch ohne Smileys zeigen, damit das Raster einspringen kann (E110)
+    const jetzt = new Date().toISOString().slice(0, 7);
+    for (const l of kurs?.leistungen ?? []) if (l.gruppe === 'mitarbeit' && l.monat && l.monat <= jetzt && !m.has(l.monat)) m.set(l.monat, []);
+    const min = kurs ? mindestSmileys(kurs) : 3;
     const liste = [...m.entries()].sort().map(([k, st]) => ({
-      k, name: new Date(k + '-01').toLocaleDateString('de-DE', { month: 'short' }), n: st.length,
-      anteile: [1, 2, 3, 4, 5].map((x) => st.filter((y) => y === x).length / st.length),
-      schnitt: st.reduce((a, b) => a + b, 0) / st.length, trend: ''
+      k, name: new Date(k + '-01T12:00').toLocaleDateString('de-DE', { month: 'short' }), n: st.length,
+      anteile: [1, 2, 3, 4, 5].map((x) => (st.length ? st.filter((y) => y === x).length / st.length : 0)),
+      schnitt: st.length ? st.reduce((a, b) => a + b, 0) / st.length : null, trend: '',
+      wenig: st.length < min, raster: kurs ? !!einschaetzungVon(kurs, k, s.id) : false
     }));
-    liste.forEach((x, i) => { if (i > 0) { const dlt = x.schnitt - liste[i - 1].schnitt; x.trend = dlt < -0.25 ? '↗' : dlt > 0.25 ? '↘' : '→'; } });
+    liste.forEach((x, i) => { const v = liste[i - 1]; if (i > 0 && x.schnitt !== null && v.schnitt !== null) { const dlt = x.schnitt - v.schnitt; x.trend = dlt < -0.25 ? '↗' : dlt > 0.25 ? '↘' : '→'; } });
     return liste;
   });
   const haeufig = $derived.by(() => {
@@ -76,7 +82,7 @@
     for (const e of eintraege) for (const b of e.bausteine) z.set(b, (z.get(b) ?? 0) + 1);
     return [...z.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   });
-  const chipArt = (t: string) => { const x = bausteinStufe(t) ?? 3; return x <= 2 ? 'pos' : x >= 4 ? 'neg' : 'neu'; };
+  const chipArt = (t: string) => { const x = bausteinStufe(t, bausteineVon(d.einstellungen)) ?? 3; return x <= 2 ? 'pos' : x >= 4 ? 'neg' : 'neu'; };
 
   // ---------- Notizen ----------
   const notizen = $derived(d.notizen.filter((n) => n.schuelerId === s.id).sort((a, b) => b.datum.localeCompare(a.datum)));
@@ -222,16 +228,20 @@
     </section>
 
     <section class="karte mit">
-      <div class="zeile"><h2 class="raum">Mitarbeit</h2><span class="klein leise">Smileys als Note · Monat antippen</span></div>
+      <div class="zeile"><h2 class="raum">Mündliche Leistungen</h2><span class="klein leise">Smileys als Note · Monat antippen</span></div>
       <p class="klein leise">Verlauf nach Monat · Anteil der Einschätzungen · Tendenz zum Vormonat</p>
       {#each monate as m}
         <button class="mz" aria-expanded={monatOffen === m.k} onclick={() => (monatOffen = monatOffen === m.k ? null : m.k)}>
           <span class="mn">{m.name}</span>
           <span class="mb">{#each m.anteile as a, i}{#if a > 0}<span style:width="{a * 100}%" style:background="var(--leo-mitv-{i + 1})"></span>{/if}{/each}</span>
-          <span class="klein leise zahl mzahl">{m.n} · <b class="tinte">{zahl(m.schnitt)}</b></span>
+          <span class="klein leise zahl mzahl">{#if m.raster}<span class="rmarke">Raster</span> {/if}{m.n} · <b class="tinte">{m.schnitt === null ? '–' : zahl(m.schnitt)}</b></span>
           <span class="trend {m.trend === '↗' ? 'besser' : m.trend === '↘' ? 'schlechter' : 'gleich'}" title={m.trend === '↗' ? 'besser als Vormonat' : m.trend === '↘' ? 'schlechter als Vormonat' : m.trend ? 'gleich wie Vormonat' : ''}>{m.trend}</span>
         </button>
         {#if monatOffen === m.k}
+          {#if m.wenig || m.raster}
+            <div class="eingerueckt rhinweis klein">{m.raster ? 'Für diesen Monat gibt es eine Raster-Einschätzung.' : `Nur ${m.n} Smiley${m.n === 1 ? '' : 's'}, zu wenig für eine Note.`}
+              <a class="knopf {m.raster ? 'leise' : 'haupt'}" href="/muendlich/{kurs.id}?monat={m.k}&s={s.id}">{m.raster ? 'Raster öffnen' : 'Mit Raster einschätzen'}</a></div>
+          {/if}
           <ul class="le eingerueckt">
             {#each eintraege.filter((e) => e.zeit.startsWith(m.k)) as e}
               <li><Smiley stufe={e.stufe} groesse={24} /><span class="raum">{[...e.bausteine, e.kommentar].filter(Boolean).join(', ') || 'nur Smiley'}</span><span class="leise klein">{datumWt(e.zeit)}</span></li>
@@ -326,4 +336,6 @@
   .nachliste { list-style: none; padding: 8px 12px; margin: 10px 0 0; border: 1px solid var(--leo-stern); background: var(--leo-stern-hell); border-radius: var(--leo-r-m); }
   .nachliste li { display: flex; gap: 10px; align-items: center; padding: 4px 0; flex-wrap: wrap; }
   .nachliste a { font-weight: 600; }
+  .rmarke { font-size: var(--leo-text-xs); background: var(--leo-akzent-hell); color: var(--leo-akzent); font-weight: 600; border-radius: var(--leo-r-pill); padding: 1px 6px; }
+  .rhinweis { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--leo-stern-hell); border-radius: var(--leo-r-m); padding: 8px 10px; margin: 4px 0; }
 </style>

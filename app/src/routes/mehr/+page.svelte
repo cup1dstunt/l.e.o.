@@ -62,6 +62,12 @@
     </form>
   </section>
 
+  <section class="karte">
+    <h2>Mündliche Leistungen</h2>
+    <p>Eigene Textbausteine (mit Kriterium) und Kriterienraster je Fach. Das Raster springt ein, wenn in einem Monat zu wenige Smileys da sind.</p>
+    <div class="zeile wrap"><a class="knopf" href="/mehr/muendlich">Bausteine und Raster bearbeiten</a></div>
+  </section>
+
   <SicherungKarte />
 
   <AbgleichKarte />

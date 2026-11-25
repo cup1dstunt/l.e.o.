@@ -76,6 +76,8 @@ export function kursMischen(lokal: Kurs, fern: Kurs, fernNeuer: boolean, basis?:
   out.lernstoff = mischenNachSchluessel(basis?.lernstoff, lokal.lernstoff, fern.lernstoff, fernNeuer);
   out.leistungen = mischenListe(basis?.leistungen, lokal.leistungen, fern.leistungen, (x) => x.id, fernNeuer);
   out.schueler = mischenListe(basis?.schueler, lokal.schueler, fern.schueler, (x) => x, fernNeuer);
+  if (lokal.einschaetzungen || fern.einschaetzungen)
+    out.einschaetzungen = mischenNachSchluessel(basis?.einschaetzungen, lokal.einschaetzungen, fern.einschaetzungen, fernNeuer);
   return out as Kurs;
 }
 
