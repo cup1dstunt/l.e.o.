@@ -2,12 +2,13 @@
   import { PRUEFUNGEN, verbindungstest, bericht, anmelden, fehlerMeldung, type Pruefung, type Zugang } from '$lib/untis';
   import { holen, uebernehmen, stammdatenEinlesen, type Ergebnis } from '$lib/untisimport';
   import { app, zeige, speichern, geheimHolen, geheimSetzen } from '$lib/speicher.svelte';
+  import { MERK, untisAuto } from '$lib/untisauto.svelte';
+  import { ABSTAND_MIN } from '$lib/untisauto';
 
   const d = app.d!;
 
   // Schule und Benutzer merkt sich das Gerät immer, Schlüssel bzw. Passwort nur auf Wunsch,
   // über HTTPS verschlüsselt mit dem L.E.O.-Passwort (F3), sonst unverschlüsselt im Browser.
-  const MERK = 'leo-untis-zugang';
   let gemerkt: Partial<Zugang> = {};
   try { gemerkt = JSON.parse(localStorage.getItem(MERK) ?? '{}'); } catch { /* privat */ }
 
@@ -36,13 +37,20 @@
   const beispielDa = $derived(d.kurse.some((k) => !k.untis));
   let beispielEntfernen = $state(true);
   const stand = $derived(d.einstellungen.untis);
+  let schluesselGemerkt = $state(false);
+  geheimHolen('untis').then((g) => (schluesselGemerkt = !!g));
+  function autoUmschalten(e: Event) {
+    d.einstellungen.untisAuto = (e.currentTarget as HTMLInputElement).checked;
+    speichern();
+  }
+  const uhr = (iso: string) => new Date(iso).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
   function pruefen() {
     if (!schule.trim() || !benutzer.trim() || !geheim) { zeige('Schule, Benutzer und Schlüssel bzw. Passwort ausfüllen'); return false; }
     try {
       localStorage.setItem(MERK, JSON.stringify({ schule, benutzer, art }));
     } catch { /* egal */ }
-    geheimSetzen('untis', merken ? geheim : null).catch(() => {});
+    geheimSetzen('untis', merken ? geheim : null).then(() => (schluesselGemerkt = merken)).catch(() => {});
     return true;
   }
 
@@ -155,6 +163,8 @@
           <div class="kachel"><b class="zahl anzahl">{ergebnis.stammdaten}</b><span class="klein leise">mit Geburtsdatum aus dem Bericht</span></div>
         </div>
       {/if}
+      <label class="zeile schalter"><input type="checkbox" checked={d.einstellungen.untisAuto !== false} onchange={autoUmschalten} disabled={!schluesselGemerkt} /> Automatisch abgleichen: beim Entsperren und alle {ABSTAND_MIN} Minuten, solange L.E.O. offen ist</label>
+      <p class="klein leise">{#if !schluesselGemerkt}Dafür muss der Schlüssel bzw. das Passwort auf diesem Gerät gemerkt sein.{:else if d.einstellungen.untisAuto === false}Aus. Abgeglichen wird nur mit „Jetzt abgleichen“.{:else if untisAuto.laeuft}Gleicht gerade ab …{:else if untisAuto.fehler}Letzter automatischer Versuch {uhr(untisAuto.versucht)}: {untisAuto.fehler}. L.E.O. versucht es später wieder.{:else}Neue Schüler und Fehlzeiten meldet eine kurze Hinweisleiste. Beispieldaten bleiben dabei unangetastet.{/if}</p>
       <p class="klein leise">Übernommen werden nur deine eigenen Stunden. Alles andere aus WebUntis wird sofort verworfen. Noten, mündliche Leistungen, Notizen und Sitzpläne bleiben bei jedem Abgleich erhalten. Wer in WebUntis nicht mehr auftaucht, wird nicht gelöscht.</p>
     </section>
 
