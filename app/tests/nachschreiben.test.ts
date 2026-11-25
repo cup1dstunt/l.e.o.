@@ -1,7 +1,7 @@
 // Prüft Modul 1 Nachschreiben: Fälle aus Notenbuch und Fehlzeiten (E104), Hinweise bei Statusänderung (F10),
 // Termine, Mail-Platzhalter und Adressmuster (E105, E106), Fristen und Quote (F11).
 // Aufruf: npm test
-import { nachschreibLage, terminSicht, fallSchluessel, adressVorschlag, schulAdresse, fuellen, mailLink, fristAbgelaufen, quotenStufe, mailWerte, MAIL_STANDARD } from '../src/lib/nachschreiben.ts';
+import { nachschreibLage, terminSicht, fallSchluessel, adressVorschlag, schulAdresse, fuellen, mailLink, fristAbgelaufen, quotenStufe, mailWerte, MAIL_STANDARD, vorlagenVon, mailFuer, terminStand, fristBis, VORLAGEN_STANDARD } from '../src/lib/nachschreiben.ts';
 import { zellWert, rechne } from '../src/lib/rechnen.ts';
 
 let ok = 0;
@@ -68,6 +68,27 @@ const text = fuellen(MAIL_STANDARD.text, w);
 gleich('Platzhalter eingesetzt', [text.includes('Hallo Va,'), text.includes('14:00 Uhr in Raum 2.14'), /\{\w+\}/.test(text)], [true, true, false]);
 gleich('unbekannter Platzhalter bleibt', fuellen('{x} {vorname}', { vorname: 'A' }), '{x} A');
 gleich('mailto', mailLink('a.b@osz-lus.de', 'Ü & Co', 'Zeile 1\nZeile 2'), 'mailto:a.b@osz-lus.de?subject=%C3%9C%20%26%20Co&body=Zeile%201%0AZeile%202');
+
+// ---------- Vorlagen und Entwürfe (E114) ----------
+gleich('Status je Eintrag: a E aus Notenbuch', t.eintraege.find((e) => e.schueler.id === 'a')?.status, 'E');
+gleich('Frist FOS 3 Tage', fristBis('FOS', '2026-10-08'), '2026-10-11');
+gleich('Frist Berufsschule 14 Tage', fristBis('OSZ', '2026-10-08'), '2026-10-22');
+gleich('leere Platzhalter ohne Leerzeilen', fuellen('A\n\n{nta}\n\n{hinweis}\n\nB', { nta: '', hinweis: '' }), 'A\n\nB');
+const vs = vorlagenVon({});
+gleich('zwei eingebaute Vorlagen', vs.map((v) => v.id), ['std-e', 'std-offen']);
+gleich('alte Einzelvorlage überschreibt E', vorlagenVon({ nachschreibMail: { betreff: 'X', text: 'Y' } })[0].betreff, 'X');
+gleich('eigene Vorlage hinten, Überschreibung ersetzt', vorlagenVon({ nachschreibVorlagen: [{ id: 'std-offen', name: 'o', betreff: 'O', text: '' }, { id: 'v1', name: 'Eigene', betreff: 'E', text: '' }] }).map((v) => `${v.id}:${v.betreff}:${v.geaendert}`), ['std-e:Nachschreibetermin {klausur} {fach}:false', 'std-offen:O:true', 'v1:E:false']);
+const tt: any = { ...d.nachschreiben[0], hinweis: 'Taschenrechner mitbringen.' };
+const ka = fallSchluessel('k', 'k1', 'a');
+const m1 = mailFuer(tt, kurs, kurs.leistungen[0], schueler[0], 'offen', vs, ka);
+gleich('offen nimmt Offen-Vorlage mit Frist und Hinweis', [m1.vorlage.id, m1.text.includes('bis Sonntag, 11. Oktober'), m1.text.includes('Taschenrechner'), m1.angepasst], ['std-offen', true, true, false]);
+gleich('E nimmt E-Vorlage', mailFuer(tt, kurs, kurs.leistungen[0], schueler[0], 'E', vs, ka).vorlage.id, 'std-e');
+const ta: any = { ...tt, entwuerfe: { [ka]: { vorlage: 'std-e', text: 'Eigener Text', stand: terminStand(tt) } } };
+const m2 = mailFuer(ta, kurs, kurs.leistungen[0], schueler[0], 'offen', vs, ka);
+gleich('angepasster Text gewinnt, Betreff aus gewählter Vorlage', [m2.text, m2.betreff, m2.angepasst, m2.veraltet], ['Eigener Text', 'Nachschreibetermin Klausur 1 Englisch', true, false]);
+gleich('Termin verschoben: Entwurf veraltet', mailFuer({ ...ta, raum: '1.01' }, kurs, kurs.leistungen[0], schueler[0], 'offen', vs, ka).veraltet, true);
+gleich('NTA-Satz', mailWerte(tt, kurs, kurs.leistungen[0], { ...schueler[0], nta: 'Zeitverlängerung 25 %' }).nta, 'Dein Nachteilsausgleich (Zeitverlängerung 25 %) gilt auch beim Nachschreiben.');
+gleich('Standardvorlagen ohne unbekannte Platzhalter', VORLAGEN_STANDARD.every((v) => !/\{\w+\}/.test(fuellen(v.text, mailWerte(tt, kurs, kurs.leistungen[0], schueler[0])))), true);
 
 // ---------- Adressmuster (E106) ----------
 gleich('einfach', adressVorschlag('Max', 'Mustermann'), { adresse: 'm.mustermann@osz-lus.de', pruefen: [] });
