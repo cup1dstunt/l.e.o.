@@ -2,7 +2,7 @@
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { schuelerVon, kurzname, name, heuteISO, minuten, stundenHeute, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
-  import { BAUSTEINE, STUFEN, bausteinStufe } from '$lib/bausteine';
+  import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
   import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
@@ -129,10 +129,11 @@
     if (i >= 0) e.bausteine.splice(i, 1); else e.bausteine.push(t);
     speichern();
   }
+  const bausteine = $derived(bausteineVon(d.einstellungen)); // eigene Bausteine (E110)
   const bausteineSortiert = $derived(
-    fensterEintrag ? [...BAUSTEINE].sort((a, b) => Math.abs(a.stufe - fensterEintrag.stufe) - Math.abs(b.stufe - fensterEintrag.stufe)) : BAUSTEINE
+    fensterEintrag ? [...bausteine].sort((a, b) => Math.abs(a.stufe - fensterEintrag.stufe) - Math.abs(b.stufe - fensterEintrag.stufe)) : bausteine
   );
-  const chipArt = (t: string) => { const s = bausteinStufe(t) ?? 3; return s <= 2 ? 'pos' : s >= 4 ? 'neg' : 'neu'; };
+  const chipArt = (t: string) => { const s = bausteinStufe(t, bausteine) ?? 3; return s <= 2 ? 'pos' : s >= 4 ? 'neg' : 'neu'; };
 
   // Zufall und Gruppen (P5–P8, E109) als eigener Baustein
   let gewaehltId = $state<string | undefined>();

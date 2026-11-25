@@ -4,6 +4,7 @@
   import { schuelerVon, name, alter, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { nachschreibLage, fallSchluessel } from '$lib/nachschreiben';
   import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, warnungen } from '$lib/rechnen';
+  import { einschaetzungVon, rasterErgebnis, rasterDerEinschaetzung, mindestSmileys } from '$lib/raster';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
   import WasWaereWenn from '$lib/ui/WasWaereWenn.svelte';
@@ -166,7 +167,11 @@
   const vorschlaege = $derived(
     liste.map((s) => {
       const stufen = d.mitarbeit.filter((e) => e.kursId === kurs.id && e.schuelerId === s.id && e.zeit.startsWith(monat)).map((e) => e.stufe);
-      return { s, n: stufen.length, v: monatsVorschlag(kurs.profil, stufen) };
+      // Raster-Einschätzung des Monats geht vor (E110)
+      const ein = einschaetzungVon(kurs, monat, s.id);
+      const r = ein ? rasterErgebnis(rasterDerEinschaetzung(d, kurs, ein), ein.stufen, kurs.profil) : null;
+      const v = r?.note != null ? { note: r.smiley!, wert: r.note } : monatsVorschlag(kurs.profil, stufen);
+      return { s, n: stufen.length, v, raster: r?.note != null, wenig: stufen.length < mindestSmileys(kurs) };
     })
   );
   let geaendert = $state<Record<string, string>>({});
@@ -386,7 +391,7 @@
           <div class="zeile ende"><button class="knopf haupt" onclick={() => (dlg = null)}>Fertig</button></div>
         {:else if dlg === 'monat'}
           <h2>Monatsnote vorschlagen</h2>
-          <p class="klein leise">Monatsnote der mündlichen Leistungen aus den Mitarbeit-Smileys des Monats: Smiley 1 bis 5 = Note 1 bis 5{fos ? ', umgerechnet in Notenpunkte (Note 1 = 14, 2 = 11, 3 = 8, 4 = 5, 5 = 2)' : ''}. Du kannst jeden Vorschlag ändern.</p>
+          <p class="klein leise">Monatsnote der mündlichen Leistungen aus den Mitarbeit-Smileys des Monats: Smiley 1 bis 5 = Note 1 bis 5{fos ? ', umgerechnet in Notenpunkte (Note 1 = 14, 2 = 11, 3 = 8, 4 = 5, 5 = 2)' : ''}. Gibt es für den Monat eine Raster-Einschätzung, gilt deren Ergebnis. Du kannst jeden Vorschlag ändern.</p>
           <div class="zeile">
             <label class="feld raum"><span>Monat</span><input type="month" bind:value={monat} /></label>
             <button class="knopf haupt" onclick={() => monatUebernehmen()}>Alle übernehmen</button>
@@ -396,7 +401,7 @@
               {#each vorschlaege as r}
                 {@const ist = monatSpalte ? zelle(monatSpalte, r.s) : undefined}
                 <tr>
-                  <td>{name(r.s)}<div class="klein leise">{r.n} Einträge{r.v ? ` · Ø Smiley ${zahl(r.v.note)}` : ''}</div></td>
+                  <td>{name(r.s)}<div class="klein leise">{#if r.raster}aus dem Raster · {r.n} Smileys{:else}{r.n} Einträge{r.v ? ` · Ø Smiley ${zahl(r.v.note)}` : ''}{/if}{#if r.wenig && !r.raster} · <a href="/muendlich/{kurs.id}?monat={monat}&s={r.s.id}">mit Raster einschätzen</a>{/if}</div></td>
                   <td><input class="eingabe klein-in" value={geaendert[r.s.id] ?? (r.v ? r.v.wert : '')} oninput={(e) => (geaendert[r.s.id] = (e.currentTarget as HTMLInputElement).value)} aria-label="Vorschlag {name(r.s)}" /></td>
                   <td>{#if ist?.wert !== undefined}<span class="leise klein">steht: {ist.wert}</span>{/if}</td>
                   <td><button class="knopf leise" disabled={!r.v && !geaendert[r.s.id]} onclick={() => monatUebernehmen(r.s.id)} aria-label="übernehmen">✓</button></td>

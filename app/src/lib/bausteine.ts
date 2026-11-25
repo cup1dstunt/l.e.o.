@@ -1,21 +1,23 @@
-// Startsatz Textbausteine (DESIGN_SYSTEM_PROTOTYP 9.2). Später pflegt der Admin die Bibliothek (E53).
-import type { Stufe } from './typen.ts';
+// Startsatz Textbausteine (DESIGN_SYSTEM_PROTOTYP 9.2). Die Lehrkraft kann ihn unter Mehr → Mündliche Leistungen
+// ändern und ergänzen (E110); dann gilt `einstellungen.bausteine`.
+// kriterium: Name eines Rasterkriteriums. Im Raster stehen die Bausteine dann als Beleg beim passenden Kriterium.
+import type { Baustein, Einstellungen, Stufe } from './typen.ts';
 
-export const BAUSTEINE: { text: string; stufe: Stufe }[] = [
-  { text: 'hilft Mitschülern', stufe: 1 },
-  { text: 'sehr gut vorbereitet', stufe: 1 },
-  { text: 'bringt eigene Ideen ein', stufe: 1 },
-  { text: 'beteiligt sich aktiv', stufe: 2 },
-  { text: 'Beiträge meistens treffend', stufe: 2 },
-  { text: 'ruhig, wenig Beteiligung', stufe: 3 },
-  { text: 'Beitragsqualität schwankt', stufe: 3 },
-  { text: 'wirkt abgelenkt', stufe: 4 },
-  { text: 'arbeitet langsam', stufe: 4 },
-  { text: 'Material fehlt zu Beginn', stufe: 4 },
-  { text: 'spricht dazwischen', stufe: 4 },
-  { text: 'stört den Unterricht', stufe: 5 },
-  { text: 'Handy genutzt', stufe: 5 },
-  { text: 'schläft', stufe: 5 }
+export const BAUSTEINE: Baustein[] = [
+  { text: 'hilft Mitschülern', stufe: 1, kriterium: 'Zusammenarbeit' },
+  { text: 'sehr gut vorbereitet', stufe: 1, kriterium: 'Hausaufgaben' },
+  { text: 'bringt eigene Ideen ein', stufe: 1, kriterium: 'Beiträge' },
+  { text: 'beteiligt sich aktiv', stufe: 2, kriterium: 'Beteiligung' },
+  { text: 'Beiträge meistens treffend', stufe: 2, kriterium: 'Beiträge' },
+  { text: 'ruhig, wenig Beteiligung', stufe: 3, kriterium: 'Beteiligung' },
+  { text: 'Beitragsqualität schwankt', stufe: 3, kriterium: 'Beiträge' },
+  { text: 'wirkt abgelenkt', stufe: 4, kriterium: 'Konzentration' },
+  { text: 'arbeitet langsam', stufe: 4, kriterium: 'Konzentration' },
+  { text: 'Material fehlt zu Beginn', stufe: 4, kriterium: 'Material' },
+  { text: 'spricht dazwischen', stufe: 4, kriterium: 'Konzentration' },
+  { text: 'stört den Unterricht', stufe: 5, kriterium: 'Konzentration' },
+  { text: 'Handy genutzt', stufe: 5, kriterium: 'Konzentration' },
+  { text: 'schläft', stufe: 5, kriterium: 'Konzentration' }
 ];
 
 export const STUFEN: { stufe: Stufe; name: string }[] = [
@@ -26,4 +28,7 @@ export const STUFEN: { stufe: Stufe; name: string }[] = [
   { stufe: 5, name: 'sehr schwach' }
 ];
 
-export const bausteinStufe = (t: string) => BAUSTEINE.find((b) => b.text === t)?.stufe;
+/** Die gültigen Bausteine: eigene, sonst der Startsatz. */
+export const bausteineVon = (e?: Pick<Einstellungen, 'bausteine'>): Baustein[] => e?.bausteine ?? BAUSTEINE;
+
+export const bausteinStufe = (t: string, liste: Baustein[] = BAUSTEINE) => liste.find((b) => b.text === t)?.stufe;

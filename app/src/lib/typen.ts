@@ -62,6 +62,49 @@ export interface Kurs {
   gruppenRegeln?: GruppenRegeln; // „nicht zusammen“ / „gern zusammen“ (P7)
   gruppensaetze?: Gruppensatz[]; // gespeicherte Gruppen, neueste zuerst (P8)
   gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
+  muendlich?: MuendlichEinstellung; // Raster und Schwelle für die mündlichen Leistungen (FB7, E110)
+  einschaetzungen?: Record<string, RasterEinschaetzung>; // Schlüssel `${monat}:${schuelerId}`
+}
+
+/** Wie die Klasse mündlich bewertet wird (E110): Smileys, Raster springt ein, wenn zu wenige da sind. */
+export interface MuendlichEinstellung {
+  rasterId: string;
+  mindestSmileys: number; // weniger Smileys im Monat = L.E.O. bietet das Raster an
+}
+
+/** Kriterienraster (E110): Bereiche mit Gewicht, Kriterien mit 4 Stufen (Index 0 = Stufe 4 = beste). */
+export interface Raster {
+  id: string;
+  name: string;
+  fach: string; // z. B. „Englisch“, leer = fachübergreifend
+  bereiche: RasterBereich[];
+  vorlage?: true; // eingebaute Vorlage, nicht änderbar (kopieren geht)
+}
+
+export interface RasterBereich {
+  name: string;
+  gewicht: number; // relativ
+  kriterien: RasterKriterium[];
+}
+
+export interface RasterKriterium {
+  id: string;
+  name: string;
+  stufen: [string, string, string, string]; // Stufe 4, 3, 2, 1 (Beschreibung, Ich-Form für die spätere Selbsteinschätzung)
+}
+
+/** Eine Einschätzung mit dem Raster für einen Schüler und einen Monat. */
+export interface RasterEinschaetzung {
+  rasterId: string;
+  stufen: Record<string, 1 | 2 | 3 | 4>; // Kriterium-id → Stufe
+  zeit: string; // ISO-Zeitpunkt der letzten Änderung
+}
+
+/** Eigener oder geänderter Textbaustein (E110). kriterium = Name eines Rasterkriteriums, z. B. „Beteiligung“. */
+export interface Baustein {
+  text: string;
+  stufe: Stufe;
+  kriterium?: string;
 }
 
 /** Ein Aufruf aus dem Zufallsgenerator. */
@@ -170,6 +213,8 @@ export interface Einstellungen {
   untisAuto?: boolean; // WebUntis automatisch abgleichen (WU2), fehlt = an
   nachschreibMail?: { betreff: string; text: string }; // eigene Vorlage der Nachschreibe-Mail (E105)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
+  bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
+  raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */

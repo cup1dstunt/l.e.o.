@@ -106,7 +106,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | P6 | Beamer-Ansicht für Zufall und Gruppen (gebaut 20.11. mit Rad und Timer, E109) | C | 2 | S |
 | P7 | Gruppen: zufällig, leistungsgemischt, geschlechterausgewogen, Konflikt- und Wunschlisten (gebaut 20.11., E109) | K, B | 1 | M |
 | P8 | Gruppen im Sitzplan abbilden (gebaut 20.11.: G1, G2 … in der Live-Stunde, E109) | B | 2 | S |
-| P9 | **Projektgruppen** über mehrere Blöcke mit Bewertung des Beitrags je Mitglied | B | 2 | M |
+| P9 | **Projektgruppen / Gruppenarbeitsmodul** über mehrere Blöcke bis ein Semester (z. B. Präsentationen), kriteriengeleitet benotet. Vorschlag 25.11.: gespeicherten Gruppensatz zum Projekt erweitern (Titel, Zeitraum, Raster z. B. „Präsentation“, vom Kürzen auf 12 Sätze ausgenommen), Bewertung daneben speichern: Gruppennote, Abweichung je Mitglied, optional Selbst-/Peer-Einschätzung über den Link aus FB7b; Note zählt wohl unter Tests/Sonstiges (zu klären) | B, K | 1 | M |
 | P10 | Namen lernen mit Fotos (Karteikarten) am Schuljahresanfang | C | 3 | S |
 
 ## Stunde
@@ -380,7 +380,10 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | FB4 | Sitzplan-Editor mit Vorlagen und Drag and Drop (E86), Raumvorlagen später je Raum teilen | K | 1 | L | Grundfassung in 0.5; eigene Vorlagen („Als Vorlage merken“, für alle Klassen) seit 19.11. |
 | FB5 | Live-Stunde: Liste/Sitzplan umschaltbar (E86) | K | 1 | S | in 0.5; Liste heißt „Alphabet“, im Sitzplan Schalter Anwesenheit/Mündlich (19.11.) |
 | FB6 | Anwesenheit da/fehlt, Verspätung mit Uhrzeit (E84); E/UE später aus WebUntis | K | 1 | S | in 0.5; Zeitvorschläge jetzt/+5…+30 min (19.11.) |
-| FB7 | **Mündliche Leistungen kriterienorientiert:** Rasterbogen (Kriterien, Mitarbeit ist eines), Selbsteinschätzungsbogen für Schüler zum Verteilen, Vergleich Selbst-/Fremdeinschätzung (E85, verzahnt mit BEWERTUNGSBOEGEN.md) | K | 1 | L | offen |
+| FB7 | **Mündliche Leistungen kriterienorientiert:** Rasterbogen (Kriterien, Mitarbeit ist eines), Selbsteinschätzungsbogen für Schüler zum Verteilen, Vergleich Selbst-/Fremdeinschätzung (E85, verzahnt mit BEWERTUNGSBOEGEN.md) | K | 1 | L | Raster springt ein (E110) im Prototyp, 25.11.2026; Selbsteinschätzung offen (FB7b) |
+| FB7b | **Selbsteinschätzung per Link** (E111): Einmal-Link per Mail an die IServ-Adresse, Formular auf dem eigenen Server, Antworten verschlüsselt ohne Namen, Erinnerung an die Fehlenden, Selbst- und Fremdbild nebeneinander mit markierten Abweichungen | K | 1 | L | offen |
+| FB7c | **Raster vorbefüllen** aus Smileys und Bausteinen je Kriterium (Weg 3), Lehrkraft bestätigt oder tippt um | K, C | 2 | M | offen |
+| FB7d | **Raster aus Word/PDF hochladen** und als Entwurf übernehmen (BEWERTUNGSBOEGEN 4) | K | 2 | M | offen |
 | FB8 | Klausuren : AT fest 50 : 50, nur mündlich : Tests frei (E83) | K | 1 | S | in 0.5 |
 | FB9 | Einzelgewicht frei eingeben | K | 1 | S | in 0.5 |
 | FB10 | Ø-Kachel mit Noten und Was-wäre-wenn (E89) | K | 1 | M | in 0.5 |
