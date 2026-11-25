@@ -106,7 +106,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | P6 | Beamer-Ansicht für Zufall und Gruppen (gebaut 20.11. mit Rad und Timer, E109) | C | 2 | S |
 | P7 | Gruppen: zufällig, leistungsgemischt, geschlechterausgewogen, Konflikt- und Wunschlisten (gebaut 20.11., E109) | K, B | 1 | M |
 | P8 | Gruppen im Sitzplan abbilden (gebaut 20.11.: G1, G2 … in der Live-Stunde, E109) | B | 2 | S |
-| P9 | **Projektgruppen / Gruppenarbeitsmodul** über mehrere Blöcke bis ein Semester (z. B. Präsentationen), kriteriengeleitet benotet. Vorschlag 25.11.: gespeicherten Gruppensatz zum Projekt erweitern (Titel, Zeitraum, Raster z. B. „Präsentation“, vom Kürzen auf 12 Sätze ausgenommen), Bewertung daneben speichern: Gruppennote, Abweichung je Mitglied, optional Selbst-/Peer-Einschätzung über den Link aus FB7b; Note zählt wohl unter Tests/Sonstiges (zu klären) | B, K | 1 | M |
+| P9 | **Projektgruppen / Gruppenarbeitsmodul** (im Prototyp seit 25.11., E114; offen: Selbst-/Partnereinschätzung per Link mit FB7b, FOS-Höchstwert 14 Punkte bei Stufe 4 klären) über mehrere Blöcke bis ein Semester (z. B. Präsentationen), kriteriengeleitet benotet. Vorschlag 25.11.: gespeicherten Gruppensatz zum Projekt erweitern (Titel, Zeitraum, Raster z. B. „Präsentation“, vom Kürzen auf 12 Sätze ausgenommen), Bewertung daneben speichern: Gruppennote, Abweichung je Mitglied, optional Selbst-/Peer-Einschätzung über den Link aus FB7b; Note zählt wohl unter Tests/Sonstiges (zu klären) | B, K | 1 | M |
 | P10 | Namen lernen mit Fotos (Karteikarten) am Schuljahresanfang | C | 3 | S |
 
 ## Stunde

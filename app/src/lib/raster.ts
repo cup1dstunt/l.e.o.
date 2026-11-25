@@ -45,7 +45,7 @@ export const VORLAGEN: Raster[] = [
 export const STANDARD_MINDEST = 3;
 
 /** Alle Raster: eigene zuerst, dann die Vorlagen. */
-export const alleRaster = (d: Pick<Daten, 'einstellungen'>): Raster[] => [...(d.einstellungen.raster ?? []), ...VORLAGEN];
+export const alleRaster = (d: Pick<Daten, 'einstellungen'>): Raster[] => [...(d.einstellungen.raster ?? []).filter((r) => r.art !== 'projekt'), ...VORLAGEN];
 
 /** Raster der Klasse: eingestellt, sonst Vorlage passend zum Fach, sonst fachübergreifend.
  *  Eigene Raster gelten nur, wenn sie für die Klasse gewählt sind (eine neue Kopie ändert nichts still). */

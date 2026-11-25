@@ -64,6 +64,33 @@ export interface Kurs {
   gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
   muendlich?: MuendlichEinstellung; // Raster und Schwelle für die mündlichen Leistungen (FB7, E110)
   einschaetzungen?: Record<string, RasterEinschaetzung>; // Schlüssel `${monat}:${schuelerId}`
+  projekte?: Projekt[]; // Gruppenarbeit über mehrere Stunden (P9, E114), neueste zuerst
+}
+
+/** Gruppenarbeit über mehrere Stunden bis ein Halbjahr (P9, E114): feste Gruppen, Gruppennote aus dem Raster, Abweichung je Mitglied. */
+export interface Projekt {
+  id: string;
+  titel: string;
+  von: string; // ISO-Datum
+  bis: string; // ISO-Datum, Abgabe oder Präsentation
+  rasterId: string; // Projektraster (Raster mit art „projekt“)
+  gewichte?: Record<string, number>; // Gewicht je Kriterium in diesem Projekt, fehlt = aus dem Raster
+  zaehltAls: 'sl' | 'mitarbeit'; // Notenbuch: Tests/Sonstiges oder mündliche Leistungen
+  gruppen: ProjektGruppe[];
+  abweichung: Record<string, { schritte: number; grund?: string }>; // je Schüler, + = besser als die Gruppe
+  leistungId?: string; // Notenbuchspalte, entsteht beim ersten Übernehmen
+  satzId?: string; // Gruppensatz, über den die Gruppen im Sitzplan erscheinen
+  mails?: Record<string, string>; // Schüler → Datum, an dem die Rückmeldung geöffnet wurde
+  abgeschlossen?: boolean;
+}
+
+export interface ProjektGruppe {
+  id: string;
+  name: string; // G1, G2 … oder eigener Name
+  thema: string;
+  mitglieder: string[];
+  stufen: Record<string, 1 | 2 | 3 | 4>; // Kriterium-id → Stufe für das Gruppenergebnis
+  notizen: { datum: string; text: string }[]; // Stand der Gruppe, neueste zuerst
 }
 
 /** Wie die Klasse mündlich bewertet wird (E110): Smileys, Raster springt ein, wenn zu wenige da sind. */
@@ -81,6 +108,7 @@ export interface Raster {
   fach: string; // z. B. „Englisch“, leer = fachübergreifend
   bereiche: RasterBereich[];
   vorlage?: true; // eingebaute Vorlage, nicht änderbar (kopieren geht)
+  art?: 'projekt'; // Projektraster für die Gruppenarbeit (E114), fehlt = mündliche Leistungen
 }
 
 export interface RasterBereich {
@@ -135,6 +163,7 @@ export interface Gruppensatz {
   name: string;
   datum: string; // ISO-Datum
   gruppen: string[][]; // Schüler-ids je Gruppe
+  projektId?: string; // gehört zu einem Projekt (P9) und wird nie automatisch gelöscht
 }
 
 /** Sitzplan als Raster (E86): Zellen sind Tisch oder frei, Belegung je Zellennummer. */
@@ -219,6 +248,7 @@ export interface Einstellungen {
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
   bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
   raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
+  projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E114)
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */

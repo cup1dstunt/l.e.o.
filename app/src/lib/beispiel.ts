@@ -142,6 +142,22 @@ export function beispielDaten(heute = new Date()): Daten {
     }
   }
 
+  // Gruppenarbeit (P9, E114): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet
+  {
+    const k = kurse[0];
+    const t = k.schueler;
+    const gruppen = [[t[0], t[5], t[9]], [t[1], t[6], t[10], t[13]], [t[2], t[7], t[11]], [t[3], t[4], t[8], t[12]]];
+    const themen = ['Fast Fashion', 'Plastic in the Ocean', 'Food Waste', 'Fair Trade Coffee'];
+    k.projekte = [{
+      id: 'p-podcast', titel: 'Podcast Sustainability', von: '2026-11-02', bis: '2026-12-11', rasterId: 'pv-projekt', zaehltAls: 'sl',
+      gruppen: gruppen.map((m, i) => ({ id: `pg${i}`, name: `G${i + 1}`, thema: themen[i], mitglieder: m, notizen: i === 0 ? [{ datum: '2026-11-19', text: 'Skript fertig, Aufnahme am 03.12.' }] : [],
+        stufen: (i === 0 ? { 'q-inhalt': 4, 'q-produkt': 3, 'q-vorstellen': 3, 'q-planung': 4, 'q-doku': 3 } : i === 1 ? { 'q-inhalt': 3, 'q-produkt': 2, 'q-planung': 2 } : {}) as Record<string, 1 | 2 | 3 | 4> })),
+      abweichung: { [t[0]]: { schritte: 1, grund: 'trägt die Gruppe' }, [t[9]]: { schritte: -2, grund: 'wenig eigener Anteil' } },
+      satzId: 'gs-podcast'
+    }];
+    k.gruppensaetze = [{ id: 'gs-podcast', name: 'Projekt: Podcast Sustainability', datum: '2026-11-02', gruppen, projektId: 'p-podcast' }];
+  }
+
   const notizen: Notiz[] = [
     { id: 'n1', schuelerId: 's3', datum: '2026-10-12', text: 'Gespräch nach der Stunde: Praktikum ist stressig, Abgabe verschoben.' },
     { id: 'n2', schuelerId: 's3', datum: '2026-09-28', text: 'Mitarbeit stark bei Gruppenarbeit, übernimmt gern die Präsentation.' },

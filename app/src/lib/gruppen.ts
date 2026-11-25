@@ -105,3 +105,9 @@ export function regelUmschalten(r: GruppenRegeln, art: 'nicht' | 'gern', a: stri
     [andere]: r[andere].filter((p) => !gleich(p))
   } as GruppenRegeln;
 }
+
+/** Gespeicherte Gruppensätze kürzen: höchstens max ohne Projekt, Sätze eines Projekts (P9) bleiben immer. */
+export function satzKuerzen<T extends { projektId?: string }>(saetze: T[], max = 12): T[] {
+  let n = 0;
+  return saetze.filter((s) => !!s.projektId || n++ < max);
+}
