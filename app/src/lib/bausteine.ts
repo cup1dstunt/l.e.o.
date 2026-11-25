@@ -4,7 +4,7 @@
 import type { Baustein, Einstellungen, Stufe } from './typen.ts';
 
 export const BAUSTEINE: Baustein[] = [
-  { text: 'hilft Mitschülern', stufe: 1, kriterium: 'Arbeitsverhalten' },
+  { text: 'hilft Mitschülern', stufe: 1, kriterium: 'Zusammenarbeit' },
   { text: 'sehr gut vorbereitet', stufe: 1, kriterium: 'Hausaufgaben' },
   { text: 'bringt eigene Ideen ein', stufe: 1, kriterium: 'Qualität der Beiträge' },
   { text: 'beteiligt sich aktiv', stufe: 2, kriterium: 'Beteiligung' },
@@ -15,6 +15,8 @@ export const BAUSTEINE: Baustein[] = [
   { text: 'arbeitet langsam', stufe: 4, kriterium: 'Arbeitsverhalten' },
   { text: 'Material fehlt zu Beginn', stufe: 4, kriterium: 'Arbeitsverhalten' },
   { text: 'spricht dazwischen', stufe: 4, kriterium: 'Arbeitsverhalten' },
+  { text: 'zu spät gekommen', stufe: 4, kriterium: 'Arbeitsverhalten' },
+  { text: 'macht in der Gruppe kaum mit', stufe: 4, kriterium: 'Zusammenarbeit' },
   { text: 'stört den Unterricht', stufe: 5, kriterium: 'Arbeitsverhalten' },
   { text: 'Handy genutzt', stufe: 5, kriterium: 'Arbeitsverhalten' },
   { text: 'schläft', stufe: 5, kriterium: 'Arbeitsverhalten' }

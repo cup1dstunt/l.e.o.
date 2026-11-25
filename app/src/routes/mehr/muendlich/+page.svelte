@@ -69,7 +69,7 @@
     speichern();
   }
   function bereichHinzu(r: Raster) {
-    r.bereiche.push({ name: 'Neuer Bereich', gewicht: 1, kriterien: [] });
+    r.bereiche.push({ name: 'Neuer Bereich', gewicht: 1, kriterien: [] }); // gewicht nur aus Kompatibilität (E113)
     speichern();
   }
   const verwendet = (r: Raster) => d.kurse.filter((k) => k.muendlich?.rasterId === r.id).map((k) => k.name);
@@ -109,7 +109,7 @@
 
   <section class="karte">
     <h2>Kriterienraster</h2>
-    <p class="klein leise">Jedes Fach hat eigene Kriterien. Vorlagen kopierst du und passt sie an; welches Raster eine Klasse nutzt, wählst du im Reiter „Mündlich“ der Klasse. Stufentexte in Ich-Form, damit sie später auch für die Selbsteinschätzung passen.</p>
+    <p class="klein leise">Jedes Fach hat eigene Kriterien. Das Gewicht hier ist der Standard; je Klasse änderst du es im Reiter „Mündlich“ mit Klick auf „Vorschlag“. Vorlagen kopierst du und passt sie an; welches Raster eine Klasse nutzt, wählst du im Reiter „Mündlich“ der Klasse. Stufentexte in Ich-Form, damit sie später auch für die Selbsteinschätzung passen.</p>
     {#each alleRaster(d) as r (r.id)}
       {@const v = verwendet(r)}
       <div class="raster">
@@ -123,8 +123,8 @@
         {#if offen === r.id}
           {#if r.vorlage}
             {#each r.bereiche as b}
-              <h3>{b.name} · Gewicht {b.gewicht}</h3>
-              <ul class="klein">{#each b.kriterien as k}<li><b>{k.name}{k.optional ? ' (optional)' : ''}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
+              <h3>{b.name}</h3>
+              <ul class="klein">{#each b.kriterien as k}<li><b>{k.name}{k.optional ? ' (optional)' : ''}{(k.gewicht ?? 1) !== 1 ? ` ×${k.gewicht}` : ''}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
             {/each}
             <p class="klein leise">Vorlagen sind fest. Zum Ändern kopieren.</p>
           {:else}
@@ -136,12 +136,12 @@
               <div class="bereich">
                 <div class="zeile wrap">
                   <label class="feld raum"><span>Bereich</span><input bind:value={b.name} oninput={speichern} /></label>
-                  <label class="feld gew"><span>Gewicht</span><input type="number" min="0" step="0.5" bind:value={b.gewicht} oninput={speichern} /></label>
                   <button class="x" onclick={() => { r.bereiche.splice(bi, 1); speichern(); }} aria-label="Bereich entfernen">×</button>
                 </div>
                 {#each b.kriterien as k, ki (k.id)}
                   <div class="krit">
                     <div class="zeile"><input class="eingabe raum" bind:value={k.name} oninput={speichern} aria-label="Kriterium" />
+                      <label class="feld gew"><span>Gewicht</span><input type="number" min="0" max="5" step="0.5" value={k.gewicht ?? 1} oninput={(e) => { k.gewicht = Number((e.currentTarget as HTMLInputElement).value) || 0; speichern(); }} /></label>
                       <label class="klein opt"><input type="checkbox" checked={!!k.optional} onchange={(e) => { if ((e.currentTarget as HTMLInputElement).checked) k.optional = true; else delete k.optional; speichern(); }} /> optional (je Klasse zuschalten)</label><button class="x" onclick={() => { b.kriterien.splice(ki, 1); speichern(); }} aria-label="Kriterium entfernen">×</button></div>
                     <div class="stufen">
                       {#each [4, 3, 2, 1] as st, i}

@@ -71,6 +71,7 @@ export interface MuendlichEinstellung {
   rasterId: string;
   mindestSmileys: number; // weniger Smileys im Monat = L.E.O. bietet das Raster an
   zusatz?: string[]; // eingeschaltete optionale Kriterien, z. B. Hausaufgaben (E112)
+  gewichte?: Record<string, number>; // Gewicht je Kriterium-id in dieser Klasse (E113), fehlt = aus dem Raster
 }
 
 /** Kriterienraster (E110): Bereiche mit Gewicht, Kriterien mit 4 Stufen (Index 0 = Stufe 4 = beste). */
@@ -84,7 +85,7 @@ export interface Raster {
 
 export interface RasterBereich {
   name: string;
-  gewicht: number; // relativ
+  gewicht: number; // nicht mehr in der Rechnung (E113); es zählt das Gewicht je Kriterium
   kriterien: RasterKriterium[];
 }
 
@@ -93,6 +94,7 @@ export interface RasterKriterium {
   name: string;
   stufen: [string, string, string, string]; // Stufe 4, 3, 2, 1 (Beschreibung, Ich-Form für die spätere Selbsteinschätzung)
   optional?: true; // nur wenn die Klasse es einschaltet (z. B. Hausaufgaben, E112)
+  gewicht?: number; // Standardgewicht (E113), fehlt = 1
 }
 
 /** Eine Einschätzung mit dem Raster für einen Schüler und einen Monat. */

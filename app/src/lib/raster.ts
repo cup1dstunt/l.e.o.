@@ -5,36 +5,39 @@ import type { Baustein, Daten, Kurs, Leistung, Profil, Raster, RasterEinschaetzu
 import { monatsVorschlag } from './rechnen.ts';
 
 type Stufen4 = [string, string, string, string];
-const k = (id: string, name: string, stufen: Stufen4): RasterKriterium => ({ id, name, stufen });
+const k = (id: string, name: string, stufen: Stufen4, gewicht?: number): RasterKriterium => ({ id, name, stufen, ...(gewicht ? { gewicht } : {}) });
 
 /** Eingebaute Vorlagen (E112): höchstens 5 Kriterien, damit eine Einschätzung etwa 10 Sekunden dauert.
- *  Häufigkeit und Qualität der Beiträge sind getrennt. Hausaufgaben ist optional und je Klasse zuschaltbar. */
+ *  Häufigkeit und Qualität der Beiträge sind getrennt, Qualität und Sprache zählen doppelt (E113, je Klasse änderbar).
+ *  Hausaufgaben ist optional und je Klasse zuschaltbar. */
 export const MAX_KRITERIEN = 5;
 
 const BETEILIGUNG = k('beteiligung', 'Beteiligung', ['Ich melde mich oft von selbst.', 'Ich beteilige mich regelmäßig.', 'Ich sage meist nur etwas, wenn ich gefragt werde.', 'Ich beteilige mich kaum.']);
-const QUALITAET = k('qualitaet', 'Qualität der Beiträge', ['Meine Beiträge sind treffend und bringen das Gespräch weiter.', 'Meine Beiträge sind meist richtig und sachbezogen.', 'Meine Beiträge sind oft ungenau oder kurz.', 'Meine Beiträge passen selten zum Thema.']);
-const ARBEIT = k('arbeitsverhalten', 'Arbeitsverhalten', ['Ich arbeite konzentriert, helfe anderen, habe Material dabei und bin pünktlich.', 'Ich arbeite meist konzentriert und bin vorbereitet.', 'Ich brauche oft Aufforderung oder bin nicht vorbereitet.', 'Ich arbeite kaum mit oder lenke andere ab.']);
+const QUALITAET_ = k('qualitaet', 'Qualität der Beiträge', ['Meine Beiträge sind treffend und bringen das Gespräch weiter.', 'Meine Beiträge sind meist richtig und sachbezogen.', 'Meine Beiträge sind oft ungenau oder kurz.', 'Meine Beiträge passen selten zum Thema.']);
+const QUALITAET: RasterKriterium = { ...QUALITAET_, gewicht: 2 };
+const ARBEIT = k('arbeitsverhalten', 'Arbeitsverhalten', ['Ich arbeite konzentriert, habe mein Material dabei und bin pünktlich.', 'Ich arbeite meist konzentriert, bin vorbereitet und selten zu spät.', 'Ich brauche oft Aufforderung, bin nicht vorbereitet oder komme manchmal zu spät.', 'Ich arbeite kaum mit, lenke andere ab oder komme oft zu spät.']);
+const ZUSAMMEN = k('zusammenarbeit', 'Zusammenarbeit', ['Ich übernehme Verantwortung in der Gruppe und helfe anderen.', 'Ich bringe mich in Gruppen ein.', 'Ich mache in Gruppen nur auf Aufforderung mit.', 'Ich bringe mich in Gruppen nicht ein.']);
 const HAUSAUFGABEN: RasterKriterium = { ...k('hausaufgaben', 'Hausaufgaben', ['Immer vollständig und gut.', 'Meistens vollständig.', 'Oft lückenhaft.', 'Fast nie gemacht.']), optional: true };
 
 export const VORLAGEN: Raster[] = [
   {
     id: 'v-englisch', name: 'Englisch mündlich', fach: 'Englisch', vorlage: true,
     bereiche: [
-      { name: 'Beiträge', gewicht: 2, kriterien: [
+      { name: 'Beiträge', gewicht: 1, kriterien: [
         BETEILIGUNG, QUALITAET,
-        k('sprache', 'Sprache', ['Ich spreche flüssig, mit treffenden Wörtern und sicherer Grammatik.', 'Man versteht mich gut, Fehler stören kaum.', 'Ich spreche in kurzen, einfachen Sätzen, Fehler stören manchmal.', 'Mir fehlen oft die Wörter, man versteht mich schwer.'])
+        k('sprache', 'Sprache', ['Ich spreche flüssig, mit treffenden Wörtern und sicherer Grammatik.', 'Man versteht mich gut, Fehler stören kaum.', 'Ich spreche in kurzen, einfachen Sätzen, Fehler stören manchmal.', 'Mir fehlen oft die Wörter, man versteht mich schwer.'], 2)
       ] },
-      { name: 'Arbeitsverhalten', gewicht: 1, kriterien: [ARBEIT, HAUSAUFGABEN] }
+      { name: 'Arbeitsweise', gewicht: 1, kriterien: [ARBEIT, ZUSAMMEN, HAUSAUFGABEN] }
     ]
   },
   {
     id: 'v-allgemein', name: 'Mündlich fachübergreifend', fach: '', vorlage: true,
     bereiche: [
-      { name: 'Beiträge', gewicht: 2, kriterien: [
+      { name: 'Beiträge', gewicht: 1, kriterien: [
         BETEILIGUNG, QUALITAET,
-        k('fachsprache', 'Fachsprache und Verstehen', ['Ich nutze Fachbegriffe sicher und verstehe Aufgaben sofort.', 'Ich nutze Fachbegriffe meist richtig und verstehe das meiste.', 'Ich umschreibe Fachbegriffe und verstehe das Wichtigste.', 'Mir fehlen Fachbegriffe, Aufgaben verstehe ich oft nicht.'])
+        k('fachsprache', 'Fachsprache und Verstehen', ['Ich nutze Fachbegriffe sicher und verstehe Aufgaben sofort.', 'Ich nutze Fachbegriffe meist richtig und verstehe das meiste.', 'Ich umschreibe Fachbegriffe und verstehe das Wichtigste.', 'Mir fehlen Fachbegriffe, Aufgaben verstehe ich oft nicht.'], 2)
       ] },
-      { name: 'Arbeitsverhalten', gewicht: 1, kriterien: [ARBEIT, HAUSAUFGABEN] }
+      { name: 'Arbeitsweise', gewicht: 1, kriterien: [ARBEIT, ZUSAMMEN, HAUSAUFGABEN] }
     ]
   }
 ];
@@ -68,38 +71,34 @@ export interface RasterErgebnis {
   schnitt: number | null; // gewichtete Stufe 1–4 (4 = beste)
   smiley: number | null; // umgerechnet auf die Smiley-Skala 1–5 (1 = beste)
   note: number | null; // Vorschlag für die Monatsnote im Profil der Klasse
-  bereiche: { name: string; gewicht: number; schnitt: number | null; gezaehlt: number; von: number }[];
-  offen: number; // Kriterien ohne Stufe
+  offen: number; // aktive Kriterien ohne Stufe
   weg: string[];
 }
 
 const fmt = (x: number) => x.toLocaleString('de-DE', { maximumFractionDigits: 2 });
 
+/** Gewicht eines Kriteriums in der Klasse (E113): eigene Einstellung der Klasse, sonst aus dem Raster, sonst 1. */
+export const kriteriumGewicht = (kurs: Pick<Kurs, 'muendlich'> | undefined, kr: RasterKriterium) => kurs?.muendlich?.gewichte?.[kr.id] ?? kr.gewicht ?? 1;
+
 /**
- * Ergebnis einer Einschätzung: je Bereich Mittel der gewählten Stufen, Bereiche nach Gewicht.
- * Leere Kriterien zählen nicht. Stufe 4 → Smiley 1, Stufe 1 → Smiley 5 (linear), danach wie die Smiley-Monatsnote (E68).
+ * Ergebnis einer Einschätzung (E113): gewichteter Durchschnitt der gewählten Stufen über die aktiven Kriterien.
+ * Leere Kriterien und Gewicht 0 zählen nicht. Stufe 4 → Smiley 1, Stufe 1 → Smiley 5 (linear), danach wie die Smiley-Monatsnote (E68).
  */
-export function rasterErgebnis(raster: Raster, stufen: Record<string, number>, profil: Profil, aktiv: (kr: RasterKriterium) => boolean = (kr) => !kr.optional): RasterErgebnis {
+export function rasterErgebnis(raster: Raster, stufen: Record<string, number>, profil: Profil, kurs?: Pick<Kurs, 'muendlich'>): RasterErgebnis {
   const weg: string[] = [];
-  let offen = 0;
-  const bereiche = raster.bereiche.map((b) => {
-    const ks = b.kriterien.filter(aktiv);
-    const w = ks.map((kr) => stufen[kr.id]).filter((x): x is number => typeof x === 'number');
-    offen += ks.length - w.length;
-    const schnitt = w.length ? w.reduce((a, x) => a + x, 0) / w.length : null;
-    weg.push(`${b.name}: ${w.length ? `(${w.join(' + ')}) / ${w.length} = ${fmt(schnitt!)}` : 'noch nichts gewählt'}`);
-    return { name: b.name, gewicht: b.gewicht, schnitt, gezaehlt: w.length, von: ks.length };
-  });
-  const mit = bereiche.filter((b) => b.schnitt !== null && b.gewicht > 0);
-  const summe = mit.reduce((a, b) => a + b.gewicht, 0);
-  if (!summe) return { schnitt: null, smiley: null, note: null, bereiche, offen, weg };
-  const schnitt = mit.reduce((a, b) => a + b.schnitt! * b.gewicht, 0) / summe;
-  if (mit.length > 1) weg.push(`Gewichtet: ${mit.map((b) => `${fmt(b.schnitt!)} × ${fmt(b.gewicht)}`).join(' + ')} / ${fmt(summe)} = ${fmt(schnitt)}`);
+  const ks = raster.bereiche.flatMap((b) => b.kriterien).filter((kr) => kriteriumAktiv(kurs ?? {}, kr));
+  const gewertet = ks.filter((kr) => typeof stufen[kr.id] === 'number' && kriteriumGewicht(kurs, kr) > 0);
+  const offen = ks.filter((kr) => typeof stufen[kr.id] !== 'number').length;
+  const summe = gewertet.reduce((a, kr) => a + kriteriumGewicht(kurs, kr), 0);
+  if (!summe) return { schnitt: null, smiley: null, note: null, offen, weg: ['Noch keine Stufe gewählt.'] };
+  const schnitt = gewertet.reduce((a, kr) => a + stufen[kr.id] * kriteriumGewicht(kurs, kr), 0) / summe;
+  weg.push(`Stufen × Gewicht: ${gewertet.map((kr) => `${kr.name} ${stufen[kr.id]} × ${fmt(kriteriumGewicht(kurs, kr))}`).join(' + ')}`);
+  weg.push(`Geteilt durch die Summe der Gewichte ${fmt(summe)} = ${fmt(schnitt)}`);
   const smiley = 1 + ((4 - schnitt) * 4) / 3;
   weg.push(`Auf die Smiley-Skala: 1 + (4 − ${fmt(schnitt)}) × 4/3 = ${fmt(smiley)}`);
   const v = monatsVorschlag(profil, [smiley])!;
   weg.push(profil === 'FOS' ? `In Notenpunkte wie bei den Smileys: ${v.wert} Punkte` : `Monatsnote: ${v.wert}`);
-  return { schnitt, smiley, note: v.wert, bereiche, offen, weg };
+  return { schnitt, smiley, note: v.wert, offen, weg };
 }
 
 export const einschaetzungSchluessel = (monat: string, sid: string) => `${monat}:${sid}`;
@@ -126,7 +125,8 @@ export function belege(
   const out = [...zaehler.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${n}× „${t}“`);
   if (name === 'pünktlichkeit' || name === 'arbeitsverhalten') {
     const v = d.verspaetungen.filter((x) => x.kursId === kursId && x.schuelerId === sid && x.datum.startsWith(monat));
-    out.push(v.length ? `${v.length} Verspätung${v.length > 1 ? 'en' : ''}, ${v.reduce((a, x) => a + x.minuten, 0)} Min.` : 'keine Verspätung');
+    const tage = v.map((x) => x.datum.slice(8, 10) + '.' + x.datum.slice(5, 7) + '.').sort().join(', ');
+    out.push(v.length ? `${v.length}× zu spät, ${v.reduce((a, x) => a + x.minuten, 0)} Min. (${tage})` : 'keine Verspätung');
   }
   return out;
 }

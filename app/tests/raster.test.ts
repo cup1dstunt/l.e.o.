@@ -1,5 +1,5 @@
 // Prüft das Kriterienraster der mündlichen Leistungen (FB7, E110). Aufruf: npm test
-import { VORLAGEN, rasterErgebnis, belege, monatsSpalte, rasterFuer, rasterKopie, mindestSmileys, rasterDerEinschaetzung, kriteriumAktiv, MAX_KRITERIEN } from '../src/lib/raster.ts';
+import { VORLAGEN, rasterErgebnis, belege, monatsSpalte, rasterFuer, rasterKopie, mindestSmileys, rasterDerEinschaetzung, MAX_KRITERIEN, kriteriumGewicht } from '../src/lib/raster.ts';
 import { BAUSTEINE } from '../src/lib/bausteine.ts';
 import { kursMischen } from '../src/lib/abgleich.ts';
 import type { Kurs, Raster } from '../src/lib/typen.ts';
@@ -23,12 +23,17 @@ gleich('alles 4 OSZ', rasterErgebnis(r, { a1: 4, a2: 4, b1: 4 }, 'OSZ').note, 1)
 gleich('alles 4 FOS', rasterErgebnis(r, { a1: 4, a2: 4, b1: 4 }, 'FOS').note, 14);
 gleich('alles 1 OSZ', rasterErgebnis(r, { a1: 1, a2: 1, b1: 1 }, 'OSZ').note, 5);
 gleich('alles 1 FOS', rasterErgebnis(r, { a1: 1, a2: 1, b1: 1 }, 'FOS').note, 2);
-// Gewichtung: A = 3 (Gewicht 2), B = 1 (Gewicht 1) → (6 + 1) / 3 = 2,333 → Smiley 1 + 1,667 × 4/3 = 3,22 → Note 3
+// Gewichtung je Kriterium (E113): a1 = 3 × 2, a2 = 3 × 1, b1 = 1 × 1 → 10 / 4 = 2,5 → Smiley 3 → Note 3
 {
-  const e = rasterErgebnis(r, { a1: 3, a2: 3, b1: 1 }, 'OSZ');
-  gleich('gewichtet Schnitt', Math.round(e.schnitt! * 1000) / 1000, 2.333);
+  const kg = { muendlich: { rasterId: 't', mindestSmileys: 3, gewichte: { a1: 2 } } };
+  const e = rasterErgebnis(r, { a1: 3, a2: 3, b1: 1 }, 'OSZ', kg);
+  gleich('gewichtet Schnitt', e.schnitt, 2.5);
   gleich('gewichtet Note', e.note, 3);
-  gleich('Rechenweg hat Zeilen', e.weg.length, 5);
+  gleich('Rechenweg hat Zeilen', e.weg.length, 4);
+  gleich('Gewicht aus der Klasse', [kriteriumGewicht(kg, r.bereiche[0].kriterien[0]), kriteriumGewicht(kg, r.bereiche[0].kriterien[1])], [2, 1]);
+  gleich('Gewicht aus dem Raster', kriteriumGewicht(undefined, { id: 'x', name: 'x', stufen: ['', '', '', ''], gewicht: 2 }), 2);
+  // Gewicht 0 lässt b1 weg: (3 + 3) / 2 = 3 → Smiley 2,33 → Note 2
+  gleich('Gewicht 0 zählt nicht', rasterErgebnis(r, { a1: 3, a2: 3, b1: 1 }, 'OSZ', { muendlich: { rasterId: 't', mindestSmileys: 3, gewichte: { b1: 0 } } }).note, 2);
 }
 // Leere Kriterien zählen nicht, leerer Bereich fällt raus
 {
@@ -40,7 +45,7 @@ gleich('alles 1 FOS', rasterErgebnis(r, { a1: 1, a2: 1, b1: 1 }, 'FOS').note, 2)
 {
   const ro: Raster = { ...r, bereiche: [r.bereiche[0], { name: 'B', gewicht: 1, kriterien: [{ id: 'ha', name: 'Hausaufgaben', stufen: ['', '', '', ''], optional: true }] }] };
   gleich('optional aus', rasterErgebnis(ro, { a1: 4, a2: 4, ha: 1 }, 'OSZ').note, 1);
-  gleich('optional an', rasterErgebnis(ro, { a1: 4, a2: 4, ha: 1 }, 'OSZ', (kr) => kriteriumAktiv({ muendlich: { rasterId: 't', mindestSmileys: 3, zusatz: ['ha'] } }, kr)).note, 2);
+  gleich('optional an', rasterErgebnis(ro, { a1: 4, a2: 4, ha: 1 }, 'OSZ', { muendlich: { rasterId: 't', mindestSmileys: 3, zusatz: ['ha'] } }).note, 2);
 }
 // Vorlagen vollständig und kurz: höchstens 5 feste Kriterien, Beteiligung und Qualität getrennt: jedes Kriterium hat 4 Stufentexte, ids je Raster eindeutig
 for (const v of VORLAGEN) {
@@ -49,6 +54,7 @@ for (const v of VORLAGEN) {
   gleich(`${v.name} ids eindeutig`, new Set(ks.map((k) => k.id)).size, ks.length);
   gleich(`${v.name} höchstens ${MAX_KRITERIEN}`, ks.filter((k) => !k.optional).length <= MAX_KRITERIEN, true);
   gleich(`${v.name} Häufigkeit und Qualität`, ['beteiligung', 'qualitaet'].every((id) => ks.some((k) => k.id === id)), true);
+  gleich(`${v.name} Qualität zählt doppelt`, ks.find((k) => k.id === 'qualitaet')?.gewicht, 2);
   gleich(`${v.name} Hausaufgaben optional`, ks.find((k) => k.id === 'hausaufgaben')?.optional, true);
 }
 
@@ -63,7 +69,7 @@ for (const v of VORLAGEN) {
     verspaetungen: [{ id: 'v', kursId: 'k', schuelerId: 's', datum: '2026-11-04', ankunft: '08:10', minuten: 10 }]
   };
   gleich('Belege Qualität', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[0]), ['2× „bringt eigene Ideen ein“']);
-  gleich('Belege Pünktlichkeit', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[1].kriterien[0]), ['1 Verspätung, 10 Min.']);
+  gleich('Belege Pünktlichkeit', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[1].kriterien[0]), ['1× zu spät, 10 Min. (04.11.)']);
   gleich('keine Belege', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[1]), []);
 }
 

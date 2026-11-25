@@ -8,7 +8,7 @@
   import { bausteineVon } from '$lib/bausteine';
   import {
     alleRaster, rasterFuer, mindestSmileys, rasterErgebnis, einschaetzungSchluessel, smileysImMonat, belege,
-    monatsSpalte, monatsNameLang, STANDARD_MINDEST, rasterDerEinschaetzung, kriteriumAktiv
+    monatsSpalte, monatsNameLang, STANDARD_MINDEST, rasterDerEinschaetzung, kriteriumAktiv, kriteriumGewicht
   } from '$lib/raster';
   import type { Schueler } from '$lib/typen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
@@ -44,7 +44,7 @@
   // Eine vorhandene Einschätzung bleibt bei ihrem Raster, auch wenn die Klasse inzwischen ein anderes nutzt
   const raster = $derived(rasterDerEinschaetzung(d, kurs, akt?.ein));
   const stufen = $derived(akt?.ein?.rasterId === raster.id ? akt.ein.stufen : {});
-  const erg = $derived(rasterErgebnis(raster, stufen, kurs.profil, (kr) => kriteriumAktiv(kurs, kr)));
+  const erg = $derived(rasterErgebnis(raster, stufen, kurs.profil, kurs));
   let wegOffen = $state(false);
 
   function waehle(kid: string, st: 1 | 2 | 3 | 4) {
@@ -84,6 +84,25 @@
     kurs.muendlich = { rasterId: rasterKlasse.id, mindestSmileys: mindest, zusatz: [...z] };
     speichern();
   }
+  // Gewichte je Kriterium für diese Klasse (E113), Kachel „Vorschlag“ oder ×-Chip öffnet das Fenster
+  let gewOffen = $state(false);
+  const aktiv = $derived(raster.bereiche.flatMap((b) => b.kriterien).filter((kr) => kriteriumAktiv(kurs, kr)));
+  const gewSumme = $derived(aktiv.reduce((a, kr) => a + kriteriumGewicht(kurs, kr), 0));
+  function gewSetzen(kid: string, w: number) {
+    const g = { ...(kurs.muendlich?.gewichte ?? {}) };
+    g[kid] = Math.max(0, Math.min(5, Math.round(w * 2) / 2));
+    kurs.muendlich = { ...kurs.muendlich, rasterId: rasterKlasse.id, mindestSmileys: mindest, gewichte: g };
+    speichern();
+  }
+  function gewStandard() {
+    if (!kurs.muendlich?.gewichte) return;
+    const alt = kurs.muendlich.gewichte;
+    delete kurs.muendlich.gewichte;
+    speichern();
+    zeige('Gewichte zurückgesetzt', () => { kurs.muendlich!.gewichte = alt; speichern(); });
+  }
+  const gz = (g: number) => g.toLocaleString('de-DE', { maximumFractionDigits: 1 });
+  const verspaetet = (t: string) => /zu spät/.test(t);
   function rasterSetzen(id: string) {
     kurs.muendlich = { ...kurs.muendlich, rasterId: id, mindestSmileys: mindest };
     if (akt?.ein && akt.ein.rasterId !== id) zeige('Vorhandene Einschätzungen behalten ihr bisheriges Raster');
@@ -122,7 +141,7 @@
       <p class="klein leise">Die Monatsnote kommt aus den Smileys. Wer in {monatsNameLang(monat)} weniger als {mindest} hat, bekommt hier das Raster angeboten; du kannst es aber für alle nutzen. Standard: {STANDARD_MINDEST}.</p>
     </section>
 
-    <div class="haupt">
+    <div class="spalten">
       <section class="karte liste">
         <div class="zeile"><h2 class="raum">Schüler</h2><button class="pille" aria-pressed={nurWenig} onclick={() => (nurWenig = !nurWenig)}>Zu wenige Smileys <b>{zuWenig}</b></button></div>
         <ul>
@@ -149,12 +168,12 @@
             {#if sm.length}<span class="smileys">{#each sm.slice(0, 8) as e (e.id)}<Smiley stufe={e.stufe} groesse={20} />{/each}{#if sm.length > 8}<span class="klein leise">+{sm.length - 8}</span>{/if}</span>{/if}
           </div>
           {#each raster.bereiche as b (b.name)}
-            <h3>{b.name} <span class="leise">· Gewicht {zahl(b.gewicht)}</span></h3>
+            <h3>{b.name}</h3>
             {#each b.kriterien as kr (kr.id)}
               {@const bl = belege(d, bausteine, kurs.id, akt.s.id, monat, kr)}
               {@const an = kriteriumAktiv(kurs, kr)}
               <div class="krit" class:aus={!an}>
-                <div class="kname"><b>{kr.name}</b>{#if kr.optional}<button class="pille mini" aria-pressed={an} onclick={() => zusatzUmschalten(kr.id)}>{an ? 'eingeschaltet' : 'einschalten'}</button>{/if}{#if bl.length && an}<span class="klein leise block">{bl.join(' · ')}</span>{/if}</div>
+                <div class="kname"><b>{kr.name}</b>{#if an}<button class="gchip" onclick={() => (gewOffen = true)} title="Gewicht ändern">×{gz(kriteriumGewicht(kurs, kr))}</button>{/if}{#if kr.optional}<button class="pille mini" aria-pressed={an} onclick={() => zusatzUmschalten(kr.id)}>{an ? 'eingeschaltet' : 'einschalten'}</button>{/if}{#if bl.length && an}<span class="klein leise block">{#each bl as t, i}{i ? ' · ' : ''}<span class:spaet={verspaetet(t)}>{t}</span>{/each}</span>{/if}</div>
                 <div class="stufen" role="group" aria-label={kr.name}>
                   {#each [4, 3, 2, 1] as st, i}
                     <button class="stufe" disabled={!an} aria-pressed={an && stufen[kr.id] === st} title={STUFE_NAME[st]} onclick={() => waehle(kr.id, st as 1 | 2 | 3 | 4)}>
@@ -170,8 +189,10 @@
 
       {#if akt}
         <aside class="karte vorschlag">
-          <h2>Vorschlag</h2>
-          <div class="gross zahl">{anzeige(erg.note)}</div>
+          <button class="kachel" onclick={() => (gewOffen = true)} title="Gewichte ändern">
+            <span class="zeile"><h2 class="raum">Vorschlag</h2><span class="klein akzent">Gewichte ›</span></span>
+            <span class="gross zahl">{anzeige(erg.note)}</span>
+          </button>
           <p class="klein leise">{erg.offen ? `${erg.offen} Kriterien noch offen, sie zählen nicht mit.` : 'Alle Kriterien eingeschätzt.'}</p>
           <button class="knopf leise klein" aria-expanded={wegOffen} onclick={() => (wegOffen = !wegOffen)}>{wegOffen ? '▾' : '▸'} Rechenweg</button>
           {#if wegOffen}<ol class="weg klein zahl">{#each erg.weg as w}<li>{w}</li>{/each}</ol>{/if}
@@ -183,6 +204,28 @@
       {/if}
     </div>
   </div>
+
+  {#if gewOffen}
+    <div class="hintergrund" role="presentation" onclick={(e) => e.target === e.currentTarget && (gewOffen = false)}>
+      <div class="schweben dialog" role="dialog" aria-label="Gewichte">
+        <h2>Gewichte · {kurs.name}</h2>
+        <table class="gtab">
+          <tbody>
+            {#each aktiv as kr (kr.id)}
+              {@const g = kriteriumGewicht(kurs, kr)}
+              <tr>
+                <td>{kr.name}</td>
+                <td class="zeile"><button class="knopf leise rund" onclick={() => gewSetzen(kr.id, g - 0.5)} aria-label="weniger">−</button><b class="zahl gwert">{gz(g)}</b><button class="knopf leise rund" onclick={() => gewSetzen(kr.id, g + 0.5)} aria-label="mehr">+</button></td>
+                <td class="zahl leise">{gewSumme ? Math.round((g / gewSumme) * 100) : 0} %</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <p class="klein leise hilfe">So zählt es: Die Note ist der gewichtete Durchschnitt der Stufen. Gewicht 2 zählt doppelt so viel wie 1, Gewicht 0 lässt das Kriterium weg. Die Prozente zeigen den Anteil an der Raster-Note. Die Gewichte gelten nur für diese Klasse; optionale Kriterien wie Hausaufgaben zählen erst, wenn du sie einschaltest.</p>
+        <div class="gfuss"><button class="knopf leise" onclick={gewStandard} disabled={!kurs.muendlich?.gewichte}>Standard</button><button class="knopf haupt" onclick={() => (gewOffen = false)}>Fertig</button></div>
+      </div>
+    </div>
+  {/if}
 {/if}
 
 <style>
@@ -190,7 +233,7 @@
   .wrap { flex-wrap: wrap; align-items: flex-end; }
   .einst p { margin: 10px 0 0; }
   .klein-feld input { min-height: 34px; }
-  .haupt { display: grid; grid-template-columns: 280px 1fr 260px; gap: 16px; align-items: start; }
+  .spalten { display: grid; grid-template-columns: 280px 1fr 260px; gap: 16px; align-items: start; }
   .liste ul { list-style: none; margin: 8px 0; padding: 0; }
   .sz { width: 100%; display: flex; align-items: center; gap: 8px; text-align: left; padding: 8px; min-height: 44px; border-radius: var(--leo-r-m); border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
   .sz[aria-current='true'] { background: var(--leo-auswahl); }
@@ -207,17 +250,28 @@
   .krit.aus .stufen { opacity: .4; }
   .stufe:disabled { cursor: default; }
   .mini { min-height: 26px; padding: 0 10px; font-size: var(--leo-text-xs); margin-left: 8px; }
+  .gchip { margin-left: 6px; border: 1px solid var(--leo-linie); background: var(--leo-flaeche-leise); color: var(--leo-akzent); border-radius: var(--leo-r-pill); font: inherit; font-size: var(--leo-text-xs); font-weight: 600; padding: 1px 7px; cursor: pointer; }
+  .spaet { color: var(--leo-warnung); font-weight: 600; }
+  .kachel { display: flex; flex-direction: column; gap: 6px; text-align: left; background: none; border: 1px solid transparent; border-radius: var(--leo-r-m); padding: 6px; margin: -6px; font: inherit; color: inherit; cursor: pointer; }
+  .kachel:hover { border-color: var(--leo-linie); background: var(--leo-flaeche-leise); }
+  .akzent { color: var(--leo-akzent); font-weight: 600; }
+  .gtab { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .gtab td { padding: 6px 4px; border-bottom: 1px solid var(--leo-linie-fein); }
+  .rund { min-width: 40px; justify-content: center; }
+  .gwert { min-width: 32px; text-align: center; }
+  .hilfe { line-height: 1.5; }
+  .gfuss { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
   .smileys { display: inline-flex; gap: 2px; align-items: center; }
   .vorschlag { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 120px; }
-  .vorschlag .knopf { white-space: normal; display: block; width: 100%; text-align: center; height: auto; min-height: 44px; padding-block: 8px; line-height: 1.25; }
+  .vorschlag .knopf { white-space: normal; justify-content: center; text-align: center; height: auto; min-height: 44px; padding-block: 8px; line-height: 1.25; }
   .liste .pille { white-space: nowrap; }
   .gross { font-size: 40px; font-weight: 700; line-height: 1; }
   .weg { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
   .vorschlag p { margin: 0; }
-  @media (max-width: 1100px) { .haupt { grid-template-columns: 240px 1fr; } .vorschlag { grid-column: 1 / -1; position: static; } }
+  @media (max-width: 1100px) { .spalten { grid-template-columns: 240px 1fr; } .vorschlag { grid-column: 1 / -1; position: static; } }
   @media (max-width: 720px) {
     .seite { padding: 16px; }
-    .haupt { grid-template-columns: 1fr; }
+    .spalten { grid-template-columns: 1fr; }
     .krit { grid-template-columns: 1fr; }
     .stufen { grid-template-columns: repeat(2, 1fr); }
   }

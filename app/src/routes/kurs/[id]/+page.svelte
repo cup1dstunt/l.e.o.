@@ -4,7 +4,7 @@
   import { schuelerVon, name, alter, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { nachschreibLage, fallSchluessel } from '$lib/nachschreiben';
   import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, warnungen } from '$lib/rechnen';
-  import { einschaetzungVon, rasterErgebnis, rasterDerEinschaetzung, mindestSmileys, kriteriumAktiv } from '$lib/raster';
+  import { einschaetzungVon, rasterErgebnis, rasterDerEinschaetzung, mindestSmileys } from '$lib/raster';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import SchnittKachel from '$lib/ui/SchnittKachel.svelte';
   import WasWaereWenn from '$lib/ui/WasWaereWenn.svelte';
@@ -169,7 +169,7 @@
       const stufen = d.mitarbeit.filter((e) => e.kursId === kurs.id && e.schuelerId === s.id && e.zeit.startsWith(monat)).map((e) => e.stufe);
       // Raster-Einschätzung des Monats geht vor (E110)
       const ein = einschaetzungVon(kurs, monat, s.id);
-      const r = ein ? rasterErgebnis(rasterDerEinschaetzung(d, kurs, ein), ein.stufen, kurs.profil, (kr) => kriteriumAktiv(kurs, kr)) : null;
+      const r = ein ? rasterErgebnis(rasterDerEinschaetzung(d, kurs, ein), ein.stufen, kurs.profil, kurs) : null;
       const v = r?.note != null ? { note: r.smiley!, wert: r.note } : monatsVorschlag(kurs.profil, stufen);
       return { s, n: stufen.length, v, raster: r?.note != null, wenig: stufen.length < mindestSmileys(kurs) };
     })
