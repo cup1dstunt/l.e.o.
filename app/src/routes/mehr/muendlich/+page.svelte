@@ -2,7 +2,7 @@
   // Mündliche Leistungen einrichten (E110): eigene Textbausteine mit Kriterium, eigene Kriterienraster je Fach.
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { BAUSTEINE, STUFEN, bausteineVon } from '$lib/bausteine';
-  import { VORLAGEN, alleRaster, rasterKopie } from '$lib/raster';
+  import { VORLAGEN, alleRaster, rasterKopie, MAX_KRITERIEN } from '$lib/raster';
   import type { Raster, Stufe } from '$lib/typen';
 
   const d = app.d!;
@@ -63,6 +63,7 @@
     speichern();
     zeige(`„${r.name}“ gelöscht`, () => { l.splice(i, 0, r); speichern(); });
   }
+  const anzahl = (r: Raster) => r.bereiche.reduce((a, b) => a + b.kriterien.filter((k) => !k.optional).length, 0);
   function kriteriumHinzu(r: Raster, bi: number) {
     r.bereiche[bi].kriterien.push({ id: neueId(), name: 'Neues Kriterium', stufen: ['', '', '', ''] });
     speichern();
@@ -114,7 +115,7 @@
       <div class="raster">
         <div class="zeile wrap">
           <button class="knopf leise kopf raum" aria-expanded={offen === r.id} onclick={() => (offen = offen === r.id ? null : r.id)}>
-            {offen === r.id ? '▾' : '▸'} <b>{r.name}</b> <span class="klein leise">{r.fach || 'fachübergreifend'} · {r.bereiche.reduce((a, b) => a + b.kriterien.length, 0)} Kriterien{r.vorlage ? ' · Vorlage' : ''}{v.length ? ` · in ${v.join(', ')}` : ''}</span>
+            {offen === r.id ? '▾' : '▸'} <b>{r.name}</b> <span class="klein leise">{r.fach || 'fachübergreifend'} · {anzahl(r)} Kriterien{r.vorlage ? ' · Vorlage' : ''}{v.length ? ` · in ${v.join(', ')}` : ''}</span>
           </button>
           <button class="knopf leise" onclick={() => kopieren(r)}>Kopieren</button>
           {#if !r.vorlage}<button class="knopf leise warn" onclick={() => rasterWeg(r)}>Löschen</button>{/if}
@@ -123,7 +124,7 @@
           {#if r.vorlage}
             {#each r.bereiche as b}
               <h3>{b.name} · Gewicht {b.gewicht}</h3>
-              <ul class="klein">{#each b.kriterien as k}<li><b>{k.name}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
+              <ul class="klein">{#each b.kriterien as k}<li><b>{k.name}{k.optional ? ' (optional)' : ''}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
             {/each}
             <p class="klein leise">Vorlagen sind fest. Zum Ändern kopieren.</p>
           {:else}
@@ -140,7 +141,8 @@
                 </div>
                 {#each b.kriterien as k, ki (k.id)}
                   <div class="krit">
-                    <div class="zeile"><input class="eingabe raum" bind:value={k.name} oninput={speichern} aria-label="Kriterium" /><button class="x" onclick={() => { b.kriterien.splice(ki, 1); speichern(); }} aria-label="Kriterium entfernen">×</button></div>
+                    <div class="zeile"><input class="eingabe raum" bind:value={k.name} oninput={speichern} aria-label="Kriterium" />
+                      <label class="klein opt"><input type="checkbox" checked={!!k.optional} onchange={(e) => { if ((e.currentTarget as HTMLInputElement).checked) k.optional = true; else delete k.optional; speichern(); }} /> optional (je Klasse zuschalten)</label><button class="x" onclick={() => { b.kriterien.splice(ki, 1); speichern(); }} aria-label="Kriterium entfernen">×</button></div>
                     <div class="stufen">
                       {#each [4, 3, 2, 1] as st, i}
                         <label class="feld"><span>Stufe {st}</span><textarea rows="2" bind:value={k.stufen[i]} oninput={speichern}></textarea></label>
@@ -148,10 +150,11 @@
                     </div>
                   </div>
                 {/each}
-                <button class="knopf leise" onclick={() => kriteriumHinzu(r, bi)}>+ Kriterium</button>
+                <button class="knopf leise" disabled={anzahl(r) >= MAX_KRITERIEN} onclick={() => kriteriumHinzu(r, bi)}>+ Kriterium</button>
               </div>
             {/each}
             <button class="knopf leise" onclick={() => bereichHinzu(r)}>+ Bereich</button>
+            <p class="klein leise">Höchstens {MAX_KRITERIEN} feste Kriterien, damit eine Einschätzung etwa 10 Sekunden dauert. Optionale (z. B. Hausaufgaben) zählen nicht mit.</p>
           {/if}
         {/if}
       </div>
@@ -178,6 +181,7 @@
   .stufen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   h3 { font-size: var(--leo-text-s); color: var(--leo-leise); margin: 10px 0 4px; }
   ul { margin: 0; padding-left: 18px; line-height: 1.5; }
+  .opt { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; color: var(--leo-leise); }
   .warn { color: var(--leo-warnung); }
   @media (max-width: 720px) { .seite { padding: 16px; } .stufen { grid-template-columns: 1fr 1fr; } td:first-child { width: auto; } }
 </style>

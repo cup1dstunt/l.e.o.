@@ -1,5 +1,5 @@
 // Prüft das Kriterienraster der mündlichen Leistungen (FB7, E110). Aufruf: npm test
-import { VORLAGEN, rasterErgebnis, belege, monatsSpalte, rasterFuer, rasterKopie, mindestSmileys, rasterDerEinschaetzung } from '../src/lib/raster.ts';
+import { VORLAGEN, rasterErgebnis, belege, monatsSpalte, rasterFuer, rasterKopie, mindestSmileys, rasterDerEinschaetzung, kriteriumAktiv, MAX_KRITERIEN } from '../src/lib/raster.ts';
 import { BAUSTEINE } from '../src/lib/bausteine.ts';
 import { kursMischen } from '../src/lib/abgleich.ts';
 import type { Kurs, Raster } from '../src/lib/typen.ts';
@@ -13,7 +13,7 @@ function gleich(name: string, ist: unknown, soll: unknown) {
 
 const r: Raster = {
   id: 't', name: 'Test', fach: '', bereiche: [
-    { name: 'A', gewicht: 2, kriterien: [{ id: 'a1', name: 'Beiträge', stufen: ['', '', '', ''] }, { id: 'a2', name: 'X', stufen: ['', '', '', ''] }] },
+    { name: 'A', gewicht: 2, kriterien: [{ id: 'a1', name: 'Qualität der Beiträge', stufen: ['', '', '', ''] }, { id: 'a2', name: 'X', stufen: ['', '', '', ''] }] },
     { name: 'B', gewicht: 1, kriterien: [{ id: 'b1', name: 'Pünktlichkeit', stufen: ['', '', '', ''] }] }
   ]
 };
@@ -36,11 +36,20 @@ gleich('alles 1 FOS', rasterErgebnis(r, { a1: 1, a2: 1, b1: 1 }, 'FOS').note, 2)
   gleich('nur ein Kriterium', [e.note, e.offen], [1, 2]);
   gleich('nichts gewählt', rasterErgebnis(r, {}, 'OSZ').note, null);
 }
-// Vorlagen vollständig: jedes Kriterium hat 4 Stufentexte, ids je Raster eindeutig
+// Optionale Kriterien zählen nur eingeschaltet (E112)
+{
+  const ro: Raster = { ...r, bereiche: [r.bereiche[0], { name: 'B', gewicht: 1, kriterien: [{ id: 'ha', name: 'Hausaufgaben', stufen: ['', '', '', ''], optional: true }] }] };
+  gleich('optional aus', rasterErgebnis(ro, { a1: 4, a2: 4, ha: 1 }, 'OSZ').note, 1);
+  gleich('optional an', rasterErgebnis(ro, { a1: 4, a2: 4, ha: 1 }, 'OSZ', (kr) => kriteriumAktiv({ muendlich: { rasterId: 't', mindestSmileys: 3, zusatz: ['ha'] } }, kr)).note, 2);
+}
+// Vorlagen vollständig und kurz: höchstens 5 feste Kriterien, Beteiligung und Qualität getrennt: jedes Kriterium hat 4 Stufentexte, ids je Raster eindeutig
 for (const v of VORLAGEN) {
   const ks = v.bereiche.flatMap((b) => b.kriterien);
   gleich(`${v.name} Stufentexte`, ks.every((k) => k.stufen.length === 4 && k.stufen.every((t) => t.length > 0)), true);
   gleich(`${v.name} ids eindeutig`, new Set(ks.map((k) => k.id)).size, ks.length);
+  gleich(`${v.name} höchstens ${MAX_KRITERIEN}`, ks.filter((k) => !k.optional).length <= MAX_KRITERIEN, true);
+  gleich(`${v.name} Häufigkeit und Qualität`, ['beteiligung', 'qualitaet'].every((id) => ks.some((k) => k.id === id)), true);
+  gleich(`${v.name} Hausaufgaben optional`, ks.find((k) => k.id === 'hausaufgaben')?.optional, true);
 }
 
 // Belege: Bausteine mit passendem Kriterium im Monat, Verspätungen bei Pünktlichkeit
@@ -53,7 +62,7 @@ for (const v of VORLAGEN) {
     ],
     verspaetungen: [{ id: 'v', kursId: 'k', schuelerId: 's', datum: '2026-11-04', ankunft: '08:10', minuten: 10 }]
   };
-  gleich('Belege Beiträge', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[0]), ['2× „bringt eigene Ideen ein“']);
+  gleich('Belege Qualität', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[0]), ['2× „bringt eigene Ideen ein“']);
   gleich('Belege Pünktlichkeit', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[1].kriterien[0]), ['1 Verspätung, 10 Min.']);
   gleich('keine Belege', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[1]), []);
 }

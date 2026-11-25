@@ -8,7 +8,7 @@
   import { bausteineVon } from '$lib/bausteine';
   import {
     alleRaster, rasterFuer, mindestSmileys, rasterErgebnis, einschaetzungSchluessel, smileysImMonat, belege,
-    monatsSpalte, monatsNameLang, STANDARD_MINDEST, rasterDerEinschaetzung
+    monatsSpalte, monatsNameLang, STANDARD_MINDEST, rasterDerEinschaetzung, kriteriumAktiv
   } from '$lib/raster';
   import type { Schueler } from '$lib/typen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
@@ -44,7 +44,7 @@
   // Eine vorhandene Einschätzung bleibt bei ihrem Raster, auch wenn die Klasse inzwischen ein anderes nutzt
   const raster = $derived(rasterDerEinschaetzung(d, kurs, akt?.ein));
   const stufen = $derived(akt?.ein?.rasterId === raster.id ? akt.ein.stufen : {});
-  const erg = $derived(rasterErgebnis(raster, stufen, kurs.profil));
+  const erg = $derived(rasterErgebnis(raster, stufen, kurs.profil, (kr) => kriteriumAktiv(kurs, kr)));
   let wegOffen = $state(false);
 
   function waehle(kid: string, st: 1 | 2 | 3 | 4) {
@@ -78,13 +78,19 @@
     const next = [...zeilen.slice(i + 1), ...zeilen.slice(0, i)].find((z) => z.wenig && !z.ein && z.steht === undefined);
     if (next) gewaehlt = next.s.id;
   }
+  function zusatzUmschalten(kid: string) {
+    const z = new Set(kurs.muendlich?.zusatz ?? []);
+    if (z.has(kid)) z.delete(kid); else z.add(kid);
+    kurs.muendlich = { rasterId: rasterKlasse.id, mindestSmileys: mindest, zusatz: [...z] };
+    speichern();
+  }
   function rasterSetzen(id: string) {
-    kurs.muendlich = { rasterId: id, mindestSmileys: mindest };
+    kurs.muendlich = { ...kurs.muendlich, rasterId: id, mindestSmileys: mindest };
     if (akt?.ein && akt.ein.rasterId !== id) zeige('Vorhandene Einschätzungen behalten ihr bisheriges Raster');
     speichern();
   }
   function mindestSetzen(n: number) {
-    kurs.muendlich = { rasterId: rasterKlasse.id, mindestSmileys: n };
+    kurs.muendlich = { ...kurs.muendlich, rasterId: rasterKlasse.id, mindestSmileys: n };
     speichern();
   }
   const STUFE_NAME = ['', 'Stufe 1', 'Stufe 2', 'Stufe 3', 'Stufe 4'];
@@ -146,11 +152,12 @@
             <h3>{b.name} <span class="leise">· Gewicht {zahl(b.gewicht)}</span></h3>
             {#each b.kriterien as kr (kr.id)}
               {@const bl = belege(d, bausteine, kurs.id, akt.s.id, monat, kr)}
-              <div class="krit">
-                <div class="kname"><b>{kr.name}</b>{#if bl.length}<span class="klein leise block">{bl.join(' · ')}</span>{/if}</div>
+              {@const an = kriteriumAktiv(kurs, kr)}
+              <div class="krit" class:aus={!an}>
+                <div class="kname"><b>{kr.name}</b>{#if kr.optional}<button class="pille mini" aria-pressed={an} onclick={() => zusatzUmschalten(kr.id)}>{an ? 'eingeschaltet' : 'einschalten'}</button>{/if}{#if bl.length && an}<span class="klein leise block">{bl.join(' · ')}</span>{/if}</div>
                 <div class="stufen" role="group" aria-label={kr.name}>
                   {#each [4, 3, 2, 1] as st, i}
-                    <button class="stufe" aria-pressed={stufen[kr.id] === st} title={STUFE_NAME[st]} onclick={() => waehle(kr.id, st as 1 | 2 | 3 | 4)}>
+                    <button class="stufe" disabled={!an} aria-pressed={an && stufen[kr.id] === st} title={STUFE_NAME[st]} onclick={() => waehle(kr.id, st as 1 | 2 | 3 | 4)}>
                       <b>{st}</b> <span>{kr.stufen[i]}</span>
                     </button>
                   {/each}
@@ -197,9 +204,12 @@
   .stufen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .stufe { text-align: left; border: 1px solid var(--leo-linie); background: var(--leo-taste); border-radius: var(--leo-r-s); padding: 6px 8px; min-height: 44px; font: inherit; font-size: var(--leo-text-s); color: var(--leo-tinte); cursor: pointer; line-height: 1.3; }
   .stufe[aria-pressed='true'] { background: var(--leo-akzent); border-color: var(--leo-akzent); color: var(--leo-auf-akzent); }
+  .krit.aus .stufen { opacity: .4; }
+  .stufe:disabled { cursor: default; }
+  .mini { min-height: 26px; padding: 0 10px; font-size: var(--leo-text-xs); margin-left: 8px; }
   .smileys { display: inline-flex; gap: 2px; align-items: center; }
   .vorschlag { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 120px; }
-  .vorschlag .knopf { white-space: normal; text-align: center; }
+  .vorschlag .knopf { white-space: normal; display: block; width: 100%; text-align: center; height: auto; min-height: 44px; padding-block: 8px; line-height: 1.25; }
   .liste .pille { white-space: nowrap; }
   .gross { font-size: 40px; font-weight: 700; line-height: 1; }
   .weg { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }

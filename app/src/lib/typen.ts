@@ -70,6 +70,7 @@ export interface Kurs {
 export interface MuendlichEinstellung {
   rasterId: string;
   mindestSmileys: number; // weniger Smileys im Monat = L.E.O. bietet das Raster an
+  zusatz?: string[]; // eingeschaltete optionale Kriterien, z. B. Hausaufgaben (E112)
 }
 
 /** Kriterienraster (E110): Bereiche mit Gewicht, Kriterien mit 4 Stufen (Index 0 = Stufe 4 = beste). */
@@ -91,6 +92,7 @@ export interface RasterKriterium {
   id: string;
   name: string;
   stufen: [string, string, string, string]; // Stufe 4, 3, 2, 1 (Beschreibung, Ich-Form für die spätere Selbsteinschätzung)
+  optional?: true; // nur wenn die Klasse es einschaltet (z. B. Hausaufgaben, E112)
 }
 
 /** Eine Einschätzung mit dem Raster für einen Schüler und einen Monat. */

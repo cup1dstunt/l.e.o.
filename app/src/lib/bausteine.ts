@@ -4,20 +4,20 @@
 import type { Baustein, Einstellungen, Stufe } from './typen.ts';
 
 export const BAUSTEINE: Baustein[] = [
-  { text: 'hilft Mitschülern', stufe: 1, kriterium: 'Zusammenarbeit' },
+  { text: 'hilft Mitschülern', stufe: 1, kriterium: 'Arbeitsverhalten' },
   { text: 'sehr gut vorbereitet', stufe: 1, kriterium: 'Hausaufgaben' },
-  { text: 'bringt eigene Ideen ein', stufe: 1, kriterium: 'Beiträge' },
+  { text: 'bringt eigene Ideen ein', stufe: 1, kriterium: 'Qualität der Beiträge' },
   { text: 'beteiligt sich aktiv', stufe: 2, kriterium: 'Beteiligung' },
-  { text: 'Beiträge meistens treffend', stufe: 2, kriterium: 'Beiträge' },
+  { text: 'Beiträge meistens treffend', stufe: 2, kriterium: 'Qualität der Beiträge' },
   { text: 'ruhig, wenig Beteiligung', stufe: 3, kriterium: 'Beteiligung' },
-  { text: 'Beitragsqualität schwankt', stufe: 3, kriterium: 'Beiträge' },
-  { text: 'wirkt abgelenkt', stufe: 4, kriterium: 'Konzentration' },
-  { text: 'arbeitet langsam', stufe: 4, kriterium: 'Konzentration' },
-  { text: 'Material fehlt zu Beginn', stufe: 4, kriterium: 'Material' },
-  { text: 'spricht dazwischen', stufe: 4, kriterium: 'Konzentration' },
-  { text: 'stört den Unterricht', stufe: 5, kriterium: 'Konzentration' },
-  { text: 'Handy genutzt', stufe: 5, kriterium: 'Konzentration' },
-  { text: 'schläft', stufe: 5, kriterium: 'Konzentration' }
+  { text: 'Beitragsqualität schwankt', stufe: 3, kriterium: 'Qualität der Beiträge' },
+  { text: 'wirkt abgelenkt', stufe: 4, kriterium: 'Arbeitsverhalten' },
+  { text: 'arbeitet langsam', stufe: 4, kriterium: 'Arbeitsverhalten' },
+  { text: 'Material fehlt zu Beginn', stufe: 4, kriterium: 'Arbeitsverhalten' },
+  { text: 'spricht dazwischen', stufe: 4, kriterium: 'Arbeitsverhalten' },
+  { text: 'stört den Unterricht', stufe: 5, kriterium: 'Arbeitsverhalten' },
+  { text: 'Handy genutzt', stufe: 5, kriterium: 'Arbeitsverhalten' },
+  { text: 'schläft', stufe: 5, kriterium: 'Arbeitsverhalten' }
 ];
 
 export const STUFEN: { stufe: Stufe; name: string }[] = [
