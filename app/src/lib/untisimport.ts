@@ -114,6 +114,8 @@ export interface Paket {
   fehlzeiten: { key: string; untisId: number; datum: string; beginn: string; stunden: number; status: Fehlzeit['status']; grund: string }[];
   verspaetungen: { key: string; untisId: number; datum: string; ankunft: string; minuten: number }[];
   ausfaelle: { key: string; datum: string; beginn: string }[];
+  termine?: { key: string; datum: string; beginn: string; ende: string }[]; // alle eigenen Stunden im Schuljahr (Semesterplanung)
+  ferien?: { name: string; von: string; bis: string }[]; // Ferien und Feiertage (getHolidays)
   stammdaten: string[]; // CSV-Texte, falls der Bericht automatisch abrufbar war
 }
 
@@ -135,6 +137,15 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   const faecher = lang(faecherL);
   const raeume = name(alsListe(await sz.r('getRooms')));
 
+  // Ferien und Feiertage für die Semesterplanung (E114); fehlen sie, nimmt L.E.O. Beispielwerte
+  let ferien: Paket['ferien'] = [];
+  try {
+    ferien = (alsListe(await sz.r('getHolidays')) as any[])
+      .filter((f) => f?.startDate && f?.endDate)
+      .map((f) => ({ name: String(f.longName || f.name || 'frei'), von: isoAusUntis(f.startDate), bis: isoAusUntis(f.endDate) }))
+      .filter((f) => f.bis >= isoAusUntis(von) && f.von <= isoAusUntis(bis));
+  } catch { /* ohne Ferien weiter */ }
+
   melde('Eigener Stundenplan im Halbjahr');
   const sp = alsListe(await sz.r('getTimetable', {
     options: {
@@ -152,6 +163,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   const stundenNachSchluessel = new Map<string, { key: string; start: number; ende: number; lehrer: Set<string> }[]>();
   const muster = new Map<string, Paket['stunden'][number]>();
   const ausfaelle: Paket['ausfaelle'] = [];
+  const termine: Paket['termine'] = [];
   const in14 = untisDatumAus(new Date(heute.getTime() + 14 * 864e5));
   const vor14 = untisDatumAus(new Date(heute.getTime() - 14 * 864e5));
 
@@ -175,6 +187,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     const liste = stundenNachSchluessel.get(tagKey) ?? [];
     liste.push({ key, start: s.startTime, ende: s.endTime, lehrer: new Set((s.te ?? []).map((t: any) => t?.name).filter(Boolean).map((n: string) => 'u:' + n)) });
     stundenNachSchluessel.set(tagKey, liste);
+    termine.push({ key, datum: isoAusUntis(s.date), beginn: zeitAusUntis(s.startTime), ende: zeitAusUntis(s.endTime) });
     if (s.code === 'cancelled') {
       ausfaelle.push({ key, datum: isoAusUntis(s.date), beginn: zeitAusUntis(s.startTime) });
       continue;
@@ -280,7 +293,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     kuerzel, von: isoAusUntis(von), bis: isoAusUntis(bis),
     // Einzelne Vertretungsstunden in fremden Klassen sind keine eigenen Klassen: mindestens 3 Stunden im Halbjahr
     kurse: [...kurse.values()].filter((k) => k.anzahl >= 3),
-    schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, stammdaten
+    schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, termine, ferien, stammdaten
   };
 }
 
@@ -390,6 +403,17 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
     kid.set(key, kurs.id);
     for (const i of ids) { const s = d.schueler.find((x) => x.id === i); if (s && !s.klasse) s.klasse = k.klasse; }
   }
+
+  // Echte Termine je Klasse (Semesterplanung, auch Blockwochen und A/B-Wochen)
+  const jeKurs = new Map<string, Set<string>>();
+  for (const t of p.termine ?? []) {
+    const kursId = kid.get(t.key);
+    if (!kursId) continue;
+    if (!jeKurs.has(kursId)) jeKurs.set(kursId, new Set());
+    jeKurs.get(kursId)!.add(`${t.datum}|${t.beginn}|${t.ende}`);
+  }
+  for (const [kursId, z] of jeKurs) { const k = d.kurse.find((x) => x.id === kursId); if (k) k.untisStunden = [...z].sort(); }
+  if (p.ferien?.length) d.einstellungen.ferien = p.ferien;
 
   // Stundenplan (Wochenmuster)
   d.stundenplan = d.stundenplan.filter((s) => s.quelle !== 'untis');
