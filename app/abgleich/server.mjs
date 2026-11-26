@@ -14,7 +14,7 @@ const scrypt = promisify(scryptCb);
 const PORT = Number(process.env.ABGLEICH_PORT ?? 8129);
 const ORDNER = process.env.ABGLEICH_DATEN ?? '/daten';
 const EINLADUNG = process.env.LEO_EINLADUNG ?? '';
-const ARTEN = new Set(['schueler', 'kurse', 'mitarbeit', 'fehlzeiten', 'verspaetungen', 'notizen', 'nachschreiben', 'termine', 'stundenplan', 'einstellungen']);
+const ARTEN = new Set(['schueler', 'kurse', 'mitarbeit', 'fehlzeiten', 'verspaetungen', 'notizen', 'nachschreiben', 'termine', 'material', 'stundenplan', 'einstellungen']);
 const MAX_KOERPER = 16 * 1024 * 1024; // eine Anfrage
 const MAX_SATZ = 4 * 1024 * 1024; // ein Datensatz (z. B. eine Klasse mit allen Noten)
 const MAX_SAETZE = 50_000; // je Konto
@@ -336,6 +336,68 @@ Object.assign(wege, {
   }
 });
 
+// ---------- Dateiinhalte (Dateiablage, V14) ----------
+// Je Konto ein Ordner, je Datei eine .bin mit verschlüsselten Bytes (12 Byte IV + AES-GCM). Lesbar sind nur id und Größe.
+const DATEI_MAX = 16 * 1024 * 1024 - 1024; // eine Datei, passt zu client_max_body_size 16m
+const DATEIEN_GRENZE = Number(process.env.LEO_DATEIEN_MB ?? 2048) * 1024 * 1024; // je Konto
+const dateiOrdner = (kid) => path.join(ORDNER, 'dateien', kid);
+const dateiPfad = (kid, id) => path.join(dateiOrdner(kid), id + '.bin');
+const dateiIdOk = (id) => typeof id === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(id);
+async function groesse(p) { try { return (await fs.stat(p)).size; } catch (e) { if (e.code === 'ENOENT') return -1; throw e; } }
+async function belegt(kid) {
+  let n = 0;
+  try { for (const f of await fs.readdir(dateiOrdner(kid))) if (f.endsWith('.bin')) n += Math.max(0, await groesse(path.join(dateiOrdner(kid), f))); }
+  catch (e) { if (e.code !== 'ENOENT') throw e; }
+  return n;
+}
+function rohKoerper(req, max) {
+  return new Promise((res, rej) => {
+    const teile = [];
+    let n = 0;
+    req.on('data', (c) => {
+      n += c.length;
+      if (n > max) { rej(new Fehler(413, 'Datei zu groß (höchstens 15 MB)')); req.destroy(); return; }
+      teile.push(c);
+    });
+    req.on('end', () => res(Buffer.concat(teile)));
+    req.on('error', rej);
+  });
+}
+/** GET liefert die Bytes, PUT legt ab (gleiche id = ersetzen), DELETE entfernt. id steht in ?id=. */
+async function dateiWeg(req, res, url) {
+  const id = url.searchParams.get('id');
+  if (!dateiIdOk(id)) throw new Fehler(400, 'Datei-id ungültig');
+  const { k } = await ausToken(req);
+  const p = dateiPfad(k.id, id);
+  if (req.method === 'GET') {
+    const n = await groesse(p);
+    if (n < 0) throw new Fehler(404, 'Datei nicht auf dem Server');
+    const inhalt = await fs.readFile(p);
+    res.writeHead(200, { 'content-type': 'application/octet-stream', 'content-length': inhalt.length, 'cache-control': 'no-store' });
+    res.end(inhalt);
+    return;
+  }
+  let antwort;
+  if (req.method === 'PUT') {
+    const inhalt = await rohKoerper(req, DATEI_MAX);
+    if (inhalt.length < 29) throw new Fehler(400, 'Kein verschlüsselter Inhalt'); // IV + Prüfsumme + mindestens 1 Byte
+    antwort = await nacheinander('dateien|' + k.id, async () => {
+      const vorher = Math.max(0, await groesse(p));
+      if ((await belegt(k.id)) - vorher + inhalt.length > DATEIEN_GRENZE) throw new Fehler(507, 'Speicherplatz für Dateien auf dem Server ist voll');
+      await fs.mkdir(dateiOrdner(k.id), { recursive: true });
+      const tmp = p + '.' + randomBytes(4).toString('hex') + '.tmp';
+      await fs.writeFile(tmp, inhalt);
+      await fs.rename(tmp, p);
+      return { ok: true, groesse: inhalt.length };
+    });
+  } else if (req.method === 'DELETE') {
+    await fs.rm(p, { force: true });
+    antwort = { ok: true };
+  } else throw new Fehler(405, 'Methode nicht erlaubt');
+  res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+  res.end(JSON.stringify(antwort));
+}
+
 function koerper(req, max = MAX_KOERPER) {
   return new Promise((res, rej) => {
     const teile = [];
@@ -355,11 +417,13 @@ function koerper(req, max = MAX_KOERPER) {
 
 export function dienst() {
   return http.createServer(async (req, res) => {
-    const pfad = new URL(req.url, 'http://x').pathname;
+    const url = new URL(req.url, 'http://x');
+    const pfad = url.pathname;
     const weg = wege[`${req.method} ${pfad}`];
     let status = 200;
     let antwort;
     try {
+      if (pfad === '/abgleich/datei') return await dateiWeg(req, res, url);
       if (!weg) throw new Fehler(404, 'Unbekannt');
       antwort = await weg(req, req.method === 'POST' ? await koerper(req, pfad.startsWith('/abgleich/selbst/') ? 64 * 1024 : MAX_KOERPER) : {});
     } catch (e) {
