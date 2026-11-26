@@ -170,7 +170,7 @@ export function beispielDaten(heute = new Date()): Daten {
     { id: 't6', datum: '2027-01-20', titel: 'Zeugniskonferenzen, unterrichtsfrei', art: 'frei', unterrichtFrei: true }
   ];
 
-  // Gruppenarbeit (P9, E116): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet
+  // Gruppenarbeit (P9, E118): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet
   {
     const k = kurse[0];
     const t = k.schueler;

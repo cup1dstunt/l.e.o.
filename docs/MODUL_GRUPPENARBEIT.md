@@ -1,4 +1,4 @@
-# Modul Gruppenarbeit (P9, E116)
+# Modul Gruppenarbeit (P9, E118)
 
 Stand 25.11.2026, im Prototyp. Bilder: Projektordner `leo/gruppenarbeit/`.
 

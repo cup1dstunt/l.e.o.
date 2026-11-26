@@ -1,4 +1,4 @@
-// Gruppenarbeit (P9, E116): feste Gruppen über mehrere Stunden bis ein Halbjahr, z. B. Podcast oder Präsentation.
+// Gruppenarbeit (P9, E118): feste Gruppen über mehrere Stunden bis ein Halbjahr, z. B. Podcast oder Präsentation.
 // Die Gruppe bekommt eine Note aus dem Projektraster, jedes Mitglied kann davon abweichen (besser oder schlechter,
 // mit Grund). Die Einzelnoten landen als eine Spalte im Notenbuch, unter Tests/Sonstiges oder mündlich.
 // Reine Logik ohne Oberfläche, deshalb einzeln testbar.

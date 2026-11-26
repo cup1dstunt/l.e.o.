@@ -110,7 +110,7 @@
   }
   function sitzplanAus() { kurs.gruppenAktiv = undefined; speichern(); }
 
-  // Gruppenarbeit (P9, E116): laufendes Projekt zeigen, aktuelle Gruppen als Projekt festhalten
+  // Gruppenarbeit (P9, E118): laufendes Projekt zeigen, aktuelle Gruppen als Projekt festhalten
   const projekt = $derived(laufendesProjekt(kurs, heuteISO()));
   function projektZeigen() {
     if (!projekt) return;

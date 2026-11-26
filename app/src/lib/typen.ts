@@ -64,7 +64,7 @@ export interface Kurs {
   gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
   muendlich?: MuendlichEinstellung; // Raster und Schwelle für die mündlichen Leistungen (FB7, E110)
   einschaetzungen?: Record<string, RasterEinschaetzung>; // Schlüssel `${monat}:${schuelerId}`
-  projekte?: Projekt[]; // Gruppenarbeit über mehrere Stunden (P9, E116), neueste zuerst
+  projekte?: Projekt[]; // Gruppenarbeit über mehrere Stunden (P9, E118), neueste zuerst
   reihen?: Reihe[]; // Semesterplanung (PB16, E114): Unterrichtsreihen in Reihenfolge
   untisStunden?: string[]; // echte Termine laut WebUntis im Schuljahr, `${datum}|${beginn}|${ende}` (auch Blockwochen, A/B-Wochen)
 }
@@ -107,7 +107,7 @@ export interface FreieZeit {
   bis: string;
 }
 
-/** Gruppenarbeit über mehrere Stunden bis ein Halbjahr (P9, E116): feste Gruppen, Gruppennote aus dem Raster, Abweichung je Mitglied. */
+/** Gruppenarbeit über mehrere Stunden bis ein Halbjahr (P9, E118): feste Gruppen, Gruppennote aus dem Raster, Abweichung je Mitglied. */
 export interface Projekt {
   id: string;
   titel: string;
@@ -148,7 +148,7 @@ export interface Raster {
   fach: string; // z. B. „Englisch“, leer = fachübergreifend
   bereiche: RasterBereich[];
   vorlage?: true; // eingebaute Vorlage, nicht änderbar (kopieren geht)
-  art?: 'projekt'; // Projektraster für die Gruppenarbeit (E116), fehlt = mündliche Leistungen
+  art?: 'projekt'; // Projektraster für die Gruppenarbeit (E118), fehlt = mündliche Leistungen
 }
 
 export interface RasterBereich {
@@ -288,7 +288,7 @@ export interface Einstellungen {
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
   bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
   raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
-  projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E116)
+  projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E118)
   ferien?: FreieZeit[]; // Ferien und Feiertage laut WebUntis (getHolidays)
   halbjahrGrenze?: string; // erster Tag des 2. Halbjahres, fehlt = 1. Februar
   module?: { planung?: boolean; kalender?: boolean }; // abschaltbare Module (Projektregel), fehlt = an
