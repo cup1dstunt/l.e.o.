@@ -59,7 +59,7 @@
   ];
   const aktiv = (href: string) =>
     href === '/' ? page.url.pathname === '/' || page.url.pathname.startsWith('/stunde/')
-    : href === '/klassen' ? /^\/(klassen|kurs|planung|sitzplan)/.test(page.url.pathname)
+    : href === '/klassen' ? /^\/(klassen|kurs|planung|sitzplan|auswertung|ewh)/.test(page.url.pathname)
     : page.url.pathname.startsWith(href);
   const lage = $derived(breite < 720 ? 'unten' : (app.d?.einstellungen.navigation ?? 'links'));
 </script>

@@ -25,6 +25,7 @@ export interface Leistung {
   gewicht: number; // relativ innerhalb der Gruppe (E41)
   datum?: string;
   monat?: string; // nur Monatsnoten, Format JJJJ-MM
+  ewh?: { titel: string; geholt: string }; // Noten aus EWH Korrektur übernommen (optionales Modul, N4)
 }
 
 export interface Zelle {
@@ -346,7 +347,7 @@ export interface Einstellungen {
   projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E118)
   ferien?: FreieZeit[]; // Ferien und Feiertage laut WebUntis (getHolidays)
   halbjahrGrenze?: string; // erster Tag des 2. Halbjahres, fehlt = 1. Februar
-  module?: { planung?: boolean; kalender?: boolean; ablage?: boolean }; // abschaltbare Module (Projektregel), fehlt = an
+  module?: { planung?: boolean; kalender?: boolean; ablage?: boolean; statistik?: boolean; ewh?: boolean }; // abschaltbare Module (Projektregel), fehlt = an; ewh fehlt = aus (nur wenige haben EWH). id „statistik“ wie im Modulregister (V15)
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */

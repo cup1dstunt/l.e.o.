@@ -215,6 +215,7 @@
     {#snippet rechts()}
       <button class="pille" onclick={() => (dlg = 'gewichte')}>Profil <b>{kurs.profil}</b> · Gewichte</button>
       <button class="pille" onclick={() => (dlg = 'monat')}>Monatsnote vorschlagen</button>
+      {#if d.einstellungen.module?.ewh === true}<a class="pille" href="/ewh/{kurs.id}">Aus EWH übernehmen</a>{/if}
       <button class="knopf haupt" onclick={() => (dlg = 'neu')}>+ Leistung</button>
     {/snippet}
   </KursKopf>
