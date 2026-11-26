@@ -34,7 +34,10 @@ Grundsätze:
 | Organisation | Stundenplan | Navigationspunkt „Stundenplan“ | – | an |
 | Organisation | Kalender | Monat im Stundenplan, „Demnächst“ auf Heute | Stundenplan | an |
 | Organisation | Semesterplanung | Reiter „Planung“, „Heute geplant“ | – | an |
-| in Vorbereitung | Dateiablage, Statistik, Import | nur als Hinweis „in Vorbereitung“ | – | aus |
+| Organisation | Dateiablage | Material je Reihe, Stunde und Klasse in Planung und Live-Stunde | – | an |
+| Organisation | Auswertung (`statistik`) | Auswertungsreiter je Klasse und Vergleich eigener Klassen | – | an |
+| Organisation | EWH-Übernahme (`ewh`) | Klausurnoten aus einer CSV übernehmen | – | aus |
+| in Vorbereitung | Import | Klassen und Noten aus Excel, UPZ oder iDoceo | – | aus |
 
 Bewusst **kein** Modul:
 - **Anwesenheit erfassen** gehört zur Live-Stunde (antippen, wer fehlt). Das Modul „Fehlzeiten“ ist die Auswertung.
@@ -57,7 +60,7 @@ Abhängigkeiten nur dort eintragen, wo das Modul ohne das andere **gar nicht ers
 ## 4 Navigation
 
 - **Hauptnavigation:** Heute, Stundenplan (Modul), Klassen, Schüler, Mehr, Suche. Fällt ein Punkt weg, rücken die anderen zusammen.
-- **Kurs-Reiter** (Noten, Stunde, Sitzplan, Mündlich, Gruppenarbeit, Anwesenheit, Planung) kommen aus dem Register, Reihenfolge wie dort.
+- **Kurs-Reiter** (Noten, Stunde, Sitzplan, Mündlich, Gruppenarbeit, Anwesenheit, Planung, Auswertung) kommen aus dem Register, Reihenfolge wie dort.
 - **Seiten eines ausgeschalteten Moduls** (alter Link, Lesezeichen, Suche) zeigen statt der Seite eine ruhige Karte: „Sitzplan ist ausgeschaltet. Deine Daten dazu sind noch da.“ mit „Einschalten“ und „Alle Module“. Kein Fehler, keine leere Seite.
 - **Einzelne Kacheln und Knöpfe** fragen `istAn(…)` (z. B. Nachschreiben-Kachel auf Heute, Smileys in der Stunde).
 
@@ -77,10 +80,10 @@ Vorschläge je Startweg (alles andere aus, Kern immer an):
 | Startweg | eingeschaltet | Gedanke |
 |---|---|---|
 | Papier | Live-Stunde, Mündlich, Sitzplan, Zufall, Fehlzeiten, Nachschreiben, Stundenplan | im Raum antippen statt aufschreiben, wenig Neues auf einmal |
-| iDoceo | alles außer Selbsteinschätzung und Semesterplanung | gewohnter Umfang (Notenbuch, Smileys, Sitzplan), dazu Kalender |
+| iDoceo | alles außer Selbsteinschätzung und Semesterplanung | gewohnter Umfang (Notenbuch, Smileys, Sitzplan), dazu Kalender, Dateiablage und Auswertung |
 | UPZ | Live-Stunde, Mündlich, Fehlzeiten, Nachschreiben, Stundenplan | Noten und Fehlzeiten im Mittelpunkt, wie in der UPZ |
 | Eigenes Excel | Live-Stunde, Mündlich, Fehlzeiten, Nachschreiben, Stundenplan, Semesterplanung | Rechnen und Planen, Rechenweg als Ersatz für eigene Formeln |
-| Noch nichts | alles (außer „in Vorbereitung“) | zum Ausprobieren |
+| Noch nichts | reguläre Module einschließlich Dateiablage und Auswertung, ohne Selbsteinschätzung; EWH bleibt optional | zum Ausprobieren |
 
 Gespeichert werden `einstellungen.module` (jede Wahl ausdrücklich), `einstellungen.herkunft` und `einstellungen.eingerichtet`.
 Wer vor dieser Änderung schon Daten hatte, sieht den Assistenten nicht (`eingerichtet` fehlt → gilt als eingerichtet) und behält alles wie bisher.

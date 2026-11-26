@@ -3,6 +3,7 @@
   // Hinweise. Jede Kachel klappt ihre Herkunft auf (E89). Rechnet nur auf dem Gerät, Noten sieht nur die Lehrkraft (E29).
   import { page } from '$app/state';
   import { app } from '$lib/speicher.svelte';
+  import { istAn } from '$lib/module';
   import { schuelerVon, kurzname, name, datumKurz, heuteISO, prozent } from '$lib/hilfen';
   import { zahl } from '$lib/rechnen';
   import { gesamtStatistik, leistungsStatistik, muendlichVerlauf, anwesenheitKurz, hinweise, hinweiseJeSchueler, SPIEGEL_BEREICH, spiegelNote, type Spiegel, type HinweisArt } from '$lib/auswertung';
@@ -24,7 +25,7 @@
   const monate = $derived(muendlichVerlauf(d, kurs, ids));
   const anw = $derived(anwesenheitKurz(d, kurs, ids));
   const hinw = $derived(hinweiseJeSchueler(hinweise(d, kurs, ids, heuteISO())));
-  const ewhAn = $derived(d.einstellungen.module?.ewh === true);
+  const ewhAn = $derived(istAn(d.einstellungen, 'ewh'));
 
   // Kopfkacheln: ein Klick zeigt die Namen dahinter
   let kachel = $state<null | 'unter' | 'kippe' | 'ohne' | 'hoch'>(null);
@@ -43,7 +44,7 @@
 
 {#if kurs}
   <KursKopf {kurs} aktiv="auswertung" />
-  {#if d.einstellungen.module?.statistik === false}
+  {#if !istAn(d.einstellungen, 'statistik')}
     <div class="seite"><p class="karte breit">Das Modul Auswertung ist ausgeschaltet. Deine Daten sind alle noch da. Einschalten unter <a href="/mehr">Mehr › Module</a>.</p></div>
   {:else}
   <div class="seite">

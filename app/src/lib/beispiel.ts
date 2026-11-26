@@ -209,6 +209,6 @@ export function beispielDaten(heute = new Date()): Daten {
 
   return {
     version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, nachschreiben: [], termine, material, stundenplan,
-    einstellungen: { navigation: 'links', theme: 'system', stundenendeHinweis: true, liveAnsicht: 'liste', sperreMinuten: 15 }
+    einstellungen: { navigation: 'links', theme: 'system', stundenendeHinweis: true, liveAnsicht: 'liste', sperreMinuten: 15, eingerichtet: false }
   };
 }

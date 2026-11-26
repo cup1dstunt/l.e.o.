@@ -2,6 +2,8 @@
   import { app, abgleich, speichern, zeige, passwortAendern, kannVerschluesseln } from '$lib/speicher.svelte';
   import { sitzung } from '$lib/sitzung.svelte';
   import SicherungKarte from '$lib/ui/SicherungKarte.svelte';
+  import ModulAuswahl from '$lib/ui/ModulAuswahl.svelte';
+  import { istAn } from '$lib/module';
   import AbgleichKarte from '$lib/ui/AbgleichKarte.svelte';
   const d = app.d!;
   let altPw = $state('');
@@ -16,12 +18,15 @@
     altPw = neuPw = neuPw2 = '';
     zeige('Passwort geändert');
   }
-  // Module abschaltbar (Projektregel): fehlt = an
-  type Modul = 'planung' | 'kalender' | 'ablage' | 'statistik' | 'ewh';
-  // EWH ist ausdrücklich zuzuschalten, weil nur wenige Lehrkräfte EWH Korrektur haben
-  const modulAn = (m: Modul) => (m === 'ewh' ? d.einstellungen.module?.ewh === true : d.einstellungen.module?.[m] !== false);
-  function modul(m: Modul, an: boolean) {
-    d.einstellungen.module = { ...(d.einstellungen.module ?? {}), [m]: an };
+  // Module wählen (Projektregel, docs/MODULE.md): Ausschalten blendet aus, Daten bleiben
+  function moduleAendern(neu: Partial<Record<string, boolean>>, hinweis: string) {
+    const vorher = d.einstellungen.module;
+    d.einstellungen.module = neu;
+    speichern();
+    zeige(hinweis || 'Gespeichert', () => { d.einstellungen.module = vorher; speichern(); });
+  }
+  function einrichtungNeu() {
+    d.einstellungen.eingerichtet = false;
     speichern();
   }
   const grenzeStandard = $derived(`${Number((d.einstellungen.untis?.halbjahrVon || '2026-08-31').slice(0, 4)) + 1}-02-01`);
@@ -71,23 +76,24 @@
     </form>
   </section>
 
-  <section class="karte">
+  <section class="karte" id="module">
     <h2>Module</h2>
-    <p>Was du nicht brauchst, blendest du aus. Die Daten bleiben erhalten.</p>
-    <label class="zeile schalter"><input type="checkbox" checked={modulAn('planung')} onchange={(e) => modul('planung', e.currentTarget.checked)} /> Semesterplanung und Stundenstand (Reiter „Planung“, „Heute geplant“ in der Stunde)</label>
-    <label class="zeile schalter"><input type="checkbox" checked={modulAn('kalender')} onchange={(e) => modul('kalender', e.currentTarget.checked)} /> Kalender (Monat im Stundenplan, „Demnächst“ auf Heute, Termine in der Woche)</label>
-    <label class="zeile schalter"><input type="checkbox" checked={modulAn('statistik')} onchange={(e) => modul('statistik', e.currentTarget.checked)} /> Auswertung (Reiter „Auswertung“ je Klasse, Vergleich aller Klassen unter Klassen)</label>
-    <label class="zeile schalter"><input type="checkbox" checked={modulAn('ewh')} onchange={(e) => modul('ewh', e.currentTarget.checked)} /> Noten aus EWH Korrektur übernehmen (nur wenn du EWH nutzt; Knopf im Notenbuch und in der Auswertung)</label>
-    <label class="zeile schalter"><input type="checkbox" checked={modulAn('ablage')} onchange={(e) => modul('ablage', e.currentTarget.checked)} /> Dateiablage (Material je Reihe, Stunde und Klasse in der Planung und in der Live-Stunde; Reihen-Material braucht die Planung)</label>
+    <p>Was du nicht brauchst, schaltest du aus. Es verschwindet aus Navigation und Reitern, deine Daten bleiben erhalten und kommen beim Einschalten zurück. Die Auswahl gilt auf all deinen Geräten.</p>
+    <ModulAuswahl module={d.einstellungen.module} aendern={moduleAendern} />
+    <div class="zeile wrap"><button class="knopf leise" onclick={einrichtungNeu}>Einrichtung noch einmal durchgehen</button></div>
+    {#if istAn(d.einstellungen, 'planung')}
     <label class="feld grenze"><span>Erster Tag des 2. Halbjahres (für die Blockzählung)</span>
       <input type="date" value={d.einstellungen.halbjahrGrenze || grenzeStandard} onchange={(e) => { d.einstellungen.halbjahrGrenze = e.currentTarget.value || undefined; speichern(); }} /></label>
+    {/if}
   </section>
 
+  {#if istAn(d.einstellungen, 'muendlich')}
   <section class="karte">
     <h2>Mündliche Leistungen</h2>
     <p>Eigene Textbausteine (mit Kriterium) und Kriterienraster je Fach. Das Raster springt ein, wenn in einem Monat zu wenige Smileys da sind.</p>
     <div class="zeile wrap"><a class="knopf" href="/mehr/muendlich">Bausteine und Raster bearbeiten</a></div>
   </section>
+  {/if}
 
   <SicherungKarte />
 

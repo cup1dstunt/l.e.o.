@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { istAn, type ModulId } from '$lib/module';
   // Schülerkarte: jede Kennzahl ist eine Kachel, die ihre Herkunft öffnet (E89).
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
@@ -13,6 +14,7 @@
   import WasWaereWenn from '$lib/ui/WasWaereWenn.svelte';
 
   const d = app.d!;
+  const an = (m: ModulId) => istAn(d.einstellungen, m);
   const s = $derived(d.schueler.find((x) => x.id === page.params.id)!);
   const kurse = $derived(d.kurse.filter((k) => k.schueler.includes(s.id)));
   let kursId = $state(page.url.searchParams.get('kurs') ?? '');
@@ -168,7 +170,7 @@
               <div class="zeilen">
                 <div><span class="leise">Datum</span><b>{l.datum ? datumWt(l.datum) : '–'}</b></div>
                 <div><span class="leise">Eintrag</span><b>{z?.status === 'UE' ? 'UE · zählt als ' + zellWert(kurs.profil, z) : z?.status ? `${z.status === 'E' ? 'E' : 'offen'} · Nachschreiben` : f ? `fehlte (${f.status}) · Nachschreiben` : (z?.wert ?? 'noch leer')}</b></div>
-                {#if f}<div><span class="leise">Nachschreibetermin</span><b><a href="/nachschreiben?{f.termin ? `kurs=${kurs.id}` : `fall=${encodeURIComponent(f.key)}`}">{f.termin ? `${datumWt(f.termin.datum)} ${f.termin.beginn}, Raum ${f.termin.raum}` : 'noch keiner, festlegen ›'}</a></b></div>{/if}
+                {#if f && an('nachschreiben')}<div><span class="leise">Nachschreibetermin</span><b><a href="/nachschreiben?{f.termin ? `kurs=${kurs.id}` : `fall=${encodeURIComponent(f.key)}`}">{f.termin ? `${datumWt(f.termin.datum)} ${f.termin.beginn}, Raum ${f.termin.raum}` : 'noch keiner, festlegen ›'}</a></b></div>{/if}
                 <div><span class="leise">Klassen-Ø</span><b>{zahl(klassenSchnitt(l.id), 1)}</b></div>
                 {#if z?.gewicht !== undefined}<div><span class="leise">Einzelgewicht</span><b>{z.gewicht}</b></div>{/if}
                 {#if z?.stern}<div><span class="leise">★ Vorbehalt</span><b>{z.stern}</b></div>{/if}
@@ -180,6 +182,7 @@
       {/if}
     </section>
 
+    {#if an('anwesenheit')}
     <section class="karte fehl">
       <div class="zeile"><h2 class="raum">Fehlzeiten und Verspätungen</h2><span class="klein leise">{d.einstellungen.untis ? `WebUntis, Stand ${new Date(d.einstellungen.untis.abgerufen).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` : 'E/UE später aus WebUntis'}</span></div>
       <div class="kacheln">
@@ -189,7 +192,7 @@
         <button class="kz" aria-expanded={fehlOffen === 'alle'} onclick={() => (fehlOffen = fehlOffen === 'alle' ? null : 'alle')}><b class="zahl" class:warn={fz.quote > 0.3}>{prozent(fz.quote)}</b><span class="klein leise">{fz.stunden} von {kurs.stundenGehalten} Std.</span></button>
         <button class="kz" aria-expanded={fehlOffen === 'spaet'} onclick={() => (fehlOffen = fehlOffen === 'spaet' ? null : 'spaet')}><b class="zahl">{verspaetungen.length}</b><span class="klein leise">Verspätungen · {minutenGesamt} min</span></button>
       </div>
-      {#if meineFaelle.length}
+      {#if meineFaelle.length && an('nachschreiben')}
         <ul class="nachliste">
           {#each meineFaelle as f (f.key)}
             <li><span class="kennz">{f.status === 'offen' ? '?' : 'E'}</span><span class="raum">{f.leistung.name}{f.leistung.datum ? ` am ${datumWt(f.leistung.datum)}` : ''} verpasst</span>
@@ -227,7 +230,9 @@
       </div>
       {#if muster}<div class="muster klein"><b>Muster:</b> {muster}</div>{/if}
     </section>
+    {/if}
 
+    {#if an('muendlich')}
     <section class="karte mit">
       <div class="zeile"><h2 class="raum">Mündliche Leistungen</h2><span class="klein leise">Smileys als Note · Monat antippen</span></div>
       <p class="klein leise">Verlauf nach Monat · Anteil der Einschätzungen · Tendenz zum Vormonat</p>
@@ -256,6 +261,7 @@
         <div class="chips">{#each haeufig as [t, n]}<span class="chip {chipArt(t)}">{t} <b>{n}×</b></span>{/each}</div>
       {/if}
     </section>
+    {/if}
 
     <section class="karte notizen">
       <h2>Notizen</h2>

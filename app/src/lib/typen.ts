@@ -347,7 +347,9 @@ export interface Einstellungen {
   projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E118)
   ferien?: FreieZeit[]; // Ferien und Feiertage laut WebUntis (getHolidays)
   halbjahrGrenze?: string; // erster Tag des 2. Halbjahres, fehlt = 1. Februar
-  module?: { planung?: boolean; kalender?: boolean; ablage?: boolean; statistik?: boolean; ewh?: boolean }; // abschaltbare Module (Projektregel), fehlt = an; ewh fehlt = aus (nur wenige haben EWH). id „statistik“ wie im Modulregister (V15)
+  module?: Partial<Record<string, boolean>>; // eigene Modulauswahl (module.ts, docs/MODULE.md), fehlt = Standard des Moduls
+  eingerichtet?: boolean; // false = Einrichtungsassistent beim ersten Start noch offen; fehlt = ältere Daten, gilt als eingerichtet
+  herkunft?: 'papier' | 'idoceo' | 'upz' | 'excel' | 'neu'; // womit die Lehrkraft vorher gearbeitet hat (Einrichtung)
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */

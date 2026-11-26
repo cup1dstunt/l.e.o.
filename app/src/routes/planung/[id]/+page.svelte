@@ -9,6 +9,7 @@
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import MaterialListe from '$lib/ui/MaterialListe.svelte';
   import { materialFuer, anzahlFuer, verschieben, reiheEntfernt, gezeigtAm } from '$lib/material';
+  import { istAn } from '$lib/module';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -52,7 +53,7 @@
   }
 
   // Dateiablage (V14): Material je Reihe, je Block und für die ganze Klasse
-  const ablageAn = $derived(d.einstellungen.module?.ablage !== false);
+  const ablageAn = $derived(istAn(d.einstellungen, 'ablage'));
   let offenReihe = $state<string | null>(null);
   let offenBlock = $state<string | null>(null);
   let alleMaterial = $state(false);

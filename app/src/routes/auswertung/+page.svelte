@@ -1,6 +1,7 @@
 <script lang="ts">
   // Alle eigenen Klassen nebeneinander (Modul A, A1). Nur die eigenen Klassen, nur auf diesem Gerät (E29).
   import { app } from '$lib/speicher.svelte';
+  import { istAn } from '$lib/module';
   import { zahl } from '$lib/rechnen';
   import { klassenVergleich } from '$lib/auswertung';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -15,7 +16,7 @@
 <div class="seite">
   <h1>Alle Klassen</h1>
   <p class="leise">Vorläufige Gesamtnoten, Fehlzeiten und mündliche Leistungen deiner Klassen auf einen Blick. Eine Zeile öffnet die Auswertung der Klasse.</p>
-  {#if d.einstellungen.module?.statistik === false}
+  {#if !istAn(d.einstellungen, 'statistik')}
     <p class="karte">Das Modul Auswertung ist ausgeschaltet. Einschalten unter <a href="/mehr">Mehr › Module</a>.</p>
   {:else}
     <div class="karte">

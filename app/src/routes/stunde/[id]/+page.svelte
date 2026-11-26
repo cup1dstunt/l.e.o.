@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { istAn } from '$lib/module';
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId, materialOeffnen } from '$lib/speicher.svelte';
   import { schuelerVon, kurzname, name, heuteISO, minuten, stundenHeute, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
@@ -93,7 +94,12 @@
     return { m, zeit: `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}` };
   }));
   // Sitzplan-Ansicht: Antippen erfasst Anwesenheit oder öffnet die mündlichen Leistungen
-  let sitzModus = $state<'anwesenheit' | 'mitarbeit'>(page.url.searchParams.has('mitarbeit') ? 'mitarbeit' : 'anwesenheit');
+  // Module (module.ts): was aus ist, erscheint in der Stunde nicht; erfasst wird trotzdem nichts anders
+  const muendlichAn = $derived(istAn(d.einstellungen, 'muendlich'));
+  const sitzplanAn = $derived(istAn(d.einstellungen, 'sitzplan'));
+  const zufallAn = $derived(istAn(d.einstellungen, 'zufall'));
+  const ansicht = $derived(sitzplanAn ? d.einstellungen.liveAnsicht : 'liste');
+  let sitzModus = $state<'anwesenheit' | 'mitarbeit'>(page.url.searchParams.has('mitarbeit') && istAn(app.d?.einstellungen, 'muendlich') ? 'mitarbeit' : 'anwesenheit');
   function platzKlick(s: Schueler) {
     if (sitzModus === 'anwesenheit') anwesenheitKlick(s);
     else oeffnen(s);
@@ -155,11 +161,11 @@
   const lernstoff = $derived(kurs?.lernstoff[heute]);
   let uebergangNeu = $state('');
   // Semesterplanung (E114): welcher Block der Reihe ist heute dran? Nur wenn das Modul an ist
-  const planAn = $derived(d.einstellungen.module?.planung !== false);
+  const planAn = $derived(istAn(d.einstellungen, 'planung'));
   const block = $derived(planAn ? blockAm(d, kurs, heute) : undefined);
   let mehrBlock = $state(false);
   // Dateiablage (V14): Material der Stunde, der Reihe und der Klasse; was zuletzt gezeigt wurde
-  const ablageAn = $derived(d.einstellungen.module?.ablage !== false);
+  const ablageAn = $derived(istAn(d.einstellungen, 'ablage'));
   const material = $derived(ablageAn ? materialListe(d.material, kurs.id, heute, block?.reihe?.id) : []);
   const zuletzt = $derived(ablageAn ? zuletztGezeigt(d.material, kurs.id, heute) : null);
   async function wiederOeffnen(m: (typeof d.material)[number]) {
@@ -181,9 +187,9 @@
       uebergangNeu = '';
     }
     speichern();
-    zeige(ohneEintrag && d.einstellungen.stundenendeHinweis ? `Stunde gespeichert · ${ohneEintrag} ohne Mitarbeitseintrag` : 'Stunde gespeichert');
+    zeige(muendlichAn && ohneEintrag && d.einstellungen.stundenendeHinweis ? `Stunde gespeichert · ${ohneEintrag} ohne Mitarbeitseintrag` : 'Stunde gespeichert');
   }
-  let nurMitarbeit = $state(page.url.searchParams.has('mitarbeit'));
+  let nurMitarbeit = $state(page.url.searchParams.has('mitarbeit') && istAn(app.d?.einstellungen, 'muendlich'));
   let nurOhne = $state(false);
 
 </script>
@@ -193,12 +199,16 @@
 {#if kurs}
   <KursKopf {kurs} aktiv="stunde" info="Live-Stunde · Raum {kurs.raum} · {anwesend.length} von {liste.length} da">
     {#snippet rechts()}
+      {#if sitzplanAn}
       <div class="umschalter" role="group" aria-label="Ansicht">
         <button aria-pressed={d.einstellungen.liveAnsicht === 'liste'} onclick={() => { d.einstellungen.liveAnsicht = 'liste'; speichern(); }}>Alphabet</button>
         <button aria-pressed={d.einstellungen.liveAnsicht === 'sitzplan'} onclick={() => { d.einstellungen.liveAnsicht = 'sitzplan'; speichern(); }}>Sitzplan</button>
       </div>
+      {/if}
+      {#if muendlichAn}
       <button class="pille" aria-pressed={nurOhne} onclick={() => (nurOhne = !nurOhne)}>Noch nicht bewertet <b>{ohneEintrag}</b></button>
       <button class="pille" aria-pressed={nurMitarbeit} onclick={() => (nurMitarbeit = !nurMitarbeit)}>Nur Mitarbeit</button>
+      {/if}
       <button class="knopf haupt" onclick={abschliessen}>Stunde abschließen</button>
     {/snippet}
   </KursKopf>
@@ -220,13 +230,15 @@
 
     <div class="bereich" class:breit={nurMitarbeit}>
       <section class="karte schueler">
-        {#if d.einstellungen.liveAnsicht === 'sitzplan'}
+        {#if ansicht === 'sitzplan'}
           {@const sp = kurs.sitzplan}
           <div class="zeile sitzkopf">
+            {#if muendlichAn}
             <div class="umschalter" role="group" aria-label="Antippen bedeutet">
               <button aria-pressed={sitzModus === 'anwesenheit'} onclick={() => (sitzModus = 'anwesenheit')}>Anwesenheit</button>
               <button aria-pressed={sitzModus === 'mitarbeit'} onclick={() => (sitzModus = 'mitarbeit')}>Mündlich</button>
             </div>
+            {/if}
             <span class="klein leise">{sitzModus === 'anwesenheit' ? 'Antippen: fehlt · nochmal: kommt später' : 'Antippen: Smiley, Bausteine, Kommentar'}</span>
           </div>
           <div class="sitze" style:grid-template-columns="repeat({sp.spalten}, minmax(0, 1fr))">
@@ -270,7 +282,7 @@
               </div>
               {#if f}
                 <div class="klein leise fehltext">fehlt · nochmal auf „fehlt“ tippen, wenn jemand später kommt</div>
-              {:else}
+              {:else if muendlichAn}
                 <div class="smileys" role="group" aria-label="Mitarbeit {name(s)}">
                   {#each STUFEN as st}
                     <button class="sm" class:an={e?.stufe === st.stufe} aria-pressed={e?.stufe === st.stufe} aria-label={st.name}
@@ -287,15 +299,15 @@
           {/each}
         </div>
         <p class="klein leise hilfe">
-          Tipp auf ein Smiley speichert sofort. Doppelklick oder langes Drücken öffnet Textbausteine und Kommentar. „da“ antippen = fehlt, nochmal = Verspätung mit Uhrzeit.
-          {#if d.einstellungen.stundenendeHinweis && ohneEintrag}<br /><b>{ohneEintrag} Anwesende noch ohne Mitarbeitseintrag.</b>{/if}
+          {#if muendlichAn}Tipp auf ein Smiley speichert sofort. Doppelklick oder langes Drücken öffnet Textbausteine und Kommentar.{/if} „da“ antippen = fehlt, nochmal = Verspätung mit Uhrzeit.
+          {#if muendlichAn && d.einstellungen.stundenendeHinweis && ohneEintrag}<br /><b>{ohneEintrag} Anwesende noch ohne Mitarbeitseintrag.</b>{/if}
         </p>
         {/if}
       </section>
 
       {#if !nurMitarbeit}
         <aside>
-          <Werkzeuge {kurs} {anwesend} bind:gewaehlt={gewaehltId} />
+          {#if zufallAn}<Werkzeuge {kurs} {anwesend} bind:gewaehlt={gewaehltId} />{/if}
           {#if lernstoff}
           <section class="karte stapel">
             <h2>Lernstoff</h2>

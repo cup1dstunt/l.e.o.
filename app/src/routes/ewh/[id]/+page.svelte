@@ -6,6 +6,7 @@
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { schuelerVon, name, datumKurz, heuteISO } from '$lib/hilfen';
   import { ewhLesen, zuordnen, vorschau, uebernehmen, zellText, type EwhDatei, type Zuordnung } from '$lib/ewh';
+  import { istAn } from '$lib/module';
   import KursKopf from '$lib/ui/KursKopf.svelte';
 
   const d = app.d!;
@@ -76,7 +77,7 @@
 {#if kurs}
   <KursKopf {kurs} aktiv="noten" info="Klausurnoten aus EWH Korrektur übernehmen" />
   <div class="seite">
-    {#if d.einstellungen.module?.ewh !== true}
+    {#if !istAn(d.einstellungen, 'ewh')}
       <p class="karte">Die EWH-Übernahme ist ausgeschaltet. Einschalten unter <a href="/mehr">Mehr › Module</a>.</p>
     {:else}
       <section class="karte">
