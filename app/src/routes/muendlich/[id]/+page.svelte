@@ -11,6 +11,7 @@
     monatsSpalte, monatsNameLang, STANDARD_MINDEST, rasterDerEinschaetzung, kriteriumAktiv, kriteriumGewicht
   } from '$lib/raster';
   import type { Schueler } from '$lib/typen';
+  import { projektHinweise } from '$lib/projekt';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import Smiley from '$lib/ui/Smiley.svelte';
   import SelbstKarte from '$lib/ui/SelbstKarte.svelte';
@@ -199,7 +200,7 @@
           {#each raster.bereiche as b (b.name)}
             <h3>{b.name}</h3>
             {#each b.kriterien as kr (kr.id)}
-              {@const bl = belege(d, bausteine, kurs.id, akt.s.id, monat, kr)}
+              {@const bl = [...belege(d, bausteine, kurs.id, akt.s.id, monat, kr), ...(kr.id === 'zusammenarbeit' ? projektHinweise(kurs, akt.s.id, monat) : [])]}
               {@const an = kriteriumAktiv(kurs, kr)}
               {@const vg = vgl.find((x) => x.id === kr.id)}
               <div class="krit" class:aus={!an}>

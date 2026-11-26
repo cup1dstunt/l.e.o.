@@ -2,7 +2,7 @@
   import type { Kurs } from '$lib/typen';
   import type { Snippet } from 'svelte';
   import { app } from '$lib/speicher.svelte';
-  let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan' | 'anwesenheit' | 'muendlich'; info?: string; rechts?: Snippet } = $props();
+  let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan' | 'anwesenheit' | 'muendlich' | 'gruppenarbeit'; info?: string; rechts?: Snippet } = $props();
 </script>
 
 <header class="kopf">
@@ -17,6 +17,7 @@
     <a href="/stunde/{kurs.id}" class:aktiv={aktiv === 'stunde'}>Stunde</a>
     <a href="/sitzplan/{kurs.id}" class:aktiv={aktiv === 'sitzplan'}>Sitzplan</a>
     <a href="/muendlich/{kurs.id}" class:aktiv={aktiv === 'muendlich'}>Mündlich</a>
+    <a href="/gruppenarbeit/{kurs.id}" class:aktiv={aktiv === 'gruppenarbeit'}>Gruppenarbeit</a>
     <a href="/anwesenheit/{kurs.id}" class:aktiv={aktiv === 'anwesenheit'}>Anwesenheit</a>
     {#if app.d?.einstellungen.module?.planung !== false}<a href="/planung/{kurs.id}" class:aktiv={aktiv === 'planung'}>Planung</a>{/if}
   </nav>

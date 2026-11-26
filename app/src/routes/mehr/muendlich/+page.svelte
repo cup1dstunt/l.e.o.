@@ -3,6 +3,7 @@
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { BAUSTEINE, STUFEN, bausteineVon } from '$lib/bausteine';
   import { VORLAGEN, alleRaster, rasterKopie, MAX_KRITERIEN } from '$lib/raster';
+  import { projektRasterAlle } from '$lib/projekt';
   import type { Raster, Stufe } from '$lib/typen';
 
   const d = app.d!;
@@ -72,8 +73,60 @@
     r.bereiche.push({ name: 'Neuer Bereich', gewicht: 1, kriterien: [] }); // gewicht nur aus Kompatibilität (E113)
     speichern();
   }
-  const verwendet = (r: Raster) => d.kurse.filter((k) => k.muendlich?.rasterId === r.id).map((k) => k.name);
+  const verwendet = (r: Raster) => r.art === 'projekt'
+    ? d.kurse.filter((k) => k.projekte?.some((p) => p.rasterId === r.id)).map((k) => k.name)
+    : d.kurse.filter((k) => k.muendlich?.rasterId === r.id).map((k) => k.name);
 </script>
+
+{#snippet rasterBlock(r: Raster)}
+      {@const v = verwendet(r)}
+      <div class="raster">
+        <div class="zeile wrap">
+          <button class="knopf leise kopf raum" aria-expanded={offen === r.id} onclick={() => (offen = offen === r.id ? null : r.id)}>
+            {offen === r.id ? '▾' : '▸'} <b>{r.name}</b> <span class="klein leise">{r.fach || 'fachübergreifend'} · {anzahl(r)} Kriterien{r.vorlage ? ' · Vorlage' : ''}{v.length ? ` · in ${v.join(', ')}` : ''}</span>
+          </button>
+          <button class="knopf leise" onclick={() => kopieren(r)}>Kopieren</button>
+          {#if !r.vorlage}<button class="knopf leise warn" onclick={() => rasterWeg(r)}>Löschen</button>{/if}
+        </div>
+        {#if offen === r.id}
+          {#if r.vorlage}
+            {#each r.bereiche as b}
+              <h3>{b.name}</h3>
+              <ul class="klein">{#each b.kriterien as k}<li><b>{k.name}{k.optional ? ' (optional)' : ''}{(k.gewicht ?? 1) !== 1 ? ` ×${k.gewicht}` : ''}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
+            {/each}
+            <p class="klein leise">Vorlagen sind fest. Zum Ändern kopieren.</p>
+          {:else}
+            <div class="zeile wrap">
+              <label class="feld raum"><span>Name</span><input bind:value={r.name} oninput={speichern} /></label>
+              <label class="feld"><span>Fach (leer = fachübergreifend)</span><input bind:value={r.fach} oninput={speichern} /></label>
+            </div>
+            {#each r.bereiche as b, bi}
+              <div class="bereich">
+                <div class="zeile wrap">
+                  <label class="feld raum"><span>Bereich</span><input bind:value={b.name} oninput={speichern} /></label>
+                  <button class="x" onclick={() => { r.bereiche.splice(bi, 1); speichern(); }} aria-label="Bereich entfernen">×</button>
+                </div>
+                {#each b.kriterien as k, ki (k.id)}
+                  <div class="krit">
+                    <div class="zeile"><input class="eingabe raum" bind:value={k.name} oninput={speichern} aria-label="Kriterium" />
+                      <label class="feld gew"><span>Gewicht</span><input type="number" min="0" max="5" step="0.5" value={k.gewicht ?? 1} oninput={(e) => { k.gewicht = Number((e.currentTarget as HTMLInputElement).value) || 0; speichern(); }} /></label>
+                      {#if r.art !== 'projekt'}<label class="klein opt"><input type="checkbox" checked={!!k.optional} onchange={(e) => { if ((e.currentTarget as HTMLInputElement).checked) k.optional = true; else delete k.optional; speichern(); }} /> optional (je Klasse zuschalten)</label>{/if}<button class="x" onclick={() => { b.kriterien.splice(ki, 1); speichern(); }} aria-label="Kriterium entfernen">×</button></div>
+                    <div class="stufen">
+                      {#each [4, 3, 2, 1] as st, i}
+                        <label class="feld"><span>Stufe {st}</span><textarea rows="2" bind:value={k.stufen[i]} oninput={speichern}></textarea></label>
+                      {/each}
+                    </div>
+                  </div>
+                {/each}
+                <button class="knopf leise" disabled={anzahl(r) >= MAX_KRITERIEN} onclick={() => kriteriumHinzu(r, bi)}>+ Kriterium</button>
+              </div>
+            {/each}
+            <button class="knopf leise" onclick={() => bereichHinzu(r)}>+ Bereich</button>
+            <p class="klein leise">Höchstens {MAX_KRITERIEN} feste Kriterien, damit eine Einschätzung etwa 10 Sekunden dauert. Optionale (z. B. Hausaufgaben) zählen nicht mit.</p>
+          {/if}
+        {/if}
+      </div>
+    {/snippet}
 
 <svelte:head><title>Mündliche Leistungen einrichten</title></svelte:head>
 
@@ -110,56 +163,14 @@
   <section class="karte">
     <h2>Kriterienraster</h2>
     <p class="klein leise">Jedes Fach hat eigene Kriterien. Das Gewicht hier ist der Standard; je Klasse änderst du es im Reiter „Mündlich“ mit Klick auf „Vorschlag“. Vorlagen kopierst du und passt sie an; welches Raster eine Klasse nutzt, wählst du im Reiter „Mündlich“ der Klasse. Stufentexte in Ich-Form, damit sie später auch für die Selbsteinschätzung passen.</p>
-    {#each alleRaster(d) as r (r.id)}
-      {@const v = verwendet(r)}
-      <div class="raster">
-        <div class="zeile wrap">
-          <button class="knopf leise kopf raum" aria-expanded={offen === r.id} onclick={() => (offen = offen === r.id ? null : r.id)}>
-            {offen === r.id ? '▾' : '▸'} <b>{r.name}</b> <span class="klein leise">{r.fach || 'fachübergreifend'} · {anzahl(r)} Kriterien{r.vorlage ? ' · Vorlage' : ''}{v.length ? ` · in ${v.join(', ')}` : ''}</span>
-          </button>
-          <button class="knopf leise" onclick={() => kopieren(r)}>Kopieren</button>
-          {#if !r.vorlage}<button class="knopf leise warn" onclick={() => rasterWeg(r)}>Löschen</button>{/if}
-        </div>
-        {#if offen === r.id}
-          {#if r.vorlage}
-            {#each r.bereiche as b}
-              <h3>{b.name}</h3>
-              <ul class="klein">{#each b.kriterien as k}<li><b>{k.name}{k.optional ? ' (optional)' : ''}{(k.gewicht ?? 1) !== 1 ? ` ×${k.gewicht}` : ''}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
-            {/each}
-            <p class="klein leise">Vorlagen sind fest. Zum Ändern kopieren.</p>
-          {:else}
-            <div class="zeile wrap">
-              <label class="feld raum"><span>Name</span><input bind:value={r.name} oninput={speichern} /></label>
-              <label class="feld"><span>Fach (leer = fachübergreifend)</span><input bind:value={r.fach} oninput={speichern} /></label>
-            </div>
-            {#each r.bereiche as b, bi}
-              <div class="bereich">
-                <div class="zeile wrap">
-                  <label class="feld raum"><span>Bereich</span><input bind:value={b.name} oninput={speichern} /></label>
-                  <button class="x" onclick={() => { r.bereiche.splice(bi, 1); speichern(); }} aria-label="Bereich entfernen">×</button>
-                </div>
-                {#each b.kriterien as k, ki (k.id)}
-                  <div class="krit">
-                    <div class="zeile"><input class="eingabe raum" bind:value={k.name} oninput={speichern} aria-label="Kriterium" />
-                      <label class="feld gew"><span>Gewicht</span><input type="number" min="0" max="5" step="0.5" value={k.gewicht ?? 1} oninput={(e) => { k.gewicht = Number((e.currentTarget as HTMLInputElement).value) || 0; speichern(); }} /></label>
-                      <label class="klein opt"><input type="checkbox" checked={!!k.optional} onchange={(e) => { if ((e.currentTarget as HTMLInputElement).checked) k.optional = true; else delete k.optional; speichern(); }} /> optional (je Klasse zuschalten)</label><button class="x" onclick={() => { b.kriterien.splice(ki, 1); speichern(); }} aria-label="Kriterium entfernen">×</button></div>
-                    <div class="stufen">
-                      {#each [4, 3, 2, 1] as st, i}
-                        <label class="feld"><span>Stufe {st}</span><textarea rows="2" bind:value={k.stufen[i]} oninput={speichern}></textarea></label>
-                      {/each}
-                    </div>
-                  </div>
-                {/each}
-                <button class="knopf leise" disabled={anzahl(r) >= MAX_KRITERIEN} onclick={() => kriteriumHinzu(r, bi)}>+ Kriterium</button>
-              </div>
-            {/each}
-            <button class="knopf leise" onclick={() => bereichHinzu(r)}>+ Bereich</button>
-            <p class="klein leise">Höchstens {MAX_KRITERIEN} feste Kriterien, damit eine Einschätzung etwa 10 Sekunden dauert. Optionale (z. B. Hausaufgaben) zählen nicht mit.</p>
-          {/if}
-        {/if}
-      </div>
-    {/each}
+    {#each alleRaster(d) as r (r.id)}{@render rasterBlock(r)}{/each}
     <p class="klein leise">Eingebaut: {VORLAGEN.map((r) => r.name).join(', ')}. Word- oder PDF-Raster hochladen kommt später.</p>
+  </section>
+
+  <section class="karte" id="projektraster">
+    <h2>Projektraster für die Gruppenarbeit</h2>
+    <p class="klein leise">Damit bewertest du im Reiter „Gruppenarbeit“ das Ergebnis einer Gruppe, z. B. eine Präsentation oder einen Podcast. Stufentexte beschreiben das Ergebnis. Vorlagen kopieren und anpassen; welches Raster ein Projekt nutzt, wählst du im Projekt.</p>
+    {#each projektRasterAlle(d) as r (r.id)}{@render rasterBlock(r)}{/each}
   </section>
 </div>
 

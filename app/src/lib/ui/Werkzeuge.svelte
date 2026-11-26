@@ -4,7 +4,9 @@
   import { kurzname, name, datumKurz, heuteISO } from '$lib/hilfen';
   import { rechne } from '$lib/rechnen';
   import { ziehe, zuruecknehmen, neuerStand, lose, rundenStand } from '$lib/zufall';
-  import { bilden, staerke, verstoesse, tauschen, regelUmschalten, gruppenAnzahl } from '$lib/gruppen';
+  import { bilden, staerke, verstoesse, tauschen, regelUmschalten, gruppenAnzahl, satzKuerzen } from '$lib/gruppen';
+  import { laufendesProjekt, satzAbgleichen } from '$lib/projekt';
+  import { goto } from '$app/navigation';
   import type { Kurs, Schueler, Gruppensatz } from '$lib/typen';
   import Beamer from './Beamer.svelte';
   import { untrack } from 'svelte';
@@ -87,11 +89,15 @@
     if (!gruppen.length) return;
     kurs.gruppensaetze ??= [];
     let s = satzId ? kurs.gruppensaetze.find((x) => x.id === satzId) : undefined;
-    if (s) s.gruppen = gruppen.map((g) => [...g]);
-    else {
+    if (s) {
+      s.gruppen = gruppen.map((g) => [...g]);
+      // Satz eines Projekts: getauschte Mitglieder auch im Projekt übernehmen (gleiche Gruppenzahl)
+      const p = s.projektId ? kurs.projekte?.find((x) => x.id === s!.projektId) : undefined;
+      if (p && p.gruppen.length === gruppen.length) p.gruppen.forEach((g, i) => (g.mitglieder = [...gruppen[i]]));
+    } else {
       s = { id: neueId(), name: `${datumKurz(heuteISO())} · ${gruppen.length} Gruppen`, datum: heuteISO(), gruppen: gruppen.map((g) => [...g]) } satisfies Gruppensatz;
       kurs.gruppensaetze.unshift(s);
-      kurs.gruppensaetze.splice(12);
+      kurs.gruppensaetze = satzKuerzen(kurs.gruppensaetze);
       satzId = s.id;
     }
     if (zeigen) kurs.gruppenAktiv = s.id;
@@ -103,6 +109,23 @@
     if (s) { gruppen = s.gruppen.map((g) => [...g]); satzId = s.id; }
   }
   function sitzplanAus() { kurs.gruppenAktiv = undefined; speichern(); }
+
+  // Gruppenarbeit (P9, E118): laufendes Projekt zeigen, aktuelle Gruppen als Projekt festhalten
+  const projekt = $derived(laufendesProjekt(kurs, heuteISO()));
+  function projektZeigen() {
+    if (!projekt) return;
+    const s = satzAbgleichen(kurs, projekt, neueId);
+    kurs.gruppenAktiv = s.id;
+    gruppen = s.gruppen.map((g) => [...g]);
+    satzId = s.id;
+    speichern();
+    zeige(`Gruppen aus „${projekt.titel}“ im Sitzplan`);
+  }
+  function alsProjekt() {
+    if (!gruppen.length) return;
+    sessionStorage.setItem('leo-projekt-gruppen', JSON.stringify(gruppen));
+    goto(`/gruppenarbeit/${kurs.id}?neu=1`);
+  }
 
   // Regeln: „nicht zusammen“ / „gern zusammen“
   let regelnAuf = $state(false);
@@ -145,6 +168,13 @@
 
 <section class="karte">
   <div class="zeile kopf"><h2>Gruppen</h2><button class="link klein" onclick={() => (regelnAuf = true)}>Regeln ({regeln.nicht.length + regeln.gern.length})</button></div>
+  {#if projekt}
+    <div class="projekt">
+      <span class="raum"><b>Projekt läuft:</b> {projekt.titel}<span class="klein leise block">{projekt.gruppen.length} Gruppen · bis {datumKurz(projekt.bis)}</span></span>
+      <button class="knopf leise" onclick={projektZeigen}>{kurs.gruppenAktiv === projekt.satzId ? 'Im Sitzplan' : 'Gruppen zeigen'}</button>
+      <a class="link klein" href="/gruppenarbeit/{kurs.id}?p={projekt.id}">Öffnen ›</a>
+    </div>
+  {/if}
   <div class="zeile wrap gz">
     <div class="umschalter" role="group" aria-label="Einteilen nach">
       <button aria-pressed={art === 'groesse'} onclick={() => (art = 'groesse')}>je</button>
@@ -175,6 +205,7 @@
     <div class="zeile wrap">
       <button class="knopf leise" onclick={() => speichernSatz(false)}>Speichern</button>
       <button class="knopf leise" onclick={() => speichernSatz(true)}>Im Sitzplan zeigen</button>
+      {#if !satzId || !kurs.gruppensaetze?.find((x) => x.id === satzId)?.projektId}<button class="knopf leise" onclick={alsProjekt} title="Gruppen über mehrere Stunden festhalten und bewerten">Als Projekt festhalten</button>{/if}
     </div>
   {/if}
   {#if kurs.gruppensaetze?.length}
@@ -238,6 +269,8 @@
   .nmk { border: 1px solid var(--leo-linie); background: var(--leo-karte); border-radius: var(--leo-r-pill); padding: 2px 10px; min-height: 30px; font-size: 13px; }
   .nmk.mark { background: var(--leo-auswahl); border: 2px solid var(--leo-akzent); }
   .warn { color: var(--leo-warnung); margin: 8px 0 0; }
+  .projekt { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--leo-akzent-hell); border-radius: var(--leo-r-m); padding: 8px 10px; margin: 8px 0 4px; }
+  .block { display: block; }
   .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
   .ende { justify-content: flex-end; margin-top: 18px; }
   .dialog p { margin: 12px 0 8px; }

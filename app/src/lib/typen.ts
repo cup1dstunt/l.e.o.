@@ -65,6 +65,7 @@ export interface Kurs {
   muendlich?: MuendlichEinstellung; // Raster und Schwelle für die mündlichen Leistungen (FB7, E110)
   einschaetzungen?: Record<string, RasterEinschaetzung>; // Schlüssel `${monat}:${schuelerId}`
   selbst?: Record<string, SelbstRunde>; // Selbsteinschätzung per Link (FB7b, E116), Schlüssel = Monat
+  projekte?: Projekt[]; // Gruppenarbeit über mehrere Stunden (P9, E118), neueste zuerst
   reihen?: Reihe[]; // Semesterplanung (PB16, E114): Unterrichtsreihen in Reihenfolge
   untisStunden?: string[]; // echte Termine laut WebUntis im Schuljahr, `${datum}|${beginn}|${ende}` (auch Blockwochen, A/B-Wochen)
 }
@@ -107,6 +108,32 @@ export interface FreieZeit {
   bis: string;
 }
 
+/** Gruppenarbeit über mehrere Stunden bis ein Halbjahr (P9, E118): feste Gruppen, Gruppennote aus dem Raster, Abweichung je Mitglied. */
+export interface Projekt {
+  id: string;
+  titel: string;
+  von: string; // ISO-Datum
+  bis: string; // ISO-Datum, Abgabe oder Präsentation
+  rasterId: string; // Projektraster (Raster mit art „projekt“)
+  gewichte?: Record<string, number>; // Gewicht je Kriterium in diesem Projekt, fehlt = aus dem Raster
+  zaehltAls: 'sl' | 'mitarbeit'; // Notenbuch: Tests/Sonstiges oder mündliche Leistungen
+  gruppen: ProjektGruppe[];
+  abweichung: Record<string, { schritte: number; grund?: string }>; // je Schüler, + = besser als die Gruppe
+  leistungId?: string; // Notenbuchspalte, entsteht beim ersten Übernehmen
+  satzId?: string; // Gruppensatz, über den die Gruppen im Sitzplan erscheinen
+  mails?: Record<string, string>; // Schüler → Datum, an dem die Rückmeldung geöffnet wurde
+  abgeschlossen?: boolean;
+}
+
+export interface ProjektGruppe {
+  id: string;
+  name: string; // G1, G2 … oder eigener Name
+  thema: string;
+  mitglieder: string[];
+  stufen: Record<string, 1 | 2 | 3 | 4>; // Kriterium-id → Stufe für das Gruppenergebnis
+  notizen: { datum: string; text: string }[]; // Stand der Gruppe, neueste zuerst
+}
+
 /** Wie die Klasse mündlich bewertet wird (E110): Smileys, Raster springt ein, wenn zu wenige da sind. */
 export interface MuendlichEinstellung {
   rasterId: string;
@@ -143,6 +170,7 @@ export interface Raster {
   fach: string; // z. B. „Englisch“, leer = fachübergreifend
   bereiche: RasterBereich[];
   vorlage?: true; // eingebaute Vorlage, nicht änderbar (kopieren geht)
+  art?: 'projekt'; // Projektraster für die Gruppenarbeit (E118), fehlt = mündliche Leistungen
 }
 
 export interface RasterBereich {
@@ -197,6 +225,7 @@ export interface Gruppensatz {
   name: string;
   datum: string; // ISO-Datum
   gruppen: string[][]; // Schüler-ids je Gruppe
+  projektId?: string; // gehört zu einem Projekt (P9) und wird nie automatisch gelöscht
 }
 
 /** Sitzplan als Raster (E86): Zellen sind Tisch oder frei, Belegung je Zellennummer. */
@@ -251,6 +280,16 @@ export interface NachTermin {
   gedruckt: boolean;
   mails: Record<string, string>; // Fall → Datum, an dem die Mail geöffnet wurde (E105)
   notiz?: string;
+  hinweis?: string; // Zusatz für alle Mails dieses Termins, Platzhalter {hinweis} (E117)
+  entwuerfe?: Record<string, MailEntwurf>; // Fall → angepasste Mail (E117)
+}
+
+/** Vor dem Senden angepasste Mail eines Falls (E117). Fehlt betreff/text, gilt die Vorlage. */
+export interface MailEntwurf {
+  vorlage?: string; // gewählte Vorlage, fehlt = passend zum Status
+  betreff?: string;
+  text?: string;
+  stand?: string; // terminStand beim Anpassen; weicht er ab, wird der Entwurf als veraltet markiert
 }
 
 export interface Notiz {
@@ -277,13 +316,15 @@ export interface Einstellungen {
   passwort?: { salz: string; hash: string };
   untis?: UntisStand;
   untisAuto?: boolean; // WebUntis automatisch abgleichen (WU2), fehlt = an
-  nachschreibMail?: { betreff: string; text: string }; // eigene Vorlage der Nachschreibe-Mail (E105)
+  nachschreibMail?: { betreff: string; text: string }; // alte Einzelvorlage (E107), gilt als Überschreibung von „Entschuldigt (E)“
+  nachschreibVorlagen?: { id: string; name: string; betreff: string; text: string }[]; // eigene und überschriebene Mailvorlagen (E117)
   selbstMail?: { betreff: string; text: string }; // eigene Vorlage der Einladung zur Selbsteinschätzung (E116)
   selbstErinnerung?: { betreff: string; text: string }; // eigene Vorlage der Erinnerung (E116)
   selbstAdresse?: string; // Adresse für Schüler-Links, fehlt = Adresse dieser App (E116)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
   bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
   raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
+  projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E118)
   ferien?: FreieZeit[]; // Ferien und Feiertage laut WebUntis (getHolidays)
   halbjahrGrenze?: string; // erster Tag des 2. Halbjahres, fehlt = 1. Februar
   module?: { planung?: boolean; kalender?: boolean }; // abschaltbare Module (Projektregel), fehlt = an
