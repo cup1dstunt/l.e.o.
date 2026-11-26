@@ -17,7 +17,7 @@
     zeige('Passwort geändert');
   }
   // Module abschaltbar (Projektregel): fehlt = an
-  type Modul = 'planung' | 'kalender' | 'statistik' | 'ewh';
+  type Modul = 'planung' | 'kalender' | 'ablage' | 'statistik' | 'ewh';
   // EWH ist ausdrücklich zuzuschalten, weil nur wenige Lehrkräfte EWH Korrektur haben
   const modulAn = (m: Modul) => (m === 'ewh' ? d.einstellungen.module?.ewh === true : d.einstellungen.module?.[m] !== false);
   function modul(m: Modul, an: boolean) {
@@ -78,6 +78,7 @@
     <label class="zeile schalter"><input type="checkbox" checked={modulAn('kalender')} onchange={(e) => modul('kalender', e.currentTarget.checked)} /> Kalender (Monat im Stundenplan, „Demnächst“ auf Heute, Termine in der Woche)</label>
     <label class="zeile schalter"><input type="checkbox" checked={modulAn('statistik')} onchange={(e) => modul('statistik', e.currentTarget.checked)} /> Auswertung (Reiter „Auswertung“ je Klasse, Vergleich aller Klassen unter Klassen)</label>
     <label class="zeile schalter"><input type="checkbox" checked={modulAn('ewh')} onchange={(e) => modul('ewh', e.currentTarget.checked)} /> Noten aus EWH Korrektur übernehmen (nur wenn du EWH nutzt; Knopf im Notenbuch und in der Auswertung)</label>
+    <label class="zeile schalter"><input type="checkbox" checked={modulAn('ablage')} onchange={(e) => modul('ablage', e.currentTarget.checked)} /> Dateiablage (Material je Reihe, Stunde und Klasse in der Planung und in der Live-Stunde; Reihen-Material braucht die Planung)</label>
     <label class="feld grenze"><span>Erster Tag des 2. Halbjahres (für die Blockzählung)</span>
       <input type="date" value={d.einstellungen.halbjahrGrenze || grenzeStandard} onchange={(e) => { d.einstellungen.halbjahrGrenze = e.currentTarget.value || undefined; speichern(); }} /></label>
   </section>

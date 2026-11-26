@@ -7,6 +7,7 @@
   import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
   import { onMount } from 'svelte';
   import { naechsterBlock, reiheText } from '$lib/semester';
+  import { materialListe } from '$lib/material';
   import { eintraege, artName } from '$lib/kalender';
   import { isoDatum } from '$lib/hilfen';
 
@@ -54,6 +55,12 @@
   // Semesterplanung (E114): Was ist in der Stunde geplant? Kalender (E115): die nächsten 14 Tage
   const planAn = $derived(d.einstellungen.module?.planung !== false);
   const kalenderAn = $derived(d.einstellungen.module?.kalender !== false);
+  const ablageAn = $derived(d.einstellungen.module?.ablage !== false);
+  // Dateiablage (V14): wie viel Material liegt für die Stunde bereit (Stunde + Reihe + Klasse)?
+  const materialFuerStunde = (kursId: string, datum: string) => {
+    const b = planAn ? naechsterBlock(d, kurs(kursId), datum) : undefined;
+    return materialListe(d.material, kursId, datum, b && b.datum === datum ? b.reihe?.id : undefined).filter((m) => !m.loesung).length;
+  };
   const geplantFuer = (kursId: string, datum: string) => {
     const k = kurs(kursId);
     const b = naechsterBlock(d, k, datum);
@@ -126,6 +133,9 @@
         {/if}
         {#if planAn && geplantFuer(k.id, hauptDatum)}
           <p class="klein geplant"><span class="leise">Geplant:</span> {geplantFuer(k.id, hauptDatum)} · <a href="/planung/{k.id}">Planung</a></p>
+        {/if}
+        {#if ablageAn && materialFuerStunde(k.id, hauptDatum)}
+          <p class="klein geplant"><span class="leise">Material:</span> <a href="/stunde/{k.id}">{materialFuerStunde(k.id, hauptDatum)} bereit</a></p>
         {/if}
         <div class="knoepfe">
           <a class="knopf haupt" href="/stunde/{k.id}">Stunde öffnen</a>

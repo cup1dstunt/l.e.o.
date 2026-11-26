@@ -85,6 +85,9 @@
   <p class="klein leise">{app.verschluesselt
     ? 'Die Datei ist mit deinem L.E.O.-Passwort verschlüsselt. Auf einem anderen Gerät öffnest du sie mit dem Passwort, das beim Herunterladen galt.'
     : kannVerschluesseln() ? 'Nach dem nächsten Anmelden wird die Datei verschlüsselt.' : 'Ohne HTTPS kann der Browser nicht verschlüsseln: Die Datei ist lesbar, bewahre sie sicher auf.'}</p>
+  {#if app.d?.material?.some((m) => m.art === 'datei')}
+    <p class="klein leise">Dateien aus der Dateiablage sind nicht in der Sicherungsdatei, nur ihre Namen und alle Links. Mit Abgleich liegen sie verschlüsselt auf deinem Server.</p>
+  {/if}
 
   {#if pwNoetig && gewaehlt}
     <form class="pw" onsubmit={dateiPruefen}>
