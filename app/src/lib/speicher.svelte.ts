@@ -19,6 +19,7 @@ function migrieren(d: Daten): Daten {
   d.termine ??= [];
   d.einstellungen.liveAnsicht ??= 'liste';
   d.einstellungen.sperreMinuten ??= 15;
+  d.einstellungen.eingerichtet ??= true; // vorhandene Daten aus der Zeit vor dem Einrichtungsassistenten
   for (const k of d.kurse) kursMigrieren(k);
   return d;
 }
@@ -342,10 +343,22 @@ export async function passwortAendern(alt: string, neu: string): Promise<string>
 }
 
 export function zuruecksetzen() {
-  const pw = app.d?.einstellungen.passwort;
+  const alt = app.d?.einstellungen;
   app.d = beispielDaten();
-  app.d.einstellungen.passwort = pw; // Anmeldung bleibt (verschlüsselt prüft der Tresor, dann ist pw leer)
+  app.d.einstellungen.passwort = alt?.passwort; // Anmeldung bleibt (verschlüsselt prüft der Tresor, dann ist pw leer)
+  // Modulauswahl und Einrichtung bleiben, sonst käme der Einrichtungsassistent erneut
+  app.d.einstellungen.module = alt?.module;
+  app.d.einstellungen.herkunft = alt?.herkunft;
+  app.d.einstellungen.eingerichtet = alt?.eingerichtet ?? true;
   if (tresor) delete app.d.einstellungen.passwort;
+  speichern();
+}
+
+/** Einrichtung (docs/MODULE.md): ohne Beispieldaten anfangen. Einstellungen bleiben, alle Klassen und Einträge gehen. */
+export function leerStarten() {
+  const d = app.d!;
+  d.schueler = []; d.kurse = []; d.mitarbeit = []; d.fehlzeiten = []; d.verspaetungen = [];
+  d.notizen = []; d.nachschreiben = []; d.termine = []; d.stundenplan = [];
   speichern();
 }
 
