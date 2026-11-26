@@ -72,7 +72,8 @@
       k, name: new Date(k + '-01T12:00').toLocaleDateString('de-DE', { month: 'short' }), n: st.length,
       anteile: [1, 2, 3, 4, 5].map((x) => (st.length ? st.filter((y) => y === x).length / st.length : 0)),
       schnitt: st.length ? st.reduce((a, b) => a + b, 0) / st.length : null, trend: '',
-      wenig: st.length < min, raster: kurs ? !!einschaetzungVon(kurs, k, s.id) : false
+      wenig: st.length < min, raster: kurs ? !!einschaetzungVon(kurs, k, s.id) : false,
+      selbst: !!kurs?.selbst?.[k]?.antworten[s.id] // Selbsteinschätzung per Link (E116)
     }));
     liste.forEach((x, i) => { const v = liste[i - 1]; if (i > 0 && x.schnitt !== null && v.schnitt !== null) { const dlt = x.schnitt - v.schnitt; x.trend = dlt < -0.25 ? '↗' : dlt > 0.25 ? '↘' : '→'; } });
     return liste;
@@ -234,13 +235,13 @@
         <button class="mz" aria-expanded={monatOffen === m.k} onclick={() => (monatOffen = monatOffen === m.k ? null : m.k)}>
           <span class="mn">{m.name}</span>
           <span class="mb">{#each m.anteile as a, i}{#if a > 0}<span style:width="{a * 100}%" style:background="var(--leo-mitv-{i + 1})"></span>{/if}{/each}</span>
-          <span class="klein leise zahl mzahl">{#if m.raster}<span class="rmarke">Raster</span> {/if}{m.n} · <b class="tinte">{m.schnitt === null ? '–' : zahl(m.schnitt)}</b></span>
+          <span class="klein leise zahl mzahl">{#if m.selbst}<span class="rmarke">Selbst</span> {/if}{#if m.raster}<span class="rmarke">Raster</span> {/if}{m.n} · <b class="tinte">{m.schnitt === null ? '–' : zahl(m.schnitt)}</b></span>
           <span class="trend {m.trend === '↗' ? 'besser' : m.trend === '↘' ? 'schlechter' : 'gleich'}" title={m.trend === '↗' ? 'besser als Vormonat' : m.trend === '↘' ? 'schlechter als Vormonat' : m.trend ? 'gleich wie Vormonat' : ''}>{m.trend}</span>
         </button>
         {#if monatOffen === m.k}
-          {#if m.wenig || m.raster}
-            <div class="eingerueckt rhinweis klein">{m.raster ? 'Für diesen Monat gibt es eine Raster-Einschätzung.' : `Nur ${m.n} Smiley${m.n === 1 ? '' : 's'}, zu wenig für eine Note.`}
-              <a class="knopf {m.raster ? 'leise' : 'haupt'}" href="/muendlich/{kurs.id}?monat={m.k}&s={s.id}">{m.raster ? 'Raster öffnen' : 'Mit Raster einschätzen'}</a></div>
+          {#if m.wenig || m.raster || m.selbst}
+            <div class="eingerueckt rhinweis klein">{m.selbst && !m.raster ? 'Selbsteinschätzung liegt vor, im Raster neben deiner sehen.' : m.raster ? `Für diesen Monat gibt es eine Raster-Einschätzung${m.selbst ? ' und eine Selbsteinschätzung' : ''}.` : `Nur ${m.n} Smiley${m.n === 1 ? '' : 's'}, zu wenig für eine Note.`}
+              <a class="knopf {m.raster || m.selbst ? 'leise' : 'haupt'}" href="/muendlich/{kurs.id}?monat={m.k}&s={s.id}">{m.raster || m.selbst ? 'Raster öffnen' : 'Mit Raster einschätzen'}</a></div>
           {/if}
           <ul class="le eingerueckt">
             {#each eintraege.filter((e) => e.zeit.startsWith(m.k)) as e}

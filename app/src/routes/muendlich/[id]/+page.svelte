@@ -14,6 +14,8 @@
   import { projektHinweise } from '$lib/projekt';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import Smiley from '$lib/ui/Smiley.svelte';
+  import SelbstKarte from '$lib/ui/SelbstKarte.svelte';
+  import { vergleich, abweichungen } from '$lib/selbst';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -47,6 +49,27 @@
   const stufen = $derived(akt?.ein?.rasterId === raster.id ? akt.ein.stufen : {});
   const erg = $derived(rasterErgebnis(raster, stufen, kurs.profil, kurs));
   let wegOffen = $state(false);
+
+  // Selbsteinschätzung per Link (FB7b, E116): zählt nicht zur Note, steht neben dem eigenen Raster
+  const selbstAn = $derived(!!kurs.muendlich?.selbst);
+  const runde = $derived(kurs.selbst?.[monat]);
+  const selbstA = $derived(akt ? runde?.antworten[akt.s.id] : undefined);
+  const selbstSt = $derived(selbstA?.stufen ?? {});
+  const vgl = $derived(selbstA ? vergleich(raster.bereiche.flatMap((b) => b.kriterien).filter((kr) => kriteriumAktiv(kurs, kr)), selbstA.stufen, stufen) : []);
+  const vglAbw = $derived(abweichungen(vgl));
+  const selbstErg = $derived(selbstA ? rasterErgebnis(raster, selbstA.stufen, kurs.profil, kurs) : null);
+  function selbstUmschalten() {
+    kurs.muendlich = { ...kurs.muendlich, rasterId: rasterKlasse.id, mindestSmileys: mindest, selbst: !selbstAn };
+    speichern();
+  }
+  function selbstAlsStart() {
+    if (!akt || !selbstA) return;
+    kurs.einschaetzungen ??= {};
+    kurs.einschaetzungen[schluessel] = { rasterId: raster.id, stufen: { ...selbstA.stufen }, zeit: new Date().toISOString() };
+    speichern();
+    zeige('Stufen aus dem Selbstbild übernommen, bitte prüfen');
+  }
+  const abwText = (a: number) => (a > 0 ? `sieht sich ${a} Stufe${a === 1 ? '' : 'n'} besser` : `sieht sich ${-a} Stufe${a === -1 ? '' : 'n'} schlechter`);
 
   function waehle(kid: string, st: 1 | 2 | 3 | 4) {
     if (!akt) return;
@@ -137,10 +160,15 @@
         <div class="feld"><span>Raster anbieten bei weniger als</span>
           <div class="zeile">{#each [2, 3, 4, 5] as n}<button class="pille" aria-pressed={mindest === n} onclick={() => mindestSetzen(n)}>{n}</button>{/each}<span class="klein leise">Smileys</span></div>
         </div>
+        <div class="feld"><span>Selbsteinschätzung per Link</span>
+          <div class="zeile"><button class="pille" aria-pressed={selbstAn} onclick={selbstUmschalten}>{selbstAn ? 'an' : 'aus'}</button><span class="klein leise">freiwillig, je Klasse</span></div>
+        </div>
         <a class="knopf leise" href="/mehr/muendlich">Raster und Bausteine bearbeiten</a>
       </div>
       <p class="klein leise">Die Monatsnote kommt aus den Smileys. Wer in {monatsNameLang(monat)} weniger als {mindest} hat, bekommt hier das Raster angeboten; du kannst es aber für alle nutzen. Standard: {STANDARD_MINDEST}.</p>
     </section>
+
+    {#if selbstAn}<SelbstKarte {kurs} {monat} raster={rasterKlasse} />{/if}
 
     <div class="spalten">
       <section class="karte liste">
@@ -151,6 +179,7 @@
               <button class="sz" aria-current={gewaehlt === z.s.id} onclick={() => (gewaehlt = z.s.id)}>
                 <span class="raum"><b>{name(z.s)}</b>
                   <span class="klein leise block">{z.n} Smiley{z.n === 1 ? '' : 's'}{z.schnitt !== null ? ` · Ø ${zahl(z.schnitt)}` : ''}</span></span>
+                {#if runde?.antworten[z.s.id]}<span class="marke selbstm" title="Selbsteinschätzung liegt vor">selbst</span>{/if}
                 {#if z.ein}<span class="marke raster">Raster</span>{:else if z.wenig}<span class="marke wenig">zu wenig</span>{/if}
                 <b class="zahl note">{anzeige(z.steht)}</b>
               </button>
@@ -173,12 +202,13 @@
             {#each b.kriterien as kr (kr.id)}
               {@const bl = [...belege(d, bausteine, kurs.id, akt.s.id, monat, kr), ...(kr.id === 'zusammenarbeit' ? projektHinweise(kurs, akt.s.id, monat) : [])]}
               {@const an = kriteriumAktiv(kurs, kr)}
+              {@const vg = vgl.find((x) => x.id === kr.id)}
               <div class="krit" class:aus={!an}>
-                <div class="kname"><b>{kr.name}</b>{#if an}<button class="gchip" onclick={() => (gewOffen = true)} title="Gewicht ändern">×{gz(kriteriumGewicht(kurs, kr))}</button>{/if}{#if kr.optional}<button class="pille mini" aria-pressed={an} onclick={() => zusatzUmschalten(kr.id)}>{an ? 'eingeschaltet' : 'einschalten'}</button>{/if}{#if bl.length && an}<span class="klein leise block">{#each bl as t, i}{i ? ' · ' : ''}<span class:spaet={verspaetet(t)}>{t}</span>{/each}</span>{/if}</div>
+                <div class="kname"><b>{kr.name}</b>{#if an}<button class="gchip" onclick={() => (gewOffen = true)} title="Gewicht ändern">×{gz(kriteriumGewicht(kurs, kr))}</button>{/if}{#if kr.optional}<button class="pille mini" aria-pressed={an} onclick={() => zusatzUmschalten(kr.id)}>{an ? 'eingeschaltet' : 'einschalten'}</button>{/if}{#if vg && vg.abstand !== null && Math.abs(vg.abstand) >= 2}<span class="abw block">{abwText(vg.abstand)}</span>{/if}{#if bl.length && an}<span class="klein leise block">{#each bl as t, i}{i ? ' · ' : ''}<span class:spaet={verspaetet(t)}>{t}</span>{/each}</span>{/if}</div>
                 <div class="stufen" role="group" aria-label={kr.name}>
                   {#each [4, 3, 2, 1] as st, i}
-                    <button class="stufe" disabled={!an} aria-pressed={an && stufen[kr.id] === st} title={STUFE_NAME[st]} onclick={() => waehle(kr.id, st as 1 | 2 | 3 | 4)}>
-                      <b>{st}</b> <span>{kr.stufen[i]}</span>
+                    <button class="stufe" class:selbst={an && selbstSt[kr.id] === st} disabled={!an} aria-pressed={an && stufen[kr.id] === st} title={STUFE_NAME[st]} onclick={() => waehle(kr.id, st as 1 | 2 | 3 | 4)}>
+                      <b>{st}</b> <span>{kr.stufen[i]}</span>{#if an && selbstSt[kr.id] === st}<i class="sm" title="So sieht sich der Schüler">selbst</i>{/if}
                     </button>
                   {/each}
                 </div>
@@ -200,7 +230,16 @@
           <button class="knopf haupt" disabled={erg.note === null} onclick={uebernehmen}>Als Monatsnote übernehmen</button>
           {#if akt.steht !== undefined}<p class="klein leise">Steht schon: {anzeige(akt.steht)}{akt.schnitt !== null ? ` · aus Smileys wäre es ${anzeige(monatsVorschlag(kurs.profil, smileysImMonat(d, kurs.id, akt.s.id, monat).map((e) => e.stufe))?.wert)}` : ''}</p>{/if}
           {#if akt.ein}<button class="knopf leise" onclick={verwerfen}>Einschätzung verwerfen</button>{/if}
-          <p class="klein leise">Selbsteinschätzung der Schüler per Link kommt in einem nächsten Schritt.</p>
+          {#if selbstA && selbstErg}
+            <div class="selbstbild">
+              <span class="zeile"><h3 class="raum">Selbstbild</h3><span class="klein leise">zählt nicht</span></span>
+              <span class="zeile"><b class="mittel zahl">{anzeige(selbstErg.note)}</b><span class="klein leise">{vglAbw.length ? `${vglAbw.length} große Abweichung${vglAbw.length === 1 ? '' : 'en'}` : 'nah an deinem Raster'}</span></span>
+              {#if selbstA.kommentar}<p class="kommentar klein">„{selbstA.kommentar}“</p>{/if}
+              {#if !Object.keys(stufen).length}<button class="knopf leise klein" onclick={selbstAlsStart}>Stufen als Start übernehmen</button>{/if}
+            </div>
+          {:else if selbstAn && runde}
+            <p class="klein leise">Selbsteinschätzung: {runde.links[akt.s.id]?.mail ? 'noch nicht abgegeben' : 'Mail noch nicht geöffnet'}.</p>
+          {/if}
         </aside>
       {/if}
     </div>
@@ -253,6 +292,16 @@
   .mini { min-height: 26px; padding: 0 10px; font-size: var(--leo-text-xs); margin-left: 8px; }
   .gchip { margin-left: 6px; border: 1px solid var(--leo-linie); background: var(--leo-flaeche-leise); color: var(--leo-akzent); border-radius: var(--leo-r-pill); font: inherit; font-size: var(--leo-text-xs); font-weight: 600; padding: 1px 7px; cursor: pointer; }
   .spaet { color: var(--leo-warnung); font-weight: 600; }
+  .marke.selbstm { border: 1px solid var(--leo-akzent); color: var(--leo-akzent); font-weight: 600; }
+  .stufe { position: relative; }
+  .stufe.selbst { box-shadow: inset 0 0 0 2px var(--leo-stern); }
+  .stufe.selbst[aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--leo-stern), 0 0 0 1px var(--leo-akzent); }
+  .sm { position: absolute; top: -7px; right: 6px; font-style: normal; font-size: 10px; font-weight: 700; background: var(--leo-stern-hell); color: var(--leo-tinte); border: 1px solid var(--leo-stern); border-radius: var(--leo-r-pill); padding: 0 6px; line-height: 15px; }
+  .abw { color: var(--leo-stern); font-size: var(--leo-text-s); font-weight: 600; margin-top: 2px; }
+  .selbstbild { border-top: 1px solid var(--leo-linie-fein); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .selbstbild h3 { margin: 0; }
+  .mittel { font-size: 24px; font-weight: 700; }
+  .kommentar { font-style: italic; color: var(--leo-tinte); }
   .kachel { display: flex; flex-direction: column; gap: 6px; text-align: left; background: none; border: 1px solid transparent; border-radius: var(--leo-r-m); padding: 6px; margin: -6px; font: inherit; color: inherit; cursor: pointer; }
   .kachel:hover { border-color: var(--leo-linie); background: var(--leo-flaeche-leise); }
   .akzent { color: var(--leo-akzent); font-weight: 600; }

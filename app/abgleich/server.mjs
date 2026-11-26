@@ -219,13 +219,130 @@ const wege = {
   }
 };
 
-function koerper(req) {
+// ---------- Selbsteinschätzung per Link (FB7b, E116) ----------
+// Eine Datei je Runde in ORDNER/selbst. Darin: Bogen (Kriterien ohne Namen, öffentlicher Schlüssel), Frist,
+// Hashes der Einmal-Links und je Link die im Schüler-Browser verschlüsselte Antwort. Keine Namen, keine Klartexte.
+// Schüler-Endpunkte brauchen keine Anmeldung, nur den Link (128 Bit Zufall). Runden verfallen 60 Tage nach der Frist.
+const SELBST_MAX_RUNDEN = 100; // je Konto
+const SELBST_MAX_LINKS = 80;
+const SELBST_HALTEN_TAGE = 60;
+const rundeDatei = (id) => path.join(ORDNER, 'selbst', id + '.json');
+const linkSha = (t) => sha('leo-selbst|' + t);
+const heute = () => new Date().toISOString().slice(0, 10);
+const istDatum = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x);
+
+async function rundeLaden(id) {
+  try { return JSON.parse(await fs.readFile(rundeDatei(id), 'utf8')); } catch (e) { if (e.code === 'ENOENT') return undefined; throw e; }
+}
+async function rundeSichern(r) {
+  await fs.mkdir(path.dirname(rundeDatei(r.id)), { recursive: true });
+  const tmp = rundeDatei(r.id) + '.' + randomBytes(4).toString('hex') + '.tmp';
+  await fs.writeFile(tmp, JSON.stringify(r));
+  await fs.rename(tmp, rundeDatei(r.id));
+}
+async function alleRunden() {
+  try { return (await fs.readdir(path.join(ORDNER, 'selbst'))).filter((n) => /^[0-9a-f]{16}\.json$/.test(n)).map((n) => n.slice(0, 16)); }
+  catch (e) { if (e.code === 'ENOENT') return []; throw e; }
+}
+/** Abgelaufene Runden löschen (Frist + 60 Tage). */
+export async function selbstAufraeumen(jetzt = heute()) {
+  const grenze = new Date(new Date(jetzt + 'T12:00Z').getTime() - SELBST_HALTEN_TAGE * 864e5).toISOString().slice(0, 10);
+  let n = 0;
+  for (const id of await alleRunden()) {
+    const r = await rundeLaden(id).catch(() => undefined);
+    if (r && r.frist < grenze) { await fs.rm(rundeDatei(id), { force: true }); n++; }
+  }
+  return n;
+}
+function bogenOk(b) {
+  if (!b || typeof b !== 'object' || !istText(b.titel, 120) || !istDatum(b.frist) || !Array.isArray(b.kriterien)) return false;
+  if (b.kriterien.length < 1 || b.kriterien.length > 8) return false;
+  if (!b.kriterien.every((k) => k && istText(k.id, 60) && istText(k.name, 80) && Array.isArray(k.stufen) && k.stufen.length === 4 && k.stufen.every((t) => istText(t, 300)))) return false;
+  const s = b.schluessel;
+  return !!s && s.kty === 'EC' && s.crv === 'P-256' && istText(s.x, 100) && istText(s.y, 100) && !('d' in s);
+}
+function geheimOk(a) {
+  return a && typeof a === 'object' && istText(a.iv, 40) && istText(a.geheim, 8000) && a.epk && a.epk.kty === 'EC' && a.epk.crv === 'P-256' && istText(a.epk.x, 100) && istText(a.epk.y, 100) && !('d' in a.epk);
+}
+async function rundeVomKonto(req, id) {
+  const { k } = await ausToken(req);
+  if (typeof id !== 'string' || !/^[0-9a-f]{16}$/.test(id)) throw new Fehler(400, 'Runde ungültig');
+  const r = await rundeLaden(id);
+  if (r && r.konto !== k.id) throw new Fehler(403, 'Diese Runde gehört zu einem anderen Konto');
+  return { k, r };
+}
+async function rundeVomLink(t) {
+  const m = /^([0-9a-f]{16})\.([\w-]{20,})$/.exec(String(t ?? ''));
+  if (!m) throw new Fehler(404, 'Dieser Link ist ungültig.');
+  const r = await rundeLaden(m[1]);
+  const h = linkSha(m[0]);
+  if (!r || !r.links[h]) throw new Fehler(404, 'Dieser Link ist ungültig oder die Runde ist schon beendet.');
+  return { r, h };
+}
+
+Object.assign(wege, {
+  // Lehrkraft legt eine Runde an oder ergänzt Links (bestehende Antworten bleiben)
+  'POST /abgleich/selbst/runde': async (req, b) => {
+    const { k } = await rundeVomKonto(req, b.id);
+    if (!bogenOk(b.bogen)) throw new Fehler(400, 'Bogen unvollständig');
+    if (!Array.isArray(b.links) || !b.links.length || b.links.length > SELBST_MAX_LINKS || !b.links.every((h) => /^[0-9a-f]{64}$/.test(h))) throw new Fehler(400, 'Links ungültig');
+    return nacheinander('selbst:' + b.id, async () => {
+      let r = await rundeLaden(b.id);
+      if (!r) {
+        let n = 0;
+        for (const id of await alleRunden()) if ((await rundeLaden(id).catch(() => undefined))?.konto === k.id) n++;
+        if (n >= SELBST_MAX_RUNDEN) throw new Fehler(429, 'Zu viele offene Runden. Bitte alte Runden beenden.');
+        r = { v: 1, id: b.id, konto: k.id, angelegt: new Date().toISOString(), links: {} };
+      }
+      r.bogen = b.bogen;
+      r.frist = b.bogen.frist;
+      for (const h of b.links) r.links[h] ??= {};
+      if (Object.keys(r.links).length > SELBST_MAX_LINKS) throw new Fehler(400, 'Zu viele Links');
+      await rundeSichern(r);
+      return { ok: true, links: Object.keys(r.links).length };
+    });
+  },
+  // Lehrkraft holt die verschlüsselten Antworten
+  'POST /abgleich/selbst/antworten': async (req, b) => {
+    const { r } = await rundeVomKonto(req, b.id);
+    if (!r) throw new Fehler(404, 'Runde nicht gefunden (abgelaufen oder beendet)');
+    const antworten = {};
+    for (const [h, l] of Object.entries(r.links)) if (l.antwort) antworten[h] = { antwort: l.antwort, abgegeben: l.abgegeben };
+    return { antworten, frist: r.frist };
+  },
+  // Lehrkraft beendet die Runde: alles auf dem Server weg
+  'POST /abgleich/selbst/beenden': async (req, b) => {
+    const { r } = await rundeVomKonto(req, b.id);
+    if (r) await nacheinander('selbst:' + b.id, () => fs.rm(rundeDatei(b.id), { force: true }));
+    return { ok: true };
+  },
+  // Schüler öffnet den Bogen (ohne Anmeldung, nur mit Link)
+  'POST /abgleich/selbst/bogen': async (_req, b) => {
+    const { r, h } = await rundeVomLink(b.t);
+    return { ...r.bogen, abgegeben: !!r.links[h].abgegeben, abgelaufen: heute() > r.frist };
+  },
+  // Schüler gibt ab: einmal, bis zur Frist
+  'POST /abgleich/selbst/abgeben': async (_req, b) => {
+    if (!geheimOk(b.antwort)) throw new Fehler(400, 'Antwort unvollständig');
+    const { r: r0 } = await rundeVomLink(b.t);
+    return nacheinander('selbst:' + r0.id, async () => {
+      const { r, h } = await rundeVomLink(b.t);
+      if (r.links[h].abgegeben) throw new Fehler(409, 'Du hast schon abgegeben. Ändern geht nicht mehr.');
+      if (heute() > r.frist) throw new Fehler(410, 'Die Frist ist abgelaufen.');
+      r.links[h] = { abgegeben: new Date().toISOString(), antwort: { epk: { kty: 'EC', crv: 'P-256', x: b.antwort.epk.x, y: b.antwort.epk.y }, iv: b.antwort.iv, geheim: b.antwort.geheim } };
+      await rundeSichern(r);
+      return { ok: true };
+    });
+  }
+});
+
+function koerper(req, max = MAX_KOERPER) {
   return new Promise((res, rej) => {
     const teile = [];
     let n = 0;
     req.on('data', (c) => {
       n += c.length;
-      if (n > MAX_KOERPER) { rej(new Fehler(413, 'Anfrage zu groß')); req.destroy(); return; }
+      if (n > max) { rej(new Fehler(413, 'Anfrage zu groß')); req.destroy(); return; }
       teile.push(c);
     });
     req.on('end', () => {
@@ -238,12 +355,13 @@ function koerper(req) {
 
 export function dienst() {
   return http.createServer(async (req, res) => {
-    const weg = wege[`${req.method} ${new URL(req.url, 'http://x').pathname}`];
+    const pfad = new URL(req.url, 'http://x').pathname;
+    const weg = wege[`${req.method} ${pfad}`];
     let status = 200;
     let antwort;
     try {
       if (!weg) throw new Fehler(404, 'Unbekannt');
-      antwort = await weg(req, req.method === 'POST' ? await koerper(req) : {});
+      antwort = await weg(req, req.method === 'POST' ? await koerper(req, pfad.startsWith('/abgleich/selbst/') ? 64 * 1024 : MAX_KOERPER) : {});
     } catch (e) {
       status = e instanceof Fehler ? e.status : 500;
       antwort = { fehler: e instanceof Fehler ? e.message : 'Interner Fehler' };
@@ -255,5 +373,7 @@ export function dienst() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  selbstAufraeumen().catch((e) => console.error(e));
+  setInterval(() => selbstAufraeumen().catch((e) => console.error(e)), 6 * 3600_000).unref();
   dienst().listen(PORT, '127.0.0.1', () => console.log(`L.E.O. Abgleich-Dienst auf 127.0.0.1:${PORT}, Daten in ${ORDNER}${EINLADUNG ? '' : ' (Konto anlegen aus: LEO_EINLADUNG fehlt)'}`));
 }

@@ -148,6 +148,19 @@ Browser verschlüsseln Daten (F2), gleichen ab (F4) und installieren die App nur
 
 Ungetestet: Ich habe keinen Zugriff auf dein Unraid. Wenn ein Schritt anders aussieht, schick mir einen Screenshot.
 
+## Selbsteinschätzung der Schüler per Link (FB7b, E116)
+
+Schüler öffnen den Bogen unter `https://<deine-adresse>/e/#<token>`. Dafür muss L.E.O. aus dem Internet über HTTPS erreichbar sein, und das Gerät der Lehrkraft muss mit dem Abgleich verbunden sein. Der Server sieht keine Namen und kann die Antworten nicht lesen.
+
+Empfohlen: eine **eigene Domain nur für Schüler** (z. B. `bogen.deine-domain.de`), die nur den Bogen freigibt, nicht die ganze App. Im Nginx Proxy Manager einen zweiten Proxy-Host anlegen (gleiches Ziel wie L.E.O., Port 8128, SSL wie gehabt) und unter „Advanced“ eintragen:
+
+```
+location = / { return 404; }
+location ~ ^/(?!e/|abgleich/selbst/(bogen|abgeben)$) { return 404; }
+```
+
+In L.E.O. dann unter Mündlich › Selbsteinschätzung › Mailtext und Adresse die Adresse `https://bogen.deine-domain.de` eintragen. Ungetestet auf dem Unraid.
+
 ## Bekannte Grenzen (ehrlich)
 
 - **OSZ-Rechnung vereinfacht:** Die UPZ rechnet in der Berufsschule mit Prozenten aus Rohpunkten. Weil wir ganze Noten eintragen (E65), rechnet der Prototyp mit dem Notenschnitt. Die FOS-Rechnung stimmt mit allen 14 UPZ-Referenzschülern überein (`npm test` in `app/`).
