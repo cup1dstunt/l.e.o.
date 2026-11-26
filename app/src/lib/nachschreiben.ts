@@ -98,14 +98,14 @@ export function terminSicht(d: Daten, t: NachTermin): TerminSicht {
   };
 }
 
-// ---------- Mail (E105, E106, E116) ----------
+// ---------- Mail (E105, E106, E117) ----------
 
 export const DOMAIN = 'osz-lus.de';
 
 /** Eine Mailvorlage. Eingebaute Vorlagen haben feste ids (std-e, std-offen) und können überschrieben werden. */
 export interface MailVorlage { id: string; name: string; betreff: string; text: string }
 
-/** Eingebaute Vorlagen: eine für entschuldigt (E), eine für noch ungeklärt (offen), E116. */
+/** Eingebaute Vorlagen: eine für entschuldigt (E), eine für noch ungeklärt (offen), E117. */
 export const VORLAGEN_STANDARD: MailVorlage[] = [
   {
     id: 'std-e',

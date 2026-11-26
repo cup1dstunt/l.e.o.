@@ -136,7 +136,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | F9 | ✅ umgesetzt 20.11. (E107). **Mail erst nach festgelegtem Nachschreibetermin** (nie automatisch nach dem Fehlen): Entwurf mit Textbaustein, nur an die schulische Adresse, Versand erst nach Klick der Lehrkraft (E105) | K | 1 | S |
 | F10 | ✅ umgesetzt 20.11. (E107). Checkliste je Nachschreibetermin (Klausur vorbereitet, gedruckt, Mail verschickt); Note eintragen schließt den Fall. Statusänderung in WebUntis danach (z. B. offen → UE bei schon eingetragener Note) nur als Hinweis, keine automatische Änderung. Oberfläche: Kachel „Nachschreiben“ auf Heute, Klausurzelle im Notenbuch zeigt E/offen/Termin, Fall in der Schülerübersicht bei den Fehlzeiten | C | 1 | S |
 | F11 | ✅ umgesetzt 20.11. (E107). 30-%-Übersicht der ganzen Klasse als zweiter Teil von Modul 1 (eigene Planung) | C | 1 | M |
-| F12 | ✅ umgesetzt 25.11. (E116). **Nachschreibe-Mail individuell anpassbar:** Vorlagen je Status (E / offen) und eigene, Platzhalter antippen, Vorschau, Hinweis je Termin, Entwurf je Schüler vor dem Senden änderbar | K | 1 | S |
+| F12 | ✅ umgesetzt 25.11. (E117). **Nachschreibe-Mail individuell anpassbar:** Vorlagen je Status (E / offen) und eigene, Platzhalter antippen, Vorschau, Hinweis je Termin, Entwurf je Schüler vor dem Senden änderbar | K | 1 | S |
 
 ## Kalender & Organisation
 
