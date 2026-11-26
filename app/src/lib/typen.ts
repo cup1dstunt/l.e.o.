@@ -15,6 +15,7 @@ export interface Schueler {
   nta?: string; // Nachteilsausgleich, z. B. „Zeitverlängerung 25 %“
   untisId?: number; // Herkunft WebUntis (V11): Abgleich über diese Nummer
   klasse?: string; // Klassenname laut WebUntis
+  herkunft?: 'datei'; // aus dem Stammdaten-Export aufgenommen (E119); der WebUntis-Abgleich ordnet später über den Namen zu
 }
 
 export interface Leistung {
@@ -370,6 +371,7 @@ export interface UntisStand {
   halbjahrVon: string; // ISO-Datum
   halbjahrBis: string;
   ausfaelle: string[]; // `${kursId}|${datum}|${beginn}` ausgefallene eigene Stunden
+  vollAbgerufen?: string; // ISO-Zeitpunkt des letzten Abgleichs über das ganze Halbjahr (E119); dazwischen nur die letzten Wochen
 }
 
 export interface Daten {

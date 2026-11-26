@@ -117,12 +117,33 @@ export interface Paket {
   termine?: { key: string; datum: string; beginn: string; ende: string }[]; // alle eigenen Stunden im Schuljahr (Semesterplanung)
   ferien?: { name: string; von: string; bis: string }[]; // Ferien und Feiertage (getHolidays)
   stammdaten: string[]; // CSV-Texte, falls der Bericht automatisch abrufbar war
+  klassenbuchAb?: string; // gesetzt beim kurzen Abgleich: Fehlzeiten und Verspätungen nur ab diesem Tag (E119)
+}
+
+/** Wie weit der kurze Abgleich zurückschaut: Berufsschulfrist 14 Tage plus Zeit, bis die Klassenleitung einträgt. */
+export const KURZ_TAGE = 28;
+
+export interface HolenOpt {
+  ab?: string; // ISO-Datum: Klassenbuch erst ab hier lesen (kurzer Abgleich); fehlt = ganzes Halbjahr
+  bekannt?: Map<string, Set<number>>; // schon bekannte Schüler je Klasse (`klasseId-fachId`), z. B. aus dem Export
+}
+
+/** Bekannte WebUntis-Schüler je Klasse, damit deren Fehlzeiten auch ohne eigenen Klassenbuch-Eintrag ankommen. */
+export function bekanntAus(d: Daten): Map<string, Set<number>> {
+  const m = new Map<string, Set<number>>();
+  for (const k of d.kurse) {
+    if (!k.untis) continue;
+    const ids = new Set<number>();
+    for (const id of k.schueler) { const s = d.schueler.find((x) => x.id === id); if (s?.untisId !== undefined) ids.add(s.untisId); }
+    m.set(kursKey(k.untis.klasseId, k.untis.fachId), ids);
+  }
+  return m;
 }
 
 const kursKey = (klasseId: number, fachId: number) => `${klasseId}-${fachId}`;
 
 /** Holt alles für die eigenen Stunden des laufenden Halbjahres. `melde` zeigt den Fortschritt. */
-export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Paket> {
+export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenOpt = {}): Promise<Paket> {
   const heute = new Date();
   const heuteN = untisDatumAus(heute);
 
@@ -209,7 +230,8 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   const inMeinenStunden: { z: any; stunde: { key: string; start: number; ende: number; lehrer: Set<string> } }[] = [];
   const kennungen = new Map<string, Set<string>>();
   const slots = new Set<string>();
-  let start = new Date(isoAusUntis(von) + 'T12:00');
+  const abIso = opt.ab && opt.ab > isoAusUntis(von) ? opt.ab : '';
+  let start = new Date((abIso || isoAusUntis(von)) + 'T12:00');
   while (untisDatumAus(start) <= ende) {
     const stueckEnde = new Date(start.getTime() + 13 * 864e5);
     const a = untisDatumAus(start);
@@ -255,7 +277,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
   const gesehen = new Set<string>();
   for (const { z, stunde } of inMeinenStunden) {
     const s = finde(z.studentId);
-    if (!s || !liste.get(stunde.key)?.has(s.id)) continue;
+    if (!s || !(liste.get(stunde.key)?.has(s.id) || opt.bekannt?.get(stunde.key)?.has(s.id))) continue;
     const doppelt = `${s.id}-${z.date}-${stunde.start}`;
     if (gesehen.has(doppelt)) continue;
     gesehen.add(doppelt);
@@ -293,7 +315,8 @@ export async function holen(sz: Sitzung, melde: (t: string) => void): Promise<Pa
     kuerzel, von: isoAusUntis(von), bis: isoAusUntis(bis),
     // Einzelne Vertretungsstunden in fremden Klassen sind keine eigenen Klassen: mindestens 3 Stunden im Halbjahr
     kurse: [...kurse.values()].filter((k) => k.anzahl >= 3),
-    schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, termine, ferien, stammdaten
+    schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, termine, ferien, stammdaten,
+    ...(abIso ? { klassenbuchAb: abIso } : {})
   };
 }
 
@@ -350,7 +373,7 @@ export interface Ergebnis {
 export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolean; benutzer: string; schule: string }): Ergebnis {
   if (opt.beispielEntfernen) {
     const weg = new Set(d.kurse.filter((k) => !k.untis).map((k) => k.id));
-    const wegS = new Set(d.schueler.filter((s) => s.untisId === undefined).map((s) => s.id));
+    const wegS = new Set(d.schueler.filter((s) => s.untisId === undefined && s.herkunft !== 'datei').map((s) => s.id));
     d.kurse = d.kurse.filter((k) => !weg.has(k.id));
     d.schueler = d.schueler.filter((s) => !wegS.has(s.id));
     d.mitarbeit = d.mitarbeit.filter((e) => !weg.has(e.kursId));
@@ -365,6 +388,12 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
   let schuelerNeu = 0;
   for (const u of p.schueler) {
     let s = d.schueler.find((x) => x.untisId === u.untisId);
+    // Aus dem Export aufgenommen (E119): über den Namen zuordnen, damit niemand doppelt erscheint
+    if (!s) {
+      const n = (x: string) => x.trim().toLowerCase();
+      const passt = d.schueler.filter((x) => x.herkunft === 'datei' && (x.untisId === undefined || !p.schueler.some((y) => y.untisId === x.untisId)) && n(x.nachname) === n(u.nachname) && n(x.vorname) === n(u.vorname));
+      if (passt.length === 1) { s = passt[0]; s.untisId = u.untisId; }
+    }
     if (!s) {
       s = { id: `u${u.untisId}`, untisId: u.untisId, vorname: u.vorname, nachname: u.nachname, geschlecht: u.geschlecht, geburt: '', mailDienst: '' };
       d.schueler.push(s);
@@ -422,15 +451,17 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
     if (kursId) d.stundenplan.push({ kursId, tag: s.tag, beginn: s.beginn, ende: s.ende, quelle: 'untis' } satisfies Stunde);
   }
 
-  // Fehlzeiten und Verspätungen aus WebUntis: jedes Mal neu, eigene Einträge bleiben
-  d.fehlzeiten = d.fehlzeiten.filter((f) => f.quelle !== 'untis');
+  // Fehlzeiten und Verspätungen aus WebUntis: jedes Mal neu, eigene Einträge bleiben.
+  // Beim kurzen Abgleich nur ab `klassenbuchAb`, ältere WebUntis-Einträge bleiben bis zum nächsten vollen Abgleich.
+  const imFenster = (datum: string) => !p.klassenbuchAb || datum >= p.klassenbuchAb;
+  d.fehlzeiten = d.fehlzeiten.filter((f) => f.quelle !== 'untis' || !imFenster(f.datum));
   for (const f of p.fehlzeiten) {
     const kursId = kid.get(f.key);
     const schuelerId = sid.get(f.untisId);
     if (!kursId || !schuelerId) continue;
     d.fehlzeiten.push({ id: `uf${f.untisId}-${f.datum}-${f.beginn}`, kursId, schuelerId, datum: f.datum, stunden: f.stunden, status: f.status, quelle: 'untis', grund: f.grund, beginn: f.beginn });
   }
-  d.verspaetungen = d.verspaetungen.filter((v) => v.quelle !== 'untis');
+  d.verspaetungen = d.verspaetungen.filter((v) => v.quelle !== 'untis' || !imFenster(v.datum));
   for (const v of p.verspaetungen) {
     const kursId = kid.get(v.key);
     const schuelerId = sid.get(v.untisId);
@@ -441,8 +472,11 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
   let stammdaten = 0;
   for (const t of p.stammdaten) stammdaten += stammdatenEinlesen(d, t).zugeordnet;
 
+  const jetzt = new Date().toISOString();
+  const vollAbgerufen = p.klassenbuchAb ? d.einstellungen.untis?.vollAbgerufen : jetzt;
   d.einstellungen.untis = {
-    schule: opt.schule, benutzer: opt.benutzer, kuerzel: p.kuerzel, abgerufen: new Date().toISOString(),
+    schule: opt.schule, benutzer: opt.benutzer, kuerzel: p.kuerzel, abgerufen: jetzt,
+    ...(vollAbgerufen ? { vollAbgerufen } : {}),
     halbjahrVon: p.von, halbjahrBis: p.bis,
     ausfaelle: p.ausfaelle.map((a) => `${kid.get(a.key)}|${a.datum}|${a.beginn}`).filter((x) => !x.startsWith('undefined'))
   };
