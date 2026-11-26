@@ -11,6 +11,7 @@
   import { onMount } from 'svelte';
   import { lehrersicht } from '$lib/sitzplan';
   import Werkzeuge from '$lib/ui/Werkzeuge.svelte';
+  import { blockAm, reiheText } from '$lib/semester';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -151,8 +152,25 @@
   });
   const lernstoff = $derived(kurs?.lernstoff[heute]);
   let uebergangNeu = $state('');
+  // Semesterplanung (E114): welcher Block der Reihe ist heute dran? Nur wenn das Modul an ist
+  const planAn = $derived(d.einstellungen.module?.planung !== false);
+  const block = $derived(planAn ? blockAm(d, kurs, heute) : undefined);
+  let mehrBlock = $state(false);
+  function blockMehr() {
+    if (!block?.reihe) return;
+    const r = kurs.reihen?.find((x) => x.id === block.reihe!.id);
+    if (!r) return;
+    r.bloecke += mehrBlock ? -1 : 1;
+    mehrBlock = !mehrBlock;
+    speichern();
+    zeige(mehrBlock ? `${r.titel}: ein Block mehr, der Plan verschiebt sich` : 'zurückgenommen');
+  }
   function abschliessen() {
-    if (uebergangNeu.trim()) { kurs.uebergang = { text: uebergangNeu.trim(), datum: heute }; uebergangNeu = ''; }
+    if (uebergangNeu.trim()) {
+      kurs.uebergang = { text: uebergangNeu.trim(), datum: heute };
+      kurs.lernstoff[heute] = { ...(kurs.lernstoff[heute] ?? { text: '', hausaufgabe: '' }), stand: uebergangNeu.trim() }; // für den Rückblick (PB1)
+      uebergangNeu = '';
+    }
     speichern();
     zeige(ohneEintrag && d.einstellungen.stundenendeHinweis ? `Stunde gespeichert · ${ohneEintrag} ohne Mitarbeitseintrag` : 'Stunde gespeichert');
   }
@@ -183,7 +201,11 @@
       {:else if !slot.plan}<span class="klein leise">Keine Stunde laut Plan, Zeitbalken zum Testen ab Öffnen.</span>{/if}
     </div>
     {#if kurs.uebergang && kurs.uebergang.datum !== heute}
-      <div class="stehen"><b>Wo wir stehengeblieben sind</b> <span class="leise klein">({datumKurz(kurs.uebergang.datum)})</span><p>{kurs.uebergang.text}</p></div>
+      <div class="stehen"><b>Wo wir stehengeblieben sind</b> <span class="leise klein">({datumKurz(kurs.uebergang.datum)})</span><p>{kurs.uebergang.text}</p>
+        {#if block && (reiheText(block) || lernstoff?.text)}<p class="klein"><span class="leise">Heute geplant:</span> {[reiheText(block), lernstoff?.text].filter(Boolean).join(' · ')}</p>{/if}
+      </div>
+    {:else if block && reiheText(block)}
+      <div class="stehen geplant"><b>Heute geplant</b> <span class="leise klein">{reiheText(block)}</span>{#if lernstoff?.text}<p>{lernstoff.text}</p>{/if}</div>
     {/if}
 
     <div class="bereich" class:breit={nurMitarbeit}>
@@ -275,7 +297,10 @@
             <h2>Übergang</h2>
             {#if kurs.uebergang}<p class="klein"><span class="leise">Letztes Mal ({datumKurz(kurs.uebergang.datum)}):</span> {kurs.uebergang.text}</p>{/if}
             <label class="feld"><span>Für die nächste Stunde (nur für dich)</span><textarea rows="2" bind:value={uebergangNeu} placeholder="Wo seid ihr stehengeblieben?"></textarea></label>
-            <span class="klein leise">Wird mit „Stunde abschließen“ gespeichert.</span>
+            <span class="klein leise">Wird mit „Stunde abschließen“ gespeichert und steht in der Planung im Rückblick.</span>
+            {#if block?.reihe}
+              <button class="pille" aria-pressed={mehrBlock} onclick={blockMehr} title="Die Reihe braucht länger: alle folgenden Blöcke rücken einen weiter">{mehrBlock ? `✓ ${block.reihe.titel} +1 Block` : `${block.reihe.titel} braucht 1 Block mehr`}</button>
+            {/if}
           </section>
         </aside>
       {/if}
@@ -388,6 +413,7 @@
   .wrap { flex-wrap: wrap; }
   .stehen { background: var(--leo-stern-hell); border: 1px solid #ecd28a; border-radius: var(--leo-r-l); padding: 12px 18px; }
   .stehen p { margin: 4px 0 0; font-size: 15px; }
+  .stehen.geplant { background: var(--leo-flaeche-leise); border-color: var(--leo-linie-fein); }
   .gnr { color: var(--leo-akzent); font-size: 11px; margin-right: 3px; }
   .stapel { display: flex; flex-direction: column; gap: 10px; }
   .stapel h2 { margin-bottom: 2px; }

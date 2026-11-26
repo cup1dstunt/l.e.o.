@@ -54,7 +54,7 @@ export interface Kurs {
   zellen: Record<string, Zelle>; // Schlüssel `${leistungId}:${schuelerId}`
   endnoten: Record<string, number>; // festgelegte Endnote je Schüler
   stundenGehalten: number; // Basis der Fehlzeitenquote
-  lernstoff: Record<string, { text: string; hausaufgabe: string }>; // je Datum
+  lernstoff: Record<string, Lernstoff>; // je Datum
   uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
   sitzplan: Sitzplan;
   untis?: { klasseId: number; fachId: number }; // Herkunft WebUntis: Klasse + Fach
@@ -64,6 +64,46 @@ export interface Kurs {
   gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
   muendlich?: MuendlichEinstellung; // Raster und Schwelle für die mündlichen Leistungen (FB7, E110)
   einschaetzungen?: Record<string, RasterEinschaetzung>; // Schlüssel `${monat}:${schuelerId}`
+  reihen?: Reihe[]; // Semesterplanung (PB16, E114): Unterrichtsreihen in Reihenfolge
+  untisStunden?: string[]; // echte Termine laut WebUntis im Schuljahr, `${datum}|${beginn}|${ende}` (auch Blockwochen, A/B-Wochen)
+}
+
+/** Was in einer Stunde dran ist (PB15) und wo man stehengeblieben ist (PB1). */
+export interface Lernstoff {
+  text: string; // Thema / Stoff
+  hausaufgabe: string;
+  stand?: string; // „Wo wir stehengeblieben sind“, beim Abschließen der Stunde gespeichert
+}
+
+/** Unterrichtsreihe der Semesterplanung: Titel und wie viele Blöcke sie braucht (E114). */
+export interface Reihe {
+  id: string;
+  titel: string;
+  bloecke: number;
+}
+
+/** Kalendereintrag (K2, E115). Unterrichtsfrei + keine Klassen = für alle eigenen Klassen frei. */
+export interface Termin {
+  id: string;
+  datum: string; // ISO-Datum
+  bis?: string; // letzter Tag bei mehrtägigen Terminen
+  beginn?: string; // HH:MM, fehlt = ganztägig
+  ende?: string;
+  titel: string;
+  art: TerminArt;
+  kursIds?: string[]; // betroffene Klassen (Ausfall, Exkursion, Abgabe)
+  unterrichtFrei?: boolean; // zählt in der Semesterplanung nicht als Block
+  notiz?: string;
+  quelle?: 'ics'; // aus einer Kalenderdatei (z. B. IServ), beim nächsten Import ersetzt
+  uid?: string; // UID aus der Kalenderdatei
+}
+export type TerminArt = 'konferenz' | 'aufsicht' | 'sprechtag' | 'abgabe' | 'ausflug' | 'ausfall' | 'frei' | 'sonstiges';
+
+/** Ferien und Feiertage (aus WebUntis); ohne Abgleich nimmt L.E.O. Beispielwerte (semester.ts). */
+export interface FreieZeit {
+  name: string;
+  von: string;
+  bis: string;
 }
 
 /** Wie die Klasse mündlich bewertet wird (E110): Smileys, Raster springt ein, wenn zu wenige da sind. */
@@ -189,11 +229,11 @@ export interface NachTermin {
   gedruckt: boolean;
   mails: Record<string, string>; // Fall → Datum, an dem die Mail geöffnet wurde (E105)
   notiz?: string;
-  hinweis?: string; // Zusatz für alle Mails dieses Termins, Platzhalter {hinweis} (E114)
-  entwuerfe?: Record<string, MailEntwurf>; // Fall → angepasste Mail (E114)
+  hinweis?: string; // Zusatz für alle Mails dieses Termins, Platzhalter {hinweis} (E116)
+  entwuerfe?: Record<string, MailEntwurf>; // Fall → angepasste Mail (E116)
 }
 
-/** Vor dem Senden angepasste Mail eines Falls (E114). Fehlt betreff/text, gilt die Vorlage. */
+/** Vor dem Senden angepasste Mail eines Falls (E116). Fehlt betreff/text, gilt die Vorlage. */
 export interface MailEntwurf {
   vorlage?: string; // gewählte Vorlage, fehlt = passend zum Status
   betreff?: string;
@@ -226,10 +266,13 @@ export interface Einstellungen {
   untis?: UntisStand;
   untisAuto?: boolean; // WebUntis automatisch abgleichen (WU2), fehlt = an
   nachschreibMail?: { betreff: string; text: string }; // alte Einzelvorlage (E107), gilt als Überschreibung von „Entschuldigt (E)“
-  nachschreibVorlagen?: { id: string; name: string; betreff: string; text: string }[]; // eigene und überschriebene Mailvorlagen (E114)
+  nachschreibVorlagen?: { id: string; name: string; betreff: string; text: string }[]; // eigene und überschriebene Mailvorlagen (E116)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
   bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
   raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
+  ferien?: FreieZeit[]; // Ferien und Feiertage laut WebUntis (getHolidays)
+  halbjahrGrenze?: string; // erster Tag des 2. Halbjahres, fehlt = 1. Februar
+  module?: { planung?: boolean; kalender?: boolean }; // abschaltbare Module (Projektregel), fehlt = an
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */
@@ -261,6 +304,7 @@ export interface Daten {
   verspaetungen: Verspaetung[];
   notizen: Notiz[];
   nachschreiben: NachTermin[];
+  termine: Termin[];
   stundenplan: Stunde[];
   einstellungen: Einstellungen;
 }

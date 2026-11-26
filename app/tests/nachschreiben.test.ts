@@ -69,7 +69,7 @@ gleich('Platzhalter eingesetzt', [text.includes('Hallo Va,'), text.includes('14:
 gleich('unbekannter Platzhalter bleibt', fuellen('{x} {vorname}', { vorname: 'A' }), '{x} A');
 gleich('mailto', mailLink('a.b@osz-lus.de', 'Ü & Co', 'Zeile 1\nZeile 2'), 'mailto:a.b@osz-lus.de?subject=%C3%9C%20%26%20Co&body=Zeile%201%0AZeile%202');
 
-// ---------- Vorlagen und Entwürfe (E114) ----------
+// ---------- Vorlagen und Entwürfe (E116) ----------
 gleich('Status je Eintrag: a E aus Notenbuch', t.eintraege.find((e) => e.schueler.id === 'a')?.status, 'E');
 gleich('Frist FOS 3 Tage', fristBis('FOS', '2026-10-08'), '2026-10-11');
 gleich('Frist Berufsschule 14 Tage', fristBis('OSZ', '2026-10-08'), '2026-10-22');

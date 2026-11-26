@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Kurs } from '$lib/typen';
   import type { Snippet } from 'svelte';
+  import { app } from '$lib/speicher.svelte';
   let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan' | 'anwesenheit' | 'muendlich'; info?: string; rechts?: Snippet } = $props();
 </script>
 
@@ -17,7 +18,7 @@
     <a href="/sitzplan/{kurs.id}" class:aktiv={aktiv === 'sitzplan'}>Sitzplan</a>
     <a href="/muendlich/{kurs.id}" class:aktiv={aktiv === 'muendlich'}>Mündlich</a>
     <a href="/anwesenheit/{kurs.id}" class:aktiv={aktiv === 'anwesenheit'}>Anwesenheit</a>
-    <a href="/planung/{kurs.id}" class:aktiv={aktiv === 'planung'}>Planung</a>
+    {#if app.d?.einstellungen.module?.planung !== false}<a href="/planung/{kurs.id}" class:aktiv={aktiv === 'planung'}>Planung</a>{/if}
   </nav>
 </header>
 

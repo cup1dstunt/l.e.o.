@@ -136,16 +136,16 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | F9 | ✅ umgesetzt 20.11. (E107). **Mail erst nach festgelegtem Nachschreibetermin** (nie automatisch nach dem Fehlen): Entwurf mit Textbaustein, nur an die schulische Adresse, Versand erst nach Klick der Lehrkraft (E105) | K | 1 | S |
 | F10 | ✅ umgesetzt 20.11. (E107). Checkliste je Nachschreibetermin (Klausur vorbereitet, gedruckt, Mail verschickt); Note eintragen schließt den Fall. Statusänderung in WebUntis danach (z. B. offen → UE bei schon eingetragener Note) nur als Hinweis, keine automatische Änderung. Oberfläche: Kachel „Nachschreiben“ auf Heute, Klausurzelle im Notenbuch zeigt E/offen/Termin, Fall in der Schülerübersicht bei den Fehlzeiten | C | 1 | S |
 | F11 | ✅ umgesetzt 20.11. (E107). 30-%-Übersicht der ganzen Klasse als zweiter Teil von Modul 1 (eigene Planung) | C | 1 | M |
-| F12 | ✅ umgesetzt 25.11. (E114). **Nachschreibe-Mail individuell anpassbar:** Vorlagen je Status (E / offen) und eigene, Platzhalter antippen, Vorschau, Hinweis je Termin, Entwurf je Schüler vor dem Senden änderbar | K | 1 | S |
+| F12 | ✅ umgesetzt 25.11. (E116). **Nachschreibe-Mail individuell anpassbar:** Vorlagen je Status (E / offen) und eigene, Platzhalter antippen, Vorschau, Hinweis je Termin, Entwurf je Schüler vor dem Senden änderbar | K | 1 | S |
 
 ## Kalender & Organisation
 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
 | K1 | Persönlicher Stundenplan aus WebUntis (Export/ICS als Start), mit Vertretungen | K, B | 1 | M |
-| K2 | Kalender: Termine, Klausuren, Abgaben, Konferenzen, Aufsichten | B | 1 | M |
-| K3 | Import anderer Pläne aus IServ (iCal) | B | 2 | S |
-| K4 | ICS-Export (z. B. Google Kalender) | B | 2 | S |
+| K2 | ✅ im Prototyp 25.11. (E115). Kalender: Termine, Klausuren, Abgaben, Konferenzen, Aufsichten | B | 1 | M |
+| K3 | ✅ als Datei-Import im Prototyp 25.11. (E115); Abo-Link aus IServ offen. Import anderer Pläne aus IServ (iCal) | B | 2 | S |
+| K4 | ✅ als Datei im Prototyp 25.11. (E115); Abo-Link offen. ICS-Export (z. B. Google Kalender) | B | 2 | S |
 | K5 | Notizen je Schüler: Kürzel, Datum, Suche | B | 2 | S |
 | K6 | Eltern-/Beratungsgespräche mit Vereinbarung und Wiedervorlage | B | 2 | M |
 | K7 | Notizen privat oder für Klassenleitung freigeben | C | 2 | S |
@@ -349,7 +349,7 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 
 | # | Punkt | Herkunft | Prio | Aufwand | Status |
 |---|---|---|---|---|---|
-| PB1 | **Wo sind wir stehengeblieben:** Notiz am Kurs (Klasse + Fach), erscheint in der nächsten Stunde oben und auf der Startseite (konkretisiert PF10) | K | 1 | S | im Prototyp |
+| PB1 | **Wo sind wir stehengeblieben:** Notiz am Kurs (Klasse + Fach), erscheint in der nächsten Stunde oben und auf der Startseite (konkretisiert PF10) | K | 1 | S | im Prototyp, Stand je Tag im Rückblick (E114) |
 | PB2 | **Was-wäre-wenn:** welche Note in einer offenen Leistung nötig ist, um eine Gesamtnote zu erreichen (I36) | C, K bestätigt | 1 | S | im Prototyp (Rechenweg-Fenster) |
 | PB3 | **Warnampel:** unter der Grenze, auf der Kippe, zu wenige Noten; Fehlzeitengrenze in der Schülerkarte (I37, Q6) | C, K bestätigt | 1 | S | im Prototyp |
 | PB4 | **Nachschreiber-Liste** bei E an Klausuren (I44), mit Namen und Termin | C, K bestätigt | 1 | S | Zähler im Prototyp, Liste offen |
@@ -362,9 +362,9 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 | PB11 | **Wochenrückblick:** was diese Woche erfasst wurde, wer ohne Mitarbeitseintrag blieb, offene Nachschreiber | C, K bestätigt | 2 | S | offen |
 | PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | gebaut 20.11. (F3, E102): verschlüsselte Datei + 7 Tagesstände |
 | PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | Woche/Tag umschaltbar im Prototyp (19.11., Entwurf A+B), Quelle WebUntis |
-| PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | offen |
-| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | einfache Fassung im Prototyp (Reiter „Planung“) |
-| PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | Zählung mit Beispiel-Ferien im Prototyp, Quelle WebUntis offen |
+| PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | im Prototyp (E115): Monat im Stundenplan, ICS-Datei hin und zurück |
+| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | im Prototyp (E114), Material/Dateien offen |
+| PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | im Prototyp (E114): WebUntis-Termine und -Ferien, Unterrichtsreihen; mit echtem WebUntis ungetestet |
 | PB17 | **Live-Stunde: Werkzeuge für die Stunde** sammeln (Zufall, Gruppen, Timer, Beamer-Modus PF25, Lernstoff, Übergang); was fehlt noch? | K | 1 | M | teilweise im Prototyp |
 | PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | gebaut 20.11. (F4, E103): eigener Dienst auf dem Unraid, Ende-zu-Ende-verschlüsselt; ungetestet auf Unraid/iPad |
 | PB19 | **App-Pakete** für Windows/macOS (Tauri) und Android/iOS (Capacitor) aus derselben Browser-App (E79) | C | 2 | M | offen |

@@ -83,7 +83,7 @@
     zeige(`${status} ins Notenbuch übernommen`, () => { if (alt) kurs.zellen[key] = alt; else delete kurs.zellen[key]; speichern(); });
   }
 
-  // ---------- Mailvorlagen (E105, E114) ----------
+  // ---------- Mailvorlagen (E105, E116) ----------
   const vorlagen = $derived(vorlagenVon(d.einstellungen));
   let vorlageOffen = $state(false);
   let aktivId = $state('std-e');
@@ -141,7 +141,7 @@
     return { fuer: e ? name(e.schueler) : 'Beispiel', betreff: fuellen(aktiv.betreff, w), text: fuellen(aktiv.text, w) };
   });
 
-  // ---------- Mail je Schüler (E105, E114) ----------
+  // ---------- Mail je Schüler (E105, E116) ----------
   type Eintrag = TerminSicht['eintraege'][number];
   const mail = (t: NachTermin, e: Eintrag) => ({ ...mailFuer(t, e.kurs, e.leistung, e.schueler, e.status, vorlagen, e.key), an: schulAdresse(e.schueler, d.schueler) });
   let offenerEntwurf = $state<string | null>(null);
