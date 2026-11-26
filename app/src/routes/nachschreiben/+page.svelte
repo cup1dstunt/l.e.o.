@@ -4,8 +4,8 @@
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { name, datumWt, heuteISO } from '$lib/hilfen';
-  import { nachschreibLage, terminSicht, schulAdresse, mailWerte, fuellen, mailLink, MAIL_STANDARD, PLATZHALTER, type Fall } from '$lib/nachschreiben';
-  import type { NachTermin } from '$lib/typen';
+  import { nachschreibLage, terminSicht, schulAdresse, mailWerte, fuellen, mailLink, mailFuer, terminStand, vorlagenVon, vorlageFuerStatus, PLATZHALTER_INFO, type Fall, type MailVorlage, type TerminSicht } from '$lib/nachschreiben';
+  import type { NachTermin, MailEntwurf } from '$lib/typen';
 
   const d = app.d!;
   const heute = heuteISO();
@@ -62,6 +62,7 @@
     if (i < 0) return;
     t.faelle.splice(i, 1);
     delete t.mails[key];
+    delete t.entwuerfe?.[key];
     speichern();
     zeige('Aus dem Termin genommen, wieder bei den offenen Fällen', () => { t.faelle.splice(i, 0, key); speichern(); });
   }
@@ -82,23 +83,105 @@
     zeige(`${status} ins Notenbuch übernommen`, () => { if (alt) kurs.zellen[key] = alt; else delete kurs.zellen[key]; speichern(); });
   }
 
-  // ---------- Mail (E105) ----------
-  const vorlage = $derived(d.einstellungen.nachschreibMail ?? MAIL_STANDARD);
+  // ---------- Mailvorlagen (E105, E117) ----------
+  const vorlagen = $derived(vorlagenVon(d.einstellungen));
   let vorlageOffen = $state(false);
-  function vorlageAendern(feld: 'betreff' | 'text', wert: string) {
-    d.einstellungen.nachschreibMail = { ...vorlage, [feld]: wert };
+  let aktivId = $state('std-e');
+  const aktiv = $derived(vorlagen.find((v) => v.id === aktivId) ?? vorlagen[0]);
+  let feldText = $state<HTMLTextAreaElement | null>(null);
+  let feldBetreff = $state<HTMLInputElement | null>(null);
+  let letztesFeld: 'betreff' | 'text' = 'text';
+
+  function vorlageSpeichern(v: MailVorlage) {
+    const liste = (d.einstellungen.nachschreibVorlagen ??= []);
+    const i = liste.findIndex((x) => x.id === v.id);
+    const sauber = { id: v.id, name: v.name, betreff: v.betreff, text: v.text };
+    if (i >= 0) liste[i] = sauber; else liste.push(sauber);
+    if (v.id === 'std-e') delete d.einstellungen.nachschreibMail; // alte Einzelvorlage ist jetzt hier aufgegangen
     speichern();
   }
-  function vorlageZurueck() { delete d.einstellungen.nachschreibMail; speichern(); }
-  const mail = (t: NachTermin, e: { kurs: any; leistung: any; schueler: any }) => {
-    const w = mailWerte(t, e.kurs, e.leistung, e.schueler);
-    return { betreff: fuellen(vorlage.betreff, w), text: fuellen(vorlage.text, w), an: schulAdresse(e.schueler, d.schueler) };
-  };
+  const vorlageAendern = (feld: 'name' | 'betreff' | 'text', wert: string) => vorlageSpeichern({ ...aktiv, [feld]: wert });
+  function vorlageNeu() {
+    const v = { id: neueId(), name: 'Eigene Vorlage', betreff: aktiv.betreff, text: aktiv.text };
+    vorlageSpeichern(v);
+    aktivId = v.id;
+    zeige('Neue Vorlage als Kopie angelegt');
+  }
+  function vorlageZurueck() {
+    const liste = d.einstellungen.nachschreibVorlagen ?? [];
+    const vorher = { liste: JSON.parse(JSON.stringify(liste)), alt: d.einstellungen.nachschreibMail };
+    d.einstellungen.nachschreibVorlagen = liste.filter((x) => x.id !== aktiv.id);
+    if (aktiv.id === 'std-e') delete d.einstellungen.nachschreibMail;
+    const eingebaut = aktiv.eingebaut;
+    if (!eingebaut) aktivId = 'std-e';
+    speichern();
+    zeige(eingebaut ? 'Standardtext wiederhergestellt' : 'Vorlage gelöscht', () => {
+      d.einstellungen.nachschreibVorlagen = vorher.liste;
+      if (vorher.alt) d.einstellungen.nachschreibMail = vorher.alt;
+      speichern();
+    });
+  }
+  /** Platzhalter antippen statt eintippen: an der Cursorposition im zuletzt benutzten Feld einsetzen. */
+  function platzhalterEinsetzen(name: string) {
+    const el = letztesFeld === 'betreff' ? feldBetreff : feldText;
+    if (!el) return;
+    const s = el.selectionStart ?? el.value.length;
+    const e = el.selectionEnd ?? s;
+    const neuWert = el.value.slice(0, s) + `{${name}}` + el.value.slice(e);
+    vorlageAendern(letztesFeld, neuWert);
+    requestAnimationFrame(() => { el.focus(); const p = s + name.length + 2; el.setSelectionRange(p, p); });
+  }
+  // Vorschau mit einem echten Fall, sonst mit einem erfundenen Beispiel
+  const vorschau = $derived.by(() => {
+    const ts = offeneTermine.find((x) => x.eintraege.length);
+    const e = ts?.eintraege[0];
+    const w = ts && e
+      ? mailWerte(ts.termin, e.kurs, e.leistung, e.schueler, aktivId === 'std-offen' ? 'offen' : e.status)
+      : { vorname: 'Alex', nachname: 'Beispiel', klausur: 'Klausur 1', fach: 'Englisch', klasse: '2FOS', klausurdatum: 'Donnerstag, 8. Oktober', datum: 'Dienstag, 24. November', uhrzeit: '14:00', raum: '2.14', status: 'entschuldigt', frist: 'Sonntag, 11. Oktober', nta: '', hinweis: '' };
+    return { fuer: e ? name(e.schueler) : 'Beispiel', betreff: fuellen(aktiv.betreff, w), text: fuellen(aktiv.text, w) };
+  });
+
+  // ---------- Mail je Schüler (E105, E117) ----------
+  type Eintrag = TerminSicht['eintraege'][number];
+  const mail = (t: NachTermin, e: Eintrag) => ({ ...mailFuer(t, e.kurs, e.leistung, e.schueler, e.status, vorlagen, e.key), an: schulAdresse(e.schueler, d.schueler) });
+  let offenerEntwurf = $state<string | null>(null);
+
+  function entwurf(t: NachTermin, key: string): MailEntwurf { return ((t.entwuerfe ??= {})[key] ??= {}); }
+  function entwurfAendern(t: NachTermin, e: Eintrag, feld: 'betreff' | 'text', wert: string) {
+    const m = mail(t, e);
+    const ent = entwurf(t, e.key);
+    // Beim ersten Anpassen beide Felder festhalten, damit eine spätere Vorlagenänderung den Entwurf nicht halb verändert
+    ent.betreff ??= m.betreff;
+    ent.text ??= m.text;
+    ent[feld] = wert;
+    ent.stand = terminStand(t);
+    speichern();
+  }
+  function vorlageWaehlen(t: NachTermin, e: Eintrag, id: string) {
+    const ent = entwurf(t, e.key);
+    const vorher = { ...ent };
+    if (id === vorlageFuerStatus(e.status)) delete ent.vorlage; else ent.vorlage = id;
+    const hatteText = ent.text !== undefined;
+    delete ent.text; delete ent.betreff; delete ent.stand;
+    speichern();
+    if (hatteText) zeige('Vorlage gewechselt, deine Anpassung ist ersetzt', () => { t.entwuerfe![e.key] = vorher; speichern(); });
+  }
+  function entwurfZurueck(t: NachTermin, e: Eintrag) {
+    const ent = entwurf(t, e.key);
+    const vorher = { ...ent };
+    delete ent.text; delete ent.betreff; delete ent.stand;
+    speichern();
+    zeige('Wieder der Text aus der Vorlage', () => { t.entwuerfe![e.key] = vorher; speichern(); });
+  }
+  function hinweisSetzen(t: NachTermin, wert: string) {
+    if (wert.trim()) t.hinweis = wert; else delete t.hinweis;
+    speichern();
+  }
   function mailOeffnen(t: NachTermin, key: string) {
     t.mails[key] = heute;
     speichern();
   }
-  async function kopieren(t: NachTermin, e: { key: string; kurs: any; leistung: any; schueler: any }) {
+  async function kopieren(t: NachTermin, e: Eintrag) {
     const m = mail(t, e);
     try {
       await navigator.clipboard.writeText(`An: ${m.an.adresse}\nBetreff: ${m.betreff}\n\n${m.text}`);
@@ -187,12 +270,34 @@
     {/if}
 
     <section class="karte">
-      <button class="aufklapp" aria-expanded={vorlageOffen} onclick={() => (vorlageOffen = !vorlageOffen)}><h2 class="raum">Mailtext</h2><span class="klein leise">{d.einstellungen.nachschreibMail ? 'eigene Vorlage' : 'Standard'} {vorlageOffen ? '▴' : '▾'}</span></button>
+      <button class="aufklapp" aria-expanded={vorlageOffen} onclick={() => (vorlageOffen = !vorlageOffen)}><h2 class="raum">Mailvorlagen</h2><span class="klein leise">{vorlagen.length} Vorlagen {vorlageOffen ? '▴' : '▾'}</span></button>
       {#if vorlageOffen}
-        <label class="feld"><span>Betreff</span><input value={vorlage.betreff} onchange={(e) => vorlageAendern('betreff', (e.currentTarget as HTMLInputElement).value)} /></label>
-        <label class="feld"><span>Text</span><textarea rows="9" value={vorlage.text} onchange={(e) => vorlageAendern('text', (e.currentTarget as HTMLTextAreaElement).value)}></textarea></label>
-        <p class="klein leise">Platzhalter: {PLATZHALTER.map((p) => `{${p}}`).join(' ')}. Die Mail geht nur an die schulische Adresse.</p>
-        {#if d.einstellungen.nachschreibMail}<button class="knopf leise" onclick={vorlageZurueck}>Standard wiederherstellen</button>{/if}
+        <div class="chips vorlagen">
+          {#each vorlagen as v (v.id)}
+            <button class="chip" aria-pressed={v.id === aktiv.id} onclick={() => (aktivId = v.id)}>{v.name}{#if v.geaendert}<span class="klein leise">angepasst</span>{/if}</button>
+          {/each}
+          <button class="pille" onclick={vorlageNeu}>+ neue Vorlage</button>
+        </div>
+        <p class="klein leise">{aktiv.id === 'std-e' ? 'Wird automatisch genommen, wenn der Status E ist.' : aktiv.id === 'std-offen' ? 'Wird automatisch genommen, solange die Entschuldigung offen ist.' : 'Eigene Vorlage, je Schüler im Termin auswählbar.'}</p>
+        {#if !aktiv.eingebaut}<label class="feld"><span>Name</span><input value={aktiv.name} onchange={(e) => vorlageAendern('name', e.currentTarget.value)} /></label>{/if}
+        <label class="feld"><span>Betreff</span><input bind:this={feldBetreff} value={aktiv.betreff} onfocus={() => (letztesFeld = 'betreff')} onchange={(e) => vorlageAendern('betreff', e.currentTarget.value)} /></label>
+        <label class="feld"><span>Text</span><textarea bind:this={feldText} rows="11" value={aktiv.text} onfocus={() => (letztesFeld = 'text')} onchange={(e) => vorlageAendern('text', e.currentTarget.value)}></textarea></label>
+        <div class="platzhalter">
+          <span class="klein leise">Antippen setzt ein:</span>
+          {#each PLATZHALTER_INFO as p (p.name)}
+            <button class="pille klein" title={p.info} onmousedown={(e) => e.preventDefault()} onclick={() => platzhalterEinsetzen(p.name)}>{p.name}</button>
+          {/each}
+        </div>
+        <div class="vorschau">
+          <span class="klein leise">Vorschau für {vorschau.fuer}</span>
+          <b>{vorschau.betreff}</b>
+          <pre>{vorschau.text}</pre>
+        </div>
+        <div class="zeile">
+          <span class="klein leise raum">Die Mail geht nur an die schulische Adresse (E105). Leere Platzhalter wie {'{nta}'} verschwinden mit ihrer Zeile.</span>
+          {#if aktiv.geaendert}<button class="knopf leise" onclick={vorlageZurueck}>Standardtext wiederherstellen</button>{/if}
+          {#if !aktiv.eingebaut}<button class="knopf leise" onclick={vorlageZurueck}>Vorlage löschen</button>{/if}
+        </div>
       {/if}
     </section>
   </div>
@@ -218,6 +323,9 @@
               <span class:fertig={ts.mailsFertig === aktiv && aktiv > 0}>{ts.mailsFertig === aktiv && aktiv > 0 ? '✓' : '○'} Mails verschickt ({ts.mailsFertig}/{aktiv})</span>
               <span class:fertig={ts.notenFertig === aktiv && aktiv > 0}>{ts.notenFertig === aktiv && aktiv > 0 ? '✓' : '○'} Noten eingetragen ({ts.notenFertig}/{aktiv})</span>
             </div>
+            <label class="feld hinweis"><span>Hinweis für alle in diesem Termin <span class="leise">(optional, steht in der Mail bei {'{hinweis}'})</span></span>
+              <textarea rows="2" value={t.hinweis ?? ''} placeholder="z. B. Bitte Taschenrechner und Wörterbuch mitbringen." onchange={(ev) => hinweisSetzen(t, ev.currentTarget.value)}></textarea>
+            </label>
             <ul class="liste">
               {#each sichtbar as e (e.key)}
                 {@const m = mail(t, e)}
@@ -227,7 +335,9 @@
                     <span class="klein leise">· {e.kurs.klasse} · {e.leistung.name}</span><br />
                     {#if e.schueler.nta}<span class="klein akzent">{e.schueler.nta}</span><br />{/if}
                     {#if e.stand !== 'entfaellt'}
-                      <span class="klein" class:leise={!m.an.pruefen.length} class:gold={m.an.pruefen.length > 0}>{m.an.adresse}{m.an.vorschlag ? ' (Vorschlag)' : ''}{m.an.pruefen.length ? ` · bitte prüfen: ${m.an.pruefen.join(', ')}` : ''}</span>
+                      <span class="klein" class:leise={!m.an.pruefen.length} class:gold={m.an.pruefen.length > 0}>{m.an.adresse}{m.an.vorschlag ? ' (Vorschlag)' : ''}{m.an.pruefen.length ? ` · bitte prüfen: ${m.an.pruefen.join(', ')}` : ''}</span><br />
+                      <span class="klein leise">{e.status === 'E' ? 'entschuldigt' : 'Entschuldigung offen'}{#if m.vorlage.id !== vorlageFuerStatus(e.status)}&nbsp;· Vorlage „{m.vorlage.name}“{/if}{#if m.angepasst}&nbsp;· <b class="akzent">angepasst</b>{/if}</span>
+                      {#if m.veraltet}<br /><span class="klein gold">Termin nach deiner Anpassung geändert, bitte Text prüfen</span>{/if}
                     {/if}
                   </div>
                   <span class="kennz" class:ok={e.stand === 'erledigt'} class:ue={e.stand === 'entfaellt'}>{e.stand === 'erledigt' ? e.wert : e.stand === 'entfaellt' ? 'UE' : '–'}</span>
@@ -237,12 +347,31 @@
                       {#if e.mail}
                         <button class="pille" onclick={() => mailZurueck(t, e.key)} title="Markierung zurücknehmen">Mail ✓ {datumWt(e.mail)}</button>
                       {:else}
+                        <button class="knopf leise" aria-expanded={offenerEntwurf === e.key} onclick={() => (offenerEntwurf = offenerEntwurf === e.key ? null : e.key)}>{offenerEntwurf === e.key ? 'Entwurf zu' : 'Entwurf ansehen'}</button>
                         <a class="knopf" href={mailLink(m.an.adresse, m.betreff, m.text)} onclick={() => mailOeffnen(t, e.key)}>Mail öffnen</a>
                         <button class="knopf leise" onclick={() => kopieren(t, e)}>kopieren</button>
                       {/if}
                     {/if}
                     <button class="pille" onclick={() => entfernen(t, e.key)} aria-label="{name(e.schueler)} aus dem Termin nehmen">×</button>
                   </div>
+                  {#if offenerEntwurf === e.key && e.stand !== 'entfaellt' && !e.mail}
+                    <div class="entwurf">
+                      <div class="chips">
+                        {#each vorlagen as v (v.id)}
+                          <button class="chip klein" aria-pressed={v.id === m.vorlage.id} onclick={() => vorlageWaehlen(t, e, v.id)}>{v.name}{#if v.id === vorlageFuerStatus(e.status)}<span class="klein leise">passt zum Status</span>{/if}</button>
+                        {/each}
+                      </div>
+                      <label class="feld"><span>An</span><input value={m.an.adresse} readonly /></label>
+                      <label class="feld"><span>Betreff</span><input value={m.betreff} onchange={(ev) => entwurfAendern(t, e, 'betreff', ev.currentTarget.value)} /></label>
+                      <label class="feld"><span>Text <span class="leise">(nur für {e.schueler.vorname}, die Vorlage bleibt unverändert)</span></span><textarea rows="10" value={m.text} onchange={(ev) => entwurfAendern(t, e, 'text', ev.currentTarget.value)}></textarea></label>
+                      <div class="zeile">
+                        {#if m.angepasst}<button class="knopf leise" onclick={() => entwurfZurueck(t, e)}>Text aus der Vorlage nehmen</button>{/if}
+                        <span class="raum"></span>
+                        <button class="knopf leise" onclick={() => kopieren(t, e)}>kopieren</button>
+                        <a class="knopf haupt" href={mailLink(m.an.adresse, m.betreff, m.text)} onclick={() => { mailOeffnen(t, e.key); offenerEntwurf = null; }}>Mail öffnen</a>
+                      </div>
+                    </div>
+                  {/if}
                 </li>
               {/each}
             </ul>
@@ -309,6 +438,14 @@
   .aendern summary { cursor: pointer; color: var(--leo-leise); min-height: 32px; }
   .aendern .felder { margin: 8px 0; }
   textarea { font-family: inherit; }
+  .vorlagen { margin: 4px 0 8px; }
+  .platzhalter { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 10px; }
+  .platzhalter .pille { font-family: var(--leo-mono, ui-monospace, monospace); }
+  .vorschau { display: grid; gap: 4px; background: var(--leo-flaeche-leise); border-radius: var(--leo-r-m); padding: 10px 12px; margin-bottom: 10px; }
+  .vorschau pre { margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.5; }
+  .hinweis { margin: 8px 0 2px; }
+  .entwurf { flex-basis: 100%; display: grid; gap: 8px; border: 2px solid var(--leo-akzent); border-radius: var(--leo-r-m); padding: 10px 12px; background: var(--leo-auswahl); }
+  .entwurf .chips { margin-top: 0; }
   @media (max-width: 900px) {
     .kopf { padding: 14px 16px 4px; }
     .seite { grid-template-columns: 1fr; padding: 8px 16px 90px; }

@@ -229,6 +229,16 @@ export interface NachTermin {
   gedruckt: boolean;
   mails: Record<string, string>; // Fall → Datum, an dem die Mail geöffnet wurde (E105)
   notiz?: string;
+  hinweis?: string; // Zusatz für alle Mails dieses Termins, Platzhalter {hinweis} (E117)
+  entwuerfe?: Record<string, MailEntwurf>; // Fall → angepasste Mail (E117)
+}
+
+/** Vor dem Senden angepasste Mail eines Falls (E117). Fehlt betreff/text, gilt die Vorlage. */
+export interface MailEntwurf {
+  vorlage?: string; // gewählte Vorlage, fehlt = passend zum Status
+  betreff?: string;
+  text?: string;
+  stand?: string; // terminStand beim Anpassen; weicht er ab, wird der Entwurf als veraltet markiert
 }
 
 export interface Notiz {
@@ -255,7 +265,8 @@ export interface Einstellungen {
   passwort?: { salz: string; hash: string };
   untis?: UntisStand;
   untisAuto?: boolean; // WebUntis automatisch abgleichen (WU2), fehlt = an
-  nachschreibMail?: { betreff: string; text: string }; // eigene Vorlage der Nachschreibe-Mail (E105)
+  nachschreibMail?: { betreff: string; text: string }; // alte Einzelvorlage (E107), gilt als Überschreibung von „Entschuldigt (E)“
+  nachschreibVorlagen?: { id: string; name: string; betreff: string; text: string }[]; // eigene und überschriebene Mailvorlagen (E117)
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
   bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
   raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
