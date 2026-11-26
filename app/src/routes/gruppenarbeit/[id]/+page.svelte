@@ -407,7 +407,7 @@
             </tbody></table>
           {/if}
         {/each}
-        <p class="klein leise">Handlungsprodukt und Arbeitsweise sind je der gewichtete Durchschnitt ihrer Stufen; beide zusammen nach deinem Anteil. Die Prozente in den Tabellen gelten innerhalb des Teils. Stufe 4 = {fos ? '15 Punkte' : 'Note 1'}. Alles gilt nur für dieses Projekt.</p>
+        <p class="klein leise">Handlungsprodukt und Arbeitsweise sind je der gewichtete Durchschnitt ihrer Stufen; beide zusammen nach deinem Anteil. Die Prozente in den Tabellen gelten innerhalb des Teils. Stufe 4 = {fos ? '14 Punkte (wie Smileys; 15 nur bei direkt eingetragener Note)' : 'Note 1'}. Alles gilt nur für dieses Projekt.</p>
         <div class="gfuss"><button class="knopf leise" disabled={!p.gewichte && p.anteilProdukt === undefined} onclick={() => { delete p.gewichte; delete p.anteilProdukt; speichern(); }}>Standard</button><button class="knopf haupt" onclick={() => (gewOffen = false)}>Fertig</button></div>
       </div>
     </div>

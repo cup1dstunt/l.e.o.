@@ -12,7 +12,7 @@ Gruppen, die länger als eine Stunde bestehen (Podcast, Präsentation, Projekt �
 4. **Abschließen:** „Ins Notenbuch übernehmen“ (eine Spalte unter Tests/Sonstiges oder mündlich, wiederholbar), Rückmeldung per Mail je Schüler.
 
 ## Rechnung
-Handlungsprodukt und Arbeitsweise je als gewichteter Durchschnitt der Stufen (1–4), dann nach dem Anteil zusammen; fehlt ein Teil, zählt der andere allein. Umrechnung: FOS Stufe 4 = 15, 3 = 11, 2 = 7, 1 = 3 Punkte (linear, kaufmännisch gerundet); OSZ Stufe 4 = Note 1 bis Stufe 1 = Note 5. Code: `app/src/lib/projekt.ts`, Tests: `app/tests/projekt.test.ts`.
+Handlungsprodukt und Arbeitsweise je als gewichteter Durchschnitt der Stufen (1–4), dann nach dem Anteil zusammen; fehlt ein Teil, zählt der andere allein. Umrechnung: FOS Stufe 4 = 14, 3 = 10, 2 = 6, 1 = 2 Punkte wie Smileys (linear, kaufmännisch gerundet; 15 nur bei direkt im Notenbuch eingetragener Note); OSZ Stufe 4 = Note 1 bis Stufe 1 = Note 5. Code: `app/src/lib/projekt.ts`, Tests: `app/tests/projekt.test.ts`.
 
 ## Verzahnung
 | Modul | Wie |

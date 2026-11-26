@@ -65,13 +65,14 @@ export function stufeFuer(p: Pick<Projekt, 'einzelStufen'>, g: Pick<ProjektGrupp
 
 const fmt = (x: number) => x.toLocaleString('de-DE', { maximumFractionDigits: 2 });
 
-/** Stufen-Schnitt 1–4 in eine Note: FOS Stufe 4 = 15, 3 = 11, 2 = 7, 1 = 3 Punkte (Konstantin 26.11.: 15 muss gehen),
- *  OSZ wie das mündliche Raster (Stufe 4 → 1, Stufe 1 → 5). Linear, kaufmännisch gerundet. */
+/** Stufen-Schnitt 1–4 in eine Note, wie Smileys und mündliches Raster (E68, E113): FOS Stufe 4 = 14, 3 = 10, 2 = 6,
+ *  1 = 2 Punkte (Konstantin 26.11.: bei Stufen ist 14 als Höchstwert richtig, 15 nur bei direkt eingetragenen Noten),
+ *  OSZ Stufe 4 → 1, Stufe 1 → 5. Linear, kaufmännisch gerundet. */
 export function stufeZuNote(profil: Profil, schnitt: number): { note: number; text: string } {
   if (profil === 'FOS') {
-    const roh = 3 + 4 * (schnitt - 1);
+    const roh = 4 * schnitt - 2;
     const note = Math.max(0, Math.min(15, kaufm(roh)));
-    return { note, text: `In Notenpunkte: 3 + 4 × (${fmt(schnitt)} − 1) = ${fmt(roh)} → ${note} Punkte (Stufe 4 = 15, 3 = 11, 2 = 7, 1 = 3)` };
+    return { note, text: `In Notenpunkte: 4 × ${fmt(schnitt)} − 2 = ${fmt(roh)} → ${note} Punkte (Stufe 4 = 14, 3 = 10, 2 = 6, 1 = 2)` };
   }
   const roh = 1 + ((4 - schnitt) * 4) / 3;
   const note = Math.max(1, Math.min(6, kaufm(roh)));
