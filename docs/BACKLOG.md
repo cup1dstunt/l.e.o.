@@ -341,7 +341,7 @@ Quelle: [prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Ents
 | PF23 | **Rechenweg hinter Info-Knopf** in der Schülerkarte, freiwerdenden Platz sinnvoll nutzen (E74) | K | 1 | S |
 | PF24 | **Platzhalter Startseite** mit Kachel „Kalender folgt später“ (V9, zu bestätigen) | C | 2 | S |
 | PF25 | **Beamer-Modus** nur mit Gruppenauslosung, zufälligem Namenziehen (gern als Rad) und Timer (E78); verzahnt mit U10 | K | 2 | M |
-| PF22 | **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
+| PF22 | Plan und Entwurf 26.11. (V15, [MODULE.md](MODULE.md)). **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
 
 ## Aus dem Prototyp 0.4 und dem Brainstorming (17.11.2026)
 
