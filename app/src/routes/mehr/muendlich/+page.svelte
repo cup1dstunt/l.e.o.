@@ -92,7 +92,7 @@
           {#if r.vorlage}
             {#each r.bereiche as b}
               <h3>{b.name}</h3>
-              <ul class="klein">{#each b.kriterien as k}<li><b>{k.name}{k.optional ? ' (optional)' : ''}{(k.gewicht ?? 1) !== 1 ? ` ×${k.gewicht}` : ''}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
+              {#if r.art === 'projekt'}<p class="klein leise">{b.einzeln ? 'je Person (Arbeitsweise)' : 'einmal für die Gruppe (Handlungsprodukt)'}</p>{/if}<ul class="klein">{#each b.kriterien as k}<li><b>{k.name}{k.optional ? ' (optional)' : ''}{(k.gewicht ?? 1) !== 1 ? ` ×${k.gewicht}` : ''}:</b> {k.stufen.join(' | ')}</li>{/each}</ul>
             {/each}
             <p class="klein leise">Vorlagen sind fest. Zum Ändern kopieren.</p>
           {:else}
@@ -104,6 +104,7 @@
               <div class="bereich">
                 <div class="zeile wrap">
                   <label class="feld raum"><span>Bereich</span><input bind:value={b.name} oninput={speichern} /></label>
+                  {#if r.art === 'projekt'}<label class="klein opt"><input type="checkbox" checked={!!b.einzeln} onchange={(e) => { if ((e.currentTarget as HTMLInputElement).checked) b.einzeln = true; else delete b.einzeln; speichern(); }} /> je Person bewerten (Arbeitsweise)</label>{/if}
                   <button class="x" onclick={() => { r.bereiche.splice(bi, 1); speichern(); }} aria-label="Bereich entfernen">×</button>
                 </div>
                 {#each b.kriterien as k, ki (k.id)}
@@ -169,7 +170,7 @@
 
   <section class="karte" id="projektraster">
     <h2>Projektraster für die Gruppenarbeit</h2>
-    <p class="klein leise">Damit bewertest du im Reiter „Gruppenarbeit“ das Ergebnis einer Gruppe, z. B. eine Präsentation oder einen Podcast. Stufentexte beschreiben das Ergebnis. Vorlagen kopieren und anpassen; welches Raster ein Projekt nutzt, wählst du im Projekt.</p>
+    <p class="klein leise">Damit bewertest du im Reiter „Gruppenarbeit“ Handlungsprodukt (einmal je Gruppe) und Arbeitsweise (je Person, mit der Beteiligung). Bereiche mit „je Person bewerten“ zählen zur Arbeitsweise, den Anteil legst du im Projekt fest. Vorlagen kopieren und anpassen; welches Raster ein Projekt nutzt, wählst du im Projekt.</p>
     {#each projektRasterAlle(d) as r (r.id)}{@render rasterBlock(r)}{/each}
   </section>
 </div>

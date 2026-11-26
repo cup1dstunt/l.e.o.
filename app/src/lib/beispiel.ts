@@ -170,7 +170,7 @@ export function beispielDaten(heute = new Date()): Daten {
     { id: 't6', datum: '2027-01-20', titel: 'Zeugniskonferenzen, unterrichtsfrei', art: 'frei', unterrichtFrei: true }
   ];
 
-  // Gruppenarbeit (P9, E118): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet
+  // Gruppenarbeit (P9, E118): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet, zwei eigene Stufen bei der Arbeitsweise
   {
     const k = kurse[0];
     const t = k.schueler;
@@ -179,8 +179,8 @@ export function beispielDaten(heute = new Date()): Daten {
     k.projekte = [{
       id: 'p-podcast', titel: 'Podcast Sustainability', von: '2026-11-02', bis: '2026-12-11', rasterId: 'pv-projekt', zaehltAls: 'sl',
       gruppen: gruppen.map((m, i) => ({ id: `pg${i}`, name: `G${i + 1}`, thema: themen[i], mitglieder: m, notizen: i === 0 ? [{ datum: '2026-11-19', text: 'Skript fertig, Aufnahme am 03.12.' }] : [],
-        stufen: (i === 0 ? { 'q-inhalt': 4, 'q-produkt': 3, 'q-vorstellen': 3, 'q-planung': 4, 'q-doku': 3 } : i === 1 ? { 'q-inhalt': 3, 'q-produkt': 2, 'q-planung': 2 } : {}) as Record<string, 1 | 2 | 3 | 4> })),
-      abweichung: { [t[0]]: { schritte: 1, grund: 'trägt die Gruppe' }, [t[9]]: { schritte: -2, grund: 'wenig eigener Anteil' } },
+        stufen: (i === 0 ? { 'q-inhalt': 4, 'q-produkt': 3, 'q-vorstellen': 3, 'q-planung': 4, 'q-beteiligung': 3 } : i === 1 ? { 'q-inhalt': 3, 'q-produkt': 2, 'q-planung': 2 } : {}) as Record<string, 1 | 2 | 3 | 4> })),
+      einzelStufen: { [t[0]]: { 'q-beteiligung': 4 }, [t[9]]: { 'q-beteiligung': 1, 'q-planung': 3 } },
       satzId: 'gs-podcast'
     }];
     k.gruppensaetze = [{ id: 'gs-podcast', name: 'Projekt: Podcast Sustainability', datum: '2026-11-02', gruppen, projektId: 'p-podcast' }];

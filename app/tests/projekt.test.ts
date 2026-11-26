@@ -1,5 +1,5 @@
 // Prüft die Gruppenarbeit (P9, E118). Aufruf: npm test
-import { PROJEKT_VORLAGEN, gruppenErgebnis, einzelNote, neuesProjekt, nichtEingeteilt, verschieben, satzAbgleichen, insNotenbuch, belegeMitglied, laufendesProjekt, projektHinweise, projektMailWerte, projektRasterAlle } from '../src/lib/projekt.ts';
+import { PROJEKT_VORLAGEN, gruppenErgebnis, projektErgebnis, einzelStufeSetzen, stufeZuNote, neuesProjekt, nichtEingeteilt, verschieben, satzAbgleichen, insNotenbuch, belegeMitglied, laufendesProjekt, projektHinweise, projektMailWerte, projektRasterAlle } from '../src/lib/projekt.ts';
 import { satzKuerzen } from '../src/lib/gruppen.ts';
 import { alleRaster } from '../src/lib/raster.ts';
 import type { Kurs, Schueler } from '../src/lib/typen.ts';
@@ -23,25 +23,38 @@ function kurs(profil: 'FOS' | 'OSZ'): Kurs {
   };
 }
 
-// Gruppennote wie das mündliche Raster: alle Stufe 4 → Smiley 1 → FOS 14, OSZ 1
+// Präsentation: Handlungsprodukt Inhalt ×2, Aufbau, Medien; Arbeitsweise (je Person) Vortrag, Beteiligung
+const alle4 = Object.fromEntries(raster.bereiche.flatMap((b) => b.kriterien).map((k) => [k.id, 4])) as Record<string, 4>;
 {
-  const alle4 = Object.fromEntries(raster.bereiche.flatMap((b) => b.kriterien).map((k) => [k.id, 4])) as Record<string, 4>;
-  gleich('FOS beste', gruppenErgebnis(raster, { stufen: alle4 }, 'FOS', {}).note, 14);
+  gleich('FOS beste', gruppenErgebnis(raster, { stufen: alle4 }, 'FOS', {}).note, 15);
   gleich('OSZ beste', gruppenErgebnis(raster, { stufen: alle4 }, 'OSZ', {}).note, 1);
-  // Inhalt 2 (×2), Rest 4: (2·2 + 4·4) / 6 = 3,33 → Smiley 1,89 → FOS 17 − 5,67 = 11,33 → 11
-  gleich('gewichtet', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 2 } }, 'FOS', {}).note, 11);
+  gleich('FOS Stufen', [1, 2, 3].map((st) => stufeZuNote('FOS', st).note), [3, 7, 11]);
+  gleich('OSZ Stufen', [1, 2, 3].map((st) => stufeZuNote('OSZ', st).note), [5, 4, 2]);
+  // Produkt: Inhalt 2 (×2), Aufbau 4, Medien 4 → 3; Arbeitsweise 4 → 50:50 = 3,5 → 3 + 4 × 2,5 = 13
+  const e = gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 2 } }, 'FOS', {});
+  gleich('Teile', [e.produkt.schnitt, e.arbeit.schnitt, e.anteil, e.note], [3, 4, 50, 13]);
+  // Anteil 70 % Produkt: 3 × 0,7 + 4 × 0,3 = 3,3 → 12,2 → 12
+  gleich('Anteil 70', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 2 } }, 'FOS', { anteilProdukt: 70 }).note, 12);
   // eigenes Gewicht im Projekt: Inhalt ×0 → nur die anderen zählen
-  gleich('Gewicht 0', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 1 } }, 'FOS', { gewichte: { 'p-inhalt': 0 } }).note, 14);
+  gleich('Gewicht 0', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 1 } }, 'FOS', { gewichte: { 'p-inhalt': 0 } }).note, 15);
   gleich('leer', gruppenErgebnis(raster, { stufen: {} }, 'FOS', {}).note, null);
+  // nur Produkt bewertet: zählt allein
+  gleich('nur Produkt', gruppenErgebnis(raster, { stufen: { 'p-inhalt': 3, 'p-aufbau': 3, 'p-medien': 3 } }, 'FOS', {}).note, 11);
+  // Person mit eigener Beteiligung 1: Arbeitsweise (4 + 1) / 2 = 2,5; zusammen (4 + 2,5) / 2 = 3,25 → 12
+  gleich('eigene Stufe', projektErgebnis(raster, { stufen: alle4 }, 'x', 'FOS', { einzelStufen: { x: { 'p-beteiligung': 1 } } }).note, 12);
 }
 
-// Abweichung: besser = mehr Punkte (FOS) bzw. kleinere Note (OSZ), mit Grenzen
-gleich('FOS besser', einzelNote('FOS', 11, 2), 13);
-gleich('FOS Grenze', einzelNote('FOS', 14, 3), 15);
-gleich('FOS schlechter', einzelNote('FOS', 2, -3), 0);
-gleich('OSZ besser', einzelNote('OSZ', 3, 1), 2);
-gleich('OSZ Grenze', einzelNote('OSZ', 5, -3), 6);
-gleich('ohne Gruppennote', einzelNote('OSZ', null, 1), null);
+// Eigene Stufe setzen: nochmal antippen oder gleiche Stufe wie die Gruppe nimmt sie zurück
+{
+  const p = {} as Parameters<typeof einzelStufeSetzen>[0];
+  const g = { stufen: { 'p-beteiligung': 3 } } as unknown as Parameters<typeof einzelStufeSetzen>[1];
+  einzelStufeSetzen(p, g, 'x', 'p-beteiligung', 4);
+  gleich('gesetzt', p.einzelStufen, { x: { 'p-beteiligung': 4 } });
+  einzelStufeSetzen(p, g, 'x', 'p-beteiligung', 4);
+  gleich('zurück', p.einzelStufen, {});
+  einzelStufeSetzen(p, g, 'x', 'p-beteiligung', 3);
+  gleich('wie Gruppe = nichts', p.einzelStufen, {});
+}
 
 // Projekt anlegen, Nachzügler einteilen, Sitzplan-Satz abgleichen
 {
@@ -61,27 +74,26 @@ gleich('ohne Gruppennote', einzelNote('OSZ', null, 1), null);
   gleich('läuft', laufendesProjekt(k, '2026-11-25')?.id, p.id);
   gleich('läuft nicht mehr', laufendesProjekt(k, '2026-12-12'), undefined);
 
-  // Notenbuch: Spalte unter Tests/Sonstiges, Einzelnoten mit Abweichung, ohne Gruppennote bleibt leer
-  const alle4 = Object.fromEntries(raster.bereiche.flatMap((b) => b.kriterien).map((kr) => [kr.id, 4]));
-  p.gruppen[0].stufen = { ...alle4, 'p-inhalt': 2 }; // 11
-  p.abweichung = { a: { schritte: 1, grund: 'trägt die Gruppe' }, e: { schritte: -2 } };
+  // Notenbuch: Spalte unter Tests/Sonstiges, Einzelnoten mit eigener Arbeitsweise, ohne Stufen bleibt leer
+  p.gruppen[0].stufen = { ...alle4, 'p-inhalt': 2 }; // Gruppe 13
+  p.einzelStufen = { a: { 'p-vortrag': 4, 'p-beteiligung': 4 }, e: { 'p-beteiligung': 1 } }; // a 13; e: Arbeitsweise 2,5, zusammen 2,75 → 10
   k.zellen['vorher:e'] = { wert: 3 };
   const r = insNotenbuch(k, p, raster, id);
   gleich('gesetzt/ohne', [r.gesetzt, r.ohne], [2, 3]);
   gleich('Spalte', [r.leistung.gruppe, r.leistung.art, r.leistung.name, k.leistungen.indexOf(r.leistung)], ['sl', 'Projekt', 'Podcast', 1]);
-  gleich('Noten', [k.zellen[`${r.leistung.id}:a`]?.wert, k.zellen[`${r.leistung.id}:e`]?.wert, k.zellen[`${r.leistung.id}:c`]], [12, 9, undefined]);
+  gleich('Noten', [k.zellen[`${r.leistung.id}:a`]?.wert, k.zellen[`${r.leistung.id}:e`]?.wert, k.zellen[`${r.leistung.id}:c`]], [13, 10, undefined]);
   // zweites Übernehmen: gleiche Spalte, Wechsel zu mündlich verschiebt sie
   p.zaehltAls = 'mitarbeit';
   const r2 = insNotenbuch(k, p, raster, id);
   gleich('gleiche Spalte', r2.leistung.id, r.leistung.id);
   gleich('jetzt mündlich', r2.leistung.gruppe, 'mitarbeit');
-  gleich('Hinweis mündlich', projektHinweise(k, 'a', '2026-11'), ['Projekt „Podcast“: G1, besser als die Gruppe (trägt die Gruppe)']);
+  gleich('Hinweis mündlich', projektHinweise(k, 'a', '2026-11'), ['Projekt „Podcast“: G1, eigene Stufen Arbeitsweise 4, 4']);
   gleich('kein Hinweis anderer Monat', projektHinweise(k, 'a', '2027-01'), []);
 
   const s1: Schueler = { id: 'a', vorname: 'Ada', nachname: 'A', geburt: '', geschlecht: 'w', mailDienst: '' };
   const w = projektMailWerte(k, p, raster, s1);
-  gleich('Mail Noten', [w.gruppennote, w.note], ['11 Punkte', '12 Punkte']);
-  gleich('Mail Kriterium', w.kriterien.split('\n')[0], '- Fachlicher Inhalt: Stufe 2 von 4, lückenhaft oder mit Fehlern');
+  gleich('Mail Noten', [w.gruppennote, w.note, w.anteile], ['13 Punkte', '13 Punkte', 'Handlungsprodukt 50 %, Arbeitsweise 50 %']);
+  gleich('Mail Kriterium', w.produkt.split('\n')[0], '- Fachlicher Inhalt: Stufe 2 von 4, lückenhaft oder mit Fehlern');
 }
 
 // Belege im Zeitraum
