@@ -82,7 +82,7 @@ auffällig oft montags fehlt.
 | L | Konferenzansicht | ganze Klasse, alle Fächer | mittel |
 | M | Auswertung & Entwicklung | Verläufe, Muster, KI-Einschätzung aus Diktat | mittel |
 | N | E-Mail | Vorlagen, Vorschau, Protokoll | später |
-| O | Dateiablage je Stunde | Konzept offen | offen |
+| O | Dateiablage je Stunde | Material an Reihe, Stunde, Klasse (V14) | offen |
 | P | Betrieb | Offline, Sicherung, Export, Updates | **Grundgerüst** |
 | Q | Bewertungsbögen | Selbst- und Fremdeinschätzung per Link/QR, Bibliothek, Upload | mittel |
 
@@ -290,7 +290,7 @@ Siehe Abschnitt 4. Dazu: Schuljahr und Halbjahre, Ferien (für Muster und Kalend
 - Später, nicht erste Priorität.
 
 ### O Dateiablage je Stunde
-- **Konzept offen**, legst du noch fest. EWH-Inhalte bleiben draußen.
+- Vorschlag V14, Plan in [MODUL_DATEIABLAGE.md](MODUL_DATEIABLAGE.md): Datei oder Link an Reihe, Stunde oder Klasse; in Planung und Live-Stunde. EWH-Inhalte bleiben draußen.
 
 ### Q Bewertungsbögen
 - Klickbare Bögen mit Bereichen, Kriterien und 3–5 Stufen, Ich-Form für Schüler, Gewichte je Bereich.
