@@ -84,6 +84,22 @@ export interface Reihe {
   bloecke: number;
 }
 
+/** Material je Stunde (Modul Dateiablage, V14): Datei oder Link an Reihe, Stunde oder Klasse. */
+export interface Material {
+  id: string;
+  kursId: string;
+  ort: 'reihe' | 'stunde' | 'klasse';
+  reiheId?: string; // bei ort „reihe“: gilt für jeden Block der Reihe
+  datum?: string; // bei ort „stunde“: ISO-Datum des Blocks
+  titel: string;
+  art: 'datei' | 'link';
+  url?: string; // bei Links
+  datei?: { id: string; name: string; typ: string; groesse: number }; // Inhalt liegt im Speicher „dateien“
+  loesung?: boolean; // nur für die Lehrkraft (Lösung, Erwartungshorizont)
+  gezeigt?: string[]; // Daten, an denen es in der Live-Stunde geöffnet wurde
+  erstellt: string; // ISO-Zeit
+}
+
 /** Kalendereintrag (K2, E115). Unterrichtsfrei + keine Klassen = für alle eigenen Klassen frei. */
 export interface Termin {
   id: string;
@@ -330,7 +346,7 @@ export interface Einstellungen {
   projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E118)
   ferien?: FreieZeit[]; // Ferien und Feiertage laut WebUntis (getHolidays)
   halbjahrGrenze?: string; // erster Tag des 2. Halbjahres, fehlt = 1. Februar
-  module?: { planung?: boolean; kalender?: boolean }; // abschaltbare Module (Projektregel), fehlt = an
+  module?: { planung?: boolean; kalender?: boolean; ablage?: boolean }; // abschaltbare Module (Projektregel), fehlt = an
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */
@@ -363,6 +379,7 @@ export interface Daten {
   notizen: Notiz[];
   nachschreiben: NachTermin[];
   termine: Termin[];
+  material: Material[];
   stundenplan: Stunde[];
   einstellungen: Einstellungen;
 }

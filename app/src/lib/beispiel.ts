@@ -1,6 +1,6 @@
 // Erfundene Beispieldaten. Keine echten Schülerdaten (CLAUDE.md, Datenschutz).
 import { BAUSTEINE } from './bausteine.ts';
-import type { Daten, Kurs, Leistung, MitarbeitEintrag, Fehlzeit, Notiz, Schueler, Stufe, Termin, Verspaetung } from './typen.ts';
+import type { Daten, Kurs, Leistung, Material, MitarbeitEintrag, Fehlzeit, Notiz, Schueler, Stufe, Termin, Verspaetung } from './typen.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
 import { monatsVorschlag } from './rechnen.ts';
 
@@ -170,6 +170,13 @@ export function beispielDaten(heute = new Date()): Daten {
     { id: 't6', datum: '2027-01-20', titel: 'Zeugniskonferenzen, unterrichtsfrei', art: 'frei', unterrichtFrei: true }
   ];
 
+  // Dateiablage (V14): Beispiel nur mit Links, Dateien legt man selbst ab
+  const material: Material[] = [
+    { id: 'm1', kursId: 'k-fos', ort: 'reihe', reiheId: 'r2', titel: 'Unit 6 Wortliste (Moodle)', art: 'link', url: 'https://moodle.example.org/unit6-wortliste', erstellt: '2026-11-10T08:00:00.000Z', gezeigt: ['2026-11-12'] },
+    { id: 'm2', kursId: 'k-fos', ort: 'klasse', titel: 'Kursplan und Bewertung', art: 'link', url: 'https://iserv.example.org/dateien/kursplan', erstellt: '2026-09-01T08:00:00.000Z' },
+    { id: 'm3', kursId: 'k-osz', ort: 'reihe', reiheId: 'r2', titel: 'Angebotsvergleich Lösung', art: 'link', url: 'https://iserv.example.org/dateien/angebotsvergleich-loesung', loesung: true, erstellt: '2026-11-10T08:00:00.000Z' }
+  ];
+
   // Gruppenarbeit (P9, E118): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet, zwei eigene Stufen bei der Arbeitsweise
   {
     const k = kurse[0];
@@ -201,7 +208,7 @@ export function beispielDaten(heute = new Date()): Daten {
   ]);
 
   return {
-    version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, nachschreiben: [], termine, stundenplan,
+    version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, nachschreiben: [], termine, material, stundenplan,
     einstellungen: { navigation: 'links', theme: 'system', stundenendeHinweis: true, liveAnsicht: 'liste', sperreMinuten: 15 }
   };
 }

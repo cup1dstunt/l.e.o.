@@ -115,3 +115,19 @@ export async function textVerschluesseln(k: Datenschluessel, zweck: string, inha
 export async function textEntschluesseln(k: Datenschluessel, zweck: string, g: GeheimText): Promise<string> {
   return lies.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(g.iv), additionalData: text.encode(zweck) }, k, unb64(g.geheim)));
 }
+
+// Dateiinhalte (Dateiablage, V14): roh verschlüsselt, ohne Base64. Format: 12 Byte IV + Geheimtext.
+// Die Datei-id geht in die Prüfsumme ein, ein Inhalt lässt sich nicht unbemerkt einem anderen Material unterschieben.
+const dateiZusatz = (id: string) => text.encode(`leo-datei|${id}`);
+export async function dateiVerschluesseln(k: Datenschluessel, id: string, inhalt: ArrayBuffer): Promise<Uint8Array<ArrayBuffer>> {
+  const iv = zufall(12);
+  const g = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: dateiZusatz(id) }, k, inhalt));
+  const out = new Uint8Array(12 + g.length);
+  out.set(iv, 0);
+  out.set(g, 12);
+  return out;
+}
+export async function dateiEntschluesseln(k: Datenschluessel, id: string, roh: ArrayBuffer | Uint8Array): Promise<ArrayBuffer> {
+  const u = roh instanceof Uint8Array ? roh : new Uint8Array(roh);
+  return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u.slice(0, 12), additionalData: dateiZusatz(id) }, k, u.slice(12));
+}
