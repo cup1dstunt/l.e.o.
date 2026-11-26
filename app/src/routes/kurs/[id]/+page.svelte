@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { istAn } from '$lib/module';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
   import { schuelerVon, name, alter, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { nachschreibLage, fallSchluessel } from '$lib/nachschreiben';
@@ -214,7 +215,8 @@
   <KursKopf {kurs} aktiv="noten">
     {#snippet rechts()}
       <button class="pille" onclick={() => (dlg = 'gewichte')}>Profil <b>{kurs.profil}</b> · Gewichte</button>
-      <button class="pille" onclick={() => (dlg = 'monat')}>Monatsnote vorschlagen</button>
+      {#if istAn(d.einstellungen, 'muendlich')}<button class="pille" onclick={() => (dlg = 'monat')}>Monatsnote vorschlagen</button>{/if}
+      {#if istAn(d.einstellungen, 'ewh')}<a class="pille" href="/ewh/{kurs.id}">Aus EWH übernehmen</a>{/if}
       <button class="knopf haupt" onclick={() => (dlg = 'neu')}>+ Leistung</button>
     {/snippet}
   </KursKopf>
@@ -313,7 +315,7 @@
     {@const fall = aktiv.l.gruppe === 'klausuren' ? fallVon(aktiv.l, aktiv.s) : undefined}
     <div class="notenleiste schweben" role="toolbar" aria-label="Notenleiste" tabindex="-1" onmousedown={(e) => e.preventDefault()}>
       <div class="kopfzeile klein"><b>{name(aktiv.s)}</b> · {aktiv.l.name}
-        {#if fall}· <a href="/nachschreiben?{fall.termin ? `kurs=${kurs.id}` : `fall=${encodeURIComponent(fall.key)}`}">{fall.termin ? `Nachschreiben ${datumWt(fall.termin.datum)} ${fall.termin.beginn}, Raum ${fall.termin.raum}` : `${fall.quelle === 'fehlzeit' ? `fehlte (${fall.status === 'offen' ? 'offen' : 'E'})` : fall.status === 'offen' ? 'offen' : 'E'}: Nachschreibetermin festlegen ›`}</a>{/if}
+        {#if fall && istAn(d.einstellungen, 'nachschreiben')}· <a href="/nachschreiben?{fall.termin ? `kurs=${kurs.id}` : `fall=${encodeURIComponent(fall.key)}`}">{fall.termin ? `Nachschreiben ${datumWt(fall.termin.datum)} ${fall.termin.beginn}, Raum ${fall.termin.raum}` : `${fall.quelle === 'fehlzeit' ? `fehlte (${fall.status === 'offen' ? 'offen' : 'E'})` : fall.status === 'offen' ? 'offen' : 'E'}: Nachschreibetermin festlegen ›`}</a>{/if}
       </div>
       <div class="tasten">
         {#each skala.werte as w}

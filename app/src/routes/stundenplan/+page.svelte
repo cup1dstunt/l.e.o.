@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { istAn } from '$lib/module';
   import { app } from '$lib/speicher.svelte';
   import { minuten, WOCHENTAGE } from '$lib/hilfen';
   import type { Stunde } from '$lib/typen';
@@ -10,7 +11,7 @@
   const d = app.d!;
   const MERK = 'leo-stundenplan-ansicht';
   // Monat = Kalender (E115), nur wenn das Modul an ist
-  const kalenderAn = $derived(d.einstellungen.module?.kalender !== false);
+  const kalenderAn = $derived(istAn(d.einstellungen, 'kalender'));
   let ansicht = $state<'woche' | 'tag' | 'monat'>('woche');
   try {
     const m = localStorage.getItem(MERK);

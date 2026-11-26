@@ -2,11 +2,14 @@
   // Semesterplanung (PB16, E114) und Stundenplanung (PB15): Blöcke im Halbjahr zählen, Unterrichtsreihen darauf legen,
   // je Block Thema und Hausaufgabe planen. Quelle: echte Termine aus WebUntis, sonst Wochenmuster; Ferien aus WebUntis.
   import { page } from '$app/state';
-  import { app, speichern } from '$lib/speicher.svelte';
+  import { app, speichern, zeige } from '$lib/speicher.svelte';
   import { heuteISO, datumWt, datumKurz } from '$lib/hilfen';
   import { semesterPlan, halbjahre, aktuellesHalbjahr, freieZeiten, reiheText, type PlanBlock } from '$lib/semester';
   import type { Reihe } from '$lib/typen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
+  import MaterialListe from '$lib/ui/MaterialListe.svelte';
+  import { materialFuer, anzahlFuer, verschieben, reiheEntfernt, gezeigtAm } from '$lib/material';
+  import { istAn } from '$lib/module';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -42,7 +45,29 @@
     speichern();
   }
   function bloeckeAendern(r: Reihe, um: number) { r.bloecke = Math.max(1, r.bloecke + um); speichern(); }
-  function entfernen(r: Reihe) { kurs.reihen = kurs.reihen!.filter((x) => x !== r); speichern(); }
+  function entfernen(r: Reihe) {
+    kurs.reihen = kurs.reihen!.filter((x) => x !== r);
+    const n = reiheEntfernt(d.material, kurs.id, r.id); // Material der Reihe bleibt bei der Klasse
+    speichern();
+    if (n) zeige(`${n} Material${n === 1 ? '' : 'ien'} der Reihe liegen jetzt bei der Klasse`);
+  }
+
+  // Dateiablage (V14): Material je Reihe, je Block und für die ganze Klasse
+  const ablageAn = $derived(istAn(d.einstellungen, 'ablage'));
+  let offenReihe = $state<string | null>(null);
+  let offenBlock = $state<string | null>(null);
+  let alleMaterial = $state(false);
+  let suche = $state('');
+  const eigenesMaterial = $derived(d.material.filter((m) => m.kursId === kurs.id));
+  const gefunden = $derived(eigenesMaterial.filter((m) => !suche.trim() || [m.titel, m.datei?.name, m.url].join(' ').toLowerCase().includes(suche.trim().toLowerCase())));
+  /** Fällt ein Block mit eigenem Material aus: auf den nächsten Unterrichtsblock legen. */
+  function materialWeiter(b: PlanBlock) {
+    const naechster = kommend.find((x) => x.datum > b.datum && x.zustand === 'unterricht');
+    if (!naechster) { zeige('Kein weiterer Block im Halbjahr'); return; }
+    const n = verschieben(d.material, kurs.id, b.datum, naechster.datum);
+    speichern();
+    zeige(`${n} Material${n === 1 ? '' : 'ien'} auf ${datumWt(naechster.datum)}`, () => { verschieben(d.material, kurs.id, naechster.datum, b.datum); speichern(); });
+  }
 
   /** Eigener Ausfall als Kalendertermin (E115), ein Tipp setzt und nimmt zurück. */
   function ausfallUmschalten(b: PlanBlock) {
@@ -108,10 +133,20 @@
               {:else if st}<span class="leise">{st.fertig} von {r.bloecke} gehalten</span>{/if}
             </span>
             <span class="aktionen">
+              {#if ablageAn}
+                {@const n = eigenesMaterial.filter((m) => m.ort === 'reihe' && m.reiheId === r.id).length}
+                <button class="pille" aria-expanded={offenReihe === r.id} onclick={() => (offenReihe = offenReihe === r.id ? null : r.id)} title="Material der Reihe">Material{n ? ` ${n}` : ''}</button>
+              {/if}
               <button class="knopf leise mini" onclick={() => schieben(r, -1)} disabled={i === 0} aria-label="nach oben">↑</button>
               <button class="knopf leise mini" onclick={() => schieben(r, 1)} disabled={i === (kurs.reihen?.length ?? 0) - 1} aria-label="nach unten">↓</button>
               <button class="knopf leise mini" onclick={() => entfernen(r)} aria-label="Reihe entfernen">×</button>
             </span>
+            {#if ablageAn && offenReihe === r.id}
+              <div class="material">
+                <p class="klein leise">Material der Reihe „{r.titel || 'ohne Titel'}“ erscheint in jedem ihrer Blöcke und in der Live-Stunde.</p>
+                <MaterialListe {kurs} eintraege={eigenesMaterial.filter((m) => m.ort === 'reihe' && m.reiheId === r.id)} ziel={{ ort: 'reihe', reiheId: r.id }} ortZeigen={false} leer="Noch kein Material in dieser Reihe." />
+              </div>
+            {/if}
           </li>
         {/each}
       </ul>
@@ -131,6 +166,10 @@
               <b>{datumWt(b.datum)}</b><span class="klein leise zahl">{b.beginn}–{b.ende}</span>
               {#each b.leistungen as l}<span class="kennz">{l.name}</span>{/each}
               {#if b.zustand === 'unterricht' && reiheText(b)}<span class="klein reihe t{ton(b)}">{reiheText(b)}</span>{/if}
+              {#if ablageAn && b.zustand !== 'frei'}
+                {@const n = anzahlFuer(d.material, kurs.id, b.datum, b.zustand === 'unterricht' ? b.reihe?.id : undefined)}
+                <button class="pille mat" aria-expanded={offenBlock === b.datum + b.beginn} onclick={() => (offenBlock = offenBlock === b.datum + b.beginn ? null : b.datum + b.beginn)}>Material{n ? ` ${n}` : ''}</button>
+              {/if}
             </div>
             {#if b.zustand === 'ausfall'}
               <span class="leise">{b.grund}</span><span></span>
@@ -143,6 +182,15 @@
             {#if b.zustand === 'unterricht' || (b.terminId && d.termine.find((t) => t.id === b.terminId)?.art === 'ausfall')}
               <button class="pille" aria-pressed={!!b.terminId} onclick={() => ausfallUmschalten(b)} title={b.terminId ? 'Ausfall zurücknehmen' : 'Block fällt aus (z. B. Prüfung, Fortbildung)'}>{b.terminId ? 'fällt aus ✓' : 'fällt aus'}</button>
             {:else if b.terminId}<a class="klein" href="/stundenplan?ansicht=monat">im Kalender</a>{:else}<span></span>{/if}
+            {#if ablageAn && offenBlock === b.datum + b.beginn}
+              {@const f = materialFuer(d.material, kurs.id, b.datum, b.zustand === 'unterricht' ? b.reihe?.id : undefined)}
+              <div class="material">
+                {#if b.zustand === 'ausfall' && f.stunde.length}
+                  <div class="zeile wrap"><span class="klein warn">Der Block fällt aus, {f.stunde.length} Material{f.stunde.length === 1 ? '' : 'ien'} hängen an ihm.</span><button class="pille" onclick={() => materialWeiter(b)}>auf den nächsten Block</button></div>
+                {/if}
+                <MaterialListe {kurs} eintraege={[...f.stunde, ...f.reihe]} ziel={{ ort: 'stunde', datum: b.datum }} leer="Noch kein Material für diese Stunde. Neues hängt an diesem Tag." />
+              </div>
+            {/if}
           </li>
         {/each}
       </ul>
@@ -150,6 +198,22 @@
         <button class="pille" aria-pressed={alleZeigen} onclick={() => (alleZeigen = !alleZeigen)}>{alleZeigen ? 'weniger zeigen' : `alle ${kommend.length} bis zum Halbjahresende`}</button>
       {/if}
     </section>
+
+    {#if ablageAn}
+      <section class="karte">
+        <div class="zeile wrap"><h2 class="raum">Material der Klasse</h2><span class="klein leise">immer da, z. B. Kursplan, Bewertungsraster · {eigenesMaterial.length} insgesamt</span></div>
+        <MaterialListe {kurs} eintraege={eigenesMaterial.filter((m) => m.ort === 'klasse')} ziel={{ ort: 'klasse' }} ortZeigen={false} leer="Noch nichts für die ganze Klasse." />
+        {#if eigenesMaterial.length}
+          <div class="zeile wrap alles">
+            <button class="pille" aria-pressed={alleMaterial} onclick={() => (alleMaterial = !alleMaterial)}>{alleMaterial ? 'ausblenden' : `alles Material (${eigenesMaterial.length})`}</button>
+            {#if alleMaterial}<input class="eingabe" type="search" placeholder="Suchen" bind:value={suche} aria-label="Material suchen" />{/if}
+          </div>
+          {#if alleMaterial}
+            <MaterialListe {kurs} eintraege={gefunden} ziel={{ ort: 'klasse' }} ohneNeu leer="Nichts gefunden." />
+          {/if}
+        {/if}
+      </section>
+    {/if}
 
     <section class="karte">
       <div class="zeile"><h2 class="raum">Rückblick</h2><button class="pille" aria-pressed={alteZeigen} onclick={() => (alteZeigen = !alteZeigen)}>{alteZeigen ? 'ausblenden' : `${vergangen.length} gehaltene zeigen`}</button></div>
@@ -160,7 +224,8 @@
             <li>
               <div class="wann"><b>{datumWt(b.datum)}</b>{#if reiheText(b)}<span class="klein reihe t{ton(b)}">{reiheText(b)}</span>{/if}</div>
               <span class:leise={!e?.text}>{e?.text || 'kein Thema eingetragen'}{e?.hausaufgabe ? ` · HA: ${e.hausaufgabe}` : ''}</span>
-              <span class="klein">{#if e?.stand}<span class="leise">Stand:</span> {e.stand}{/if}</span>
+              <span class="klein">{#if e?.stand}<span class="leise">Stand:</span> {e.stand}{/if}
+                {#if ablageAn && gezeigtAm(d.material, kurs.id, b.datum).length}<br /><span class="leise">Gezeigt:</span> {gezeigtAm(d.material, kurs.id, b.datum).map((m) => m.titel).join(', ')}{/if}</span>
             </li>
           {/each}
         </ul>
@@ -199,13 +264,16 @@
   .zaehler b { min-width: 24px; text-align: center; }
   .mini { min-height: 32px; min-width: 32px; padding: 0 8px; }
   .zeitraum { display: flex; flex-direction: column; }
-  .aktionen { display: inline-flex; gap: 4px; }
+  .aktionen { display: inline-flex; gap: 4px; justify-content: flex-end; min-width: 220px; }
   .plan { list-style: none; padding: 0; margin: 12px 0; }
   .plan li { display: grid; grid-template-columns: 290px 1fr 240px auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px dashed var(--leo-linie); }
   .plan li.heute { background: var(--leo-auswahl); }
   .plan li.aus .wann b { text-decoration: line-through; color: var(--leo-leise); }
   .plan.alt li { grid-template-columns: 290px 1fr 1fr; }
   .wann { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .material { grid-column: 1 / -1; padding: 6px 0 10px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .mat { min-height: 28px; padding: 0 10px; font-size: 12px; }
+  .alles { margin-top: 12px; }
   .reihe { border-left: 4px solid var(--ton); padding-left: 6px; color: var(--leo-leise); }
   @media (max-width: 900px) {
     .seite { padding: 12px; }

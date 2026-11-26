@@ -56,7 +56,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | N1 | Notenbuch **exakt nach Konstantins iDoceo-Vorlagen** (Struktur, Berechnungen, Ansicht); Grundlage Screenshots | K, B | 1 | L |
 | N2 | Vorlagen als Daten, später für Kollegen teilbar | C | 2 | M |
 | N3 | Projektbewertungen als Spalten (Werkstatt-Export JSON/CSV) | K, B | 2 | S |
-| N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte) | K, C | 3 | S |
+| N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte). **Entwurf 26.11.:** CSV aus EWH einlesen, optionales Modul (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | K, C | 3 | S |
 | N5 | Rechenweg der Endnote anzeigen | C | 2 | S |
 | N6 | Was-wäre-wenn / Zielnote („was braucht er in der nächsten Klausur?“) | C | 3 | S |
 | N8 | Seiten je Kurs (Noten, Mitarbeit, Anwesenheit, frei ergänzbar wie Orga/Hausaufgaben) | K (Screenshots) | 1 | M |
@@ -156,9 +156,12 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
-| A1 | Statistiken überall sammeln, übersichtlich darstellen | B | 2 | M |
+| A1 | Statistiken überall sammeln, übersichtlich darstellen. **Entwurf 26.11.:** Reiter „Auswertung“ je Klasse und Klassenvergleich (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | B | 2 | M |
 | A2 | Verlaufsdiagramme je Schüler, Kurs, Klasse (Noten, Mitarbeit, Fehlzeiten, Hausaufgaben) | B | 2 | M |
 | A3 | Konferenzansicht: ganze Klasse, alle Fehlzeiten aller Fächer, Kurzübersicht je Schüler | B | 2 | M |
+| A6 | EWH-Noten direkt abrufen statt CSV (Weg B: Abrufschlüssel und Lese-Endpunkt in EWH), erst wenn beide schulweit laufen | C | 3 | M |
+| A7 | Auswertung drucken bzw. als PDF | C | 3 | S |
+| A8 | Halbjahresvergleich je Klasse nach dem Schuljahreswechsel (K9) | C | 3 | S |
 | A4 | Endnoten **aktiv** an die Klassenleitung schicken (statt Zettel/Rundmail), nur wer will (E29) | C | 2 | M |
 | A5 | Leistungsstand per Knopfdruck: Diktat → KI-Text, keine Klarnamen an KI | B | 3 | M |
 
@@ -341,7 +344,7 @@ Quelle: [prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Ents
 | PF23 | **Rechenweg hinter Info-Knopf** in der Schülerkarte, freiwerdenden Platz sinnvoll nutzen (E74) | K | 1 | S |
 | PF24 | **Platzhalter Startseite** mit Kachel „Kalender folgt später“ (V9, zu bestätigen) | C | 2 | S |
 | PF25 | **Beamer-Modus** nur mit Gruppenauslosung, zufälligem Namenziehen (gern als Rad) und Timer (E78); verzahnt mit U10 | K | 2 | M |
-| PF22 | **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
+| PF22 | Plan und Entwurf 26.11. (V15, [MODULE.md](MODULE.md)). **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
 
 ## Aus dem Prototyp 0.4 und dem Brainstorming (17.11.2026)
 
@@ -363,7 +366,7 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 | PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | gebaut 20.11. (F3, E102): verschlüsselte Datei + 7 Tagesstände |
 | PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | Woche/Tag umschaltbar im Prototyp (19.11., Entwurf A+B), Quelle WebUntis |
 | PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | im Prototyp (E115): Monat im Stundenplan, ICS-Datei hin und zurück |
-| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | im Prototyp (E114), Material/Dateien offen |
+| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | im Prototyp (E114); Material/Dateien als Vorschlag V14 |
 | PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | im Prototyp (E114): WebUntis-Termine und -Ferien, Unterrichtsreihen; mit echtem WebUntis ungetestet |
 | PB17 | **Live-Stunde: Werkzeuge für die Stunde** sammeln (Zufall, Gruppen, Timer, Beamer-Modus PF25, Lernstoff, Übergang); was fehlt noch? | K | 1 | M | teilweise im Prototyp |
 | PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | gebaut 20.11. (F4, E103): eigener Dienst auf dem Unraid, Ende-zu-Ende-verschlüsselt; ungetestet auf Unraid/iPad |
@@ -408,7 +411,7 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 
 | # | Punkt | Herkunft | Prio |
 |---|---|---|---|
-| O1 | Dateiablage je Stunde: Konzept legt Konstantin fest, EWH-Inhalte bleiben draußen | K, B | ? |
+| O1 | Dateiablage je Stunde: Konzept als Vorschlag V14 ([MODUL_DATEIABLAGE.md](MODUL_DATEIABLAGE.md)), Prototyp als Entwurf; EWH-Inhalte bleiben draußen | K, B | ? |
 | O2 | Abiturprüfung: Excel-Tabellen mit der Gewichtung schickt Konstantin später, nicht dringend | K | 3 |
 
 ## Verworfen
