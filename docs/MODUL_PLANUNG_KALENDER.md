@@ -46,4 +46,4 @@ Bilder: [konzept/planung-kalender/](konzept/planung-kalender/).
 - Thema und Hausaufgabe hängen am Tag: zwei Blöcke derselben Klasse an einem Tag teilen sich ein Thema.
 - ICS nur als Datei, kein Abo-Link; Wiederholungen (RRULE) werden beim Import nicht aufgelöst.
 - Beispiel-Ferien enthalten nur Herbst-, Weihnachts- und Winterferien und die gesetzlichen Feiertage.
-- Material/Dateiablage je Stunde fehlt noch.
+- Material/Dateiablage je Stunde: eigener Plan [MODUL_DATEIABLAGE.md](MODUL_DATEIABLAGE.md) (V14).

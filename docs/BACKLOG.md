@@ -363,7 +363,7 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 | PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | gebaut 20.11. (F3, E102): verschlüsselte Datei + 7 Tagesstände |
 | PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | Woche/Tag umschaltbar im Prototyp (19.11., Entwurf A+B), Quelle WebUntis |
 | PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | im Prototyp (E115): Monat im Stundenplan, ICS-Datei hin und zurück |
-| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | im Prototyp (E114), Material/Dateien offen |
+| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | im Prototyp (E114); Material/Dateien als Vorschlag V14 |
 | PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | im Prototyp (E114): WebUntis-Termine und -Ferien, Unterrichtsreihen; mit echtem WebUntis ungetestet |
 | PB17 | **Live-Stunde: Werkzeuge für die Stunde** sammeln (Zufall, Gruppen, Timer, Beamer-Modus PF25, Lernstoff, Übergang); was fehlt noch? | K | 1 | M | teilweise im Prototyp |
 | PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | gebaut 20.11. (F4, E103): eigener Dienst auf dem Unraid, Ende-zu-Ende-verschlüsselt; ungetestet auf Unraid/iPad |
@@ -408,7 +408,7 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 
 | # | Punkt | Herkunft | Prio |
 |---|---|---|---|
-| O1 | Dateiablage je Stunde: Konzept legt Konstantin fest, EWH-Inhalte bleiben draußen | K, B | ? |
+| O1 | Dateiablage je Stunde: Konzept als Vorschlag V14 ([MODUL_DATEIABLAGE.md](MODUL_DATEIABLAGE.md)), Prototyp als Entwurf; EWH-Inhalte bleiben draußen | K, B | ? |
 | O2 | Abiturprüfung: Excel-Tabellen mit der Gewichtung schickt Konstantin später, nicht dringend | K | 3 |
 
 ## Verworfen
