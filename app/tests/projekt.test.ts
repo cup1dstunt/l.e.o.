@@ -1,4 +1,4 @@
-// Prüft die Gruppenarbeit (P9, E114). Aufruf: npm test
+// Prüft die Gruppenarbeit (P9, E116). Aufruf: npm test
 import { PROJEKT_VORLAGEN, gruppenErgebnis, einzelNote, neuesProjekt, nichtEingeteilt, verschieben, satzAbgleichen, insNotenbuch, belegeMitglied, laufendesProjekt, projektHinweise, projektMailWerte, projektRasterAlle } from '../src/lib/projekt.ts';
 import { satzKuerzen } from '../src/lib/gruppen.ts';
 import { alleRaster } from '../src/lib/raster.ts';

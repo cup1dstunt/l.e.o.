@@ -16,6 +16,13 @@
     altPw = neuPw = neuPw2 = '';
     zeige('Passwort geändert');
   }
+  // Module abschaltbar (Projektregel): fehlt = an
+  const modulAn = (m: 'planung' | 'kalender') => d.einstellungen.module?.[m] !== false;
+  function modul(m: 'planung' | 'kalender', an: boolean) {
+    d.einstellungen.module = { ...(d.einstellungen.module ?? {}), [m]: an };
+    speichern();
+  }
+  const grenzeStandard = $derived(`${Number((d.einstellungen.untis?.halbjahrVon || '2026-08-31').slice(0, 4)) + 1}-02-01`);
 </script>
 
 <div class="seite">
@@ -63,6 +70,15 @@
   </section>
 
   <section class="karte">
+    <h2>Module</h2>
+    <p>Was du nicht brauchst, blendest du aus. Die Daten bleiben erhalten.</p>
+    <label class="zeile schalter"><input type="checkbox" checked={modulAn('planung')} onchange={(e) => modul('planung', e.currentTarget.checked)} /> Semesterplanung und Stundenstand (Reiter „Planung“, „Heute geplant“ in der Stunde)</label>
+    <label class="zeile schalter"><input type="checkbox" checked={modulAn('kalender')} onchange={(e) => modul('kalender', e.currentTarget.checked)} /> Kalender (Monat im Stundenplan, „Demnächst“ auf Heute, Termine in der Woche)</label>
+    <label class="feld grenze"><span>Erster Tag des 2. Halbjahres (für die Blockzählung)</span>
+      <input type="date" value={d.einstellungen.halbjahrGrenze || grenzeStandard} onchange={(e) => { d.einstellungen.halbjahrGrenze = e.currentTarget.value || undefined; speichern(); }} /></label>
+  </section>
+
+  <section class="karte">
     <h2>Mündliche Leistungen</h2>
     <p>Eigene Textbausteine (mit Kriterium) und Kriterienraster je Fach. Das Raster springt ein, wenn in einem Monat zu wenige Smileys da sind.</p>
     <div class="zeile wrap"><a class="knopf" href="/mehr/muendlich">Bausteine und Raster bearbeiten</a></div>
@@ -88,6 +104,7 @@
 <style>
   .seite { padding: 24px 32px; max-width: 820px; display: flex; flex-direction: column; gap: 16px; }
   section p { line-height: 1.55; }
+  .grenze { max-width: 320px; margin-top: 10px; }
   .zeile { flex-wrap: wrap; gap: 8px; }
   .wrap { margin: 10px 0; }
   .schalter { margin-top: 16px; }

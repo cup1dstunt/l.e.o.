@@ -1,6 +1,6 @@
 // Erfundene Beispieldaten. Keine echten Schülerdaten (CLAUDE.md, Datenschutz).
 import { BAUSTEINE } from './bausteine.ts';
-import type { Daten, Kurs, Leistung, MitarbeitEintrag, Fehlzeit, Notiz, Schueler, Stufe, Verspaetung } from './typen.ts';
+import type { Daten, Kurs, Leistung, MitarbeitEintrag, Fehlzeit, Notiz, Schueler, Stufe, Termin, Verspaetung } from './typen.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
 import { monatsVorschlag } from './rechnen.ts';
 
@@ -142,7 +142,35 @@ export function beispielDaten(heute = new Date()): Daten {
     }
   }
 
-  // Gruppenarbeit (P9, E114): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet
+  // Semesterplanung (E114): Unterrichtsreihen und ein paar Stundenstände
+  kurse[0].reihen = [
+    { id: 'r1', titel: 'Unit 5 · Working life', bloecke: 40 },
+    { id: 'r2', titel: 'Unit 6 · Media and society', bloecke: 46 },
+    { id: 'r3', titel: 'Unit 7 · Global challenges', bloecke: 36 },
+    { id: 'r4', titel: 'Wiederholung Klausur 2', bloecke: 8 },
+    { id: 'r5', titel: 'Unit 8 · Mediation', bloecke: 30 }
+  ];
+  kurse[1].reihen = [
+    { id: 'r1', titel: 'Kaufvertrag', bloecke: 42 },
+    { id: 'r2', titel: 'Angebotsvergleich', bloecke: 40 },
+    { id: 'r3', titel: 'Zahlungsverkehr', bloecke: 44 },
+    { id: 'r4', titel: 'Wiederholung', bloecke: 10 }
+  ];
+  kurse[0].lernstoff['2026-11-12'] = { text: 'Unit 6 Vocabulary', hausaufgabe: 'Vokabeln S. 84', stand: 'Vokabeltest geschrieben, Reading nur angefangen' };
+  kurse[0].lernstoff['2026-11-13'] = { text: 'Unit 6 Reading', hausaufgabe: '', stand: 'Unit 6 Reading bis Absatz 3, Vokabeln S. 84 offen' };
+  kurse[1].lernstoff['2026-11-13'] = { text: 'Angebotsvergleich Einstieg', hausaufgabe: 'Aufgabe 1', stand: 'Angebotsvergleich begonnen, Aufgabe 2 fehlt noch' };
+
+  // Kalender (E115): eigene Termine, einer davon unterrichtsfrei
+  const termine: Termin[] = [
+    { id: 't1', datum: '2026-11-26', beginn: '14:30', ende: '16:00', titel: 'Fachkonferenz Englisch', art: 'konferenz' },
+    { id: 't2', datum: '2026-11-30', beginn: '09:30', ende: '09:45', titel: 'Hofaufsicht', art: 'aufsicht' },
+    { id: 't3', datum: '2026-12-03', titel: 'Exkursion Messe', art: 'ausflug', kursIds: ['k-osz'], unterrichtFrei: true },
+    { id: 't4', datum: '2026-12-04', beginn: '15:00', ende: '18:00', titel: 'Elternsprechtag', art: 'sprechtag' },
+    { id: 't5', datum: '2026-12-15', titel: 'Abgabe Portfolio', art: 'abgabe', kursIds: ['k-fos'] },
+    { id: 't6', datum: '2027-01-20', titel: 'Zeugniskonferenzen, unterrichtsfrei', art: 'frei', unterrichtFrei: true }
+  ];
+
+  // Gruppenarbeit (P9, E116): ein laufendes Projekt im Englischkurs, zwei Gruppen schon bewertet
   {
     const k = kurse[0];
     const t = k.schueler;
@@ -173,7 +201,7 @@ export function beispielDaten(heute = new Date()): Daten {
   ]);
 
   return {
-    version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, nachschreiben: [], stundenplan,
+    version: 1, schueler, kurse, mitarbeit, fehlzeiten, verspaetungen, notizen, nachschreiben: [], termine, stundenplan,
     einstellungen: { navigation: 'links', theme: 'system', stundenendeHinweis: true, liveAnsicht: 'liste', sperreMinuten: 15 }
   };
 }

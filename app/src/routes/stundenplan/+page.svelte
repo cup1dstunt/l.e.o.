@@ -2,12 +2,23 @@
   import { app } from '$lib/speicher.svelte';
   import { minuten, WOCHENTAGE } from '$lib/hilfen';
   import type { Stunde } from '$lib/typen';
+  import { page } from '$app/state';
+  import { eintraege as kalEintraege, amTag } from '$lib/kalender';
+  import KalenderMonat from '$lib/ui/KalenderMonat.svelte';
 
   // Stundenplan als Woche (Raster) oder als Tag (Liste), Entwurf A + B vom 19.11.2026.
   const d = app.d!;
   const MERK = 'leo-stundenplan-ansicht';
-  let ansicht = $state<'woche' | 'tag'>('woche');
-  try { if (localStorage.getItem(MERK) === 'tag' || (!localStorage.getItem(MERK) && innerWidth < 700)) ansicht = 'tag'; } catch { /* egal */ }
+  // Monat = Kalender (E115), nur wenn das Modul an ist
+  const kalenderAn = $derived(d.einstellungen.module?.kalender !== false);
+  let ansicht = $state<'woche' | 'tag' | 'monat'>('woche');
+  try {
+    const m = localStorage.getItem(MERK);
+    if (m === 'tag' || m === 'monat' || (!m && innerWidth < 700)) ansicht = (m as 'tag' | 'monat') || 'tag';
+  } catch { /* egal */ }
+  const wunsch = page.url.searchParams.get('ansicht');
+  if (wunsch === 'monat' || wunsch === 'woche' || wunsch === 'tag') ansicht = wunsch;
+  $effect(() => { if (ansicht === 'monat' && !kalenderAn) ansicht = 'woche'; });
   $effect(() => { try { localStorage.setItem(MERK, ansicht); } catch { /* egal */ } });
 
   const iso = (x: Date) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
@@ -45,6 +56,7 @@
         return { ...s, datum: t.datum, zustand: ausfall ? 'ausfall' : lauf ? 'jetzt' : vorbei ? 'vorbei' : '' };
       });
   }
+  const termineWoche = $derived(kalenderAn ? kalEintraege(d, tage[0].datum, tage[4].datum) : []);
   const tagWahl = $derived(tage[tag - 1]);
   const tagListe = $derived(eintraege(tagWahl));
   const summe = $derived(tage.flatMap((t) => eintraege(t)));
@@ -59,9 +71,13 @@
     <div class="zeile wrap" role="group" aria-label="Ansicht">
       <button class="pille" aria-pressed={ansicht === 'woche'} onclick={() => (ansicht = 'woche')}>Woche</button>
       <button class="pille" aria-pressed={ansicht === 'tag'} onclick={() => (ansicht = 'tag')}>Tag</button>
+      {#if kalenderAn}<button class="pille" aria-pressed={ansicht === 'monat'} onclick={() => (ansicht = 'monat')}>Monat</button>{/if}
     </div>
   </div>
 
+  {#if ansicht === 'monat'}
+    <KalenderMonat />
+  {:else}
   <div class="zeile wrap">
     <button class="knopf leise" onclick={() => woche--} aria-label="Vorige Woche">‹</button>
     <b class="zahl">KW {kw} · {tage[0].kurz} bis {tage[4].kurz}</b>
@@ -76,7 +92,9 @@
       <div class="raster" style:grid-template-rows="auto repeat({zeiten.length}, minmax(74px, auto))">
         <div></div>
         {#each tage as t}
-          <button class="tagkopf" class:heute={t.datum === heute} onclick={() => { tag = t.nr; ansicht = 'tag'; }} title="Tagesansicht">{t.w} {t.kurz}</button>
+          <button class="tagkopf" class:heute={t.datum === heute} onclick={() => { tag = t.nr; ansicht = 'tag'; }} title="Tagesansicht">{t.w} {t.kurz}
+            {#each amTag(termineWoche, t.datum) as e (e.art + e.id)}<span class="termin {e.art}" class:ufrei={e.frei}>{e.beginn ? e.beginn + ' ' : ''}{e.titel}</span>{/each}
+          </button>
         {/each}
         {#each zeiten as z}
           <div class="zeit zahl klein leise">{z}</div>
@@ -104,6 +122,9 @@
       {/each}
     </div>
     <div class="liste">
+      {#each amTag(termineWoche, tagWahl.datum) as e (e.art + e.id)}
+        <a class="termin gross {e.art}" class:ufrei={e.frei} href={e.href ?? '/stundenplan?ansicht=monat'}>{e.beginn ? e.beginn + ' · ' : 'ganztägig · '}{e.titel}{e.klasse ? ` · ${e.klasse}` : ''}{e.frei ? ' · unterrichtsfrei' : ''}</a>
+      {/each}
       {#each tagListe as s, i}
         {@const k = kurs(s.kursId)!}
         {@const vor = tagListe[i - 1]}
@@ -124,10 +145,14 @@
     </div>
   {/if}
 
+  {/if}
+
+  {#if ansicht !== 'monat'}
   <p class="klein leise">
     {summe.filter((s) => s.zustand !== 'ausfall').length} Stunden diese Woche{summe.some((s) => s.zustand === 'ausfall') ? `, ${summe.filter((s) => s.zustand === 'ausfall').length} Ausfall` : ''}.
     Quelle: {d.einstellungen.untis ? `WebUntis, abgeglichen ${new Date(d.einstellungen.untis.abgerufen).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} (Wochenmuster, Ausfälle bis zum Abgleich)` : 'Beispieldaten'}.
   </p>
+  {/if}
 </div>
 
 <style>
@@ -140,6 +165,12 @@
   .tagkopf { font: inherit; font-size: 13px; font-weight: 600; text-align: left; padding: 6px 10px; border-radius: 8px; border: 0; background: transparent; color: var(--leo-tinte); cursor: pointer; }
   .tagkopf.heute { background: var(--leo-akzent-hell); color: var(--leo-akzent); }
   .zeit { padding-top: 8px; }
+  .tagkopf { display: flex; flex-direction: column; gap: 3px; }
+  .termin { font-size: 11.5px; font-weight: 500; padding: 1px 6px; border-radius: 4px; background: var(--leo-taste); border-left: 3px solid var(--leo-leise); color: var(--leo-tinte); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+  .termin.klausur { background: var(--leo-stern-hell); border-color: var(--leo-stern); }
+  .termin.ferien { border-color: var(--leo-linie); color: var(--leo-leise); }
+  .termin.ufrei { border-color: var(--leo-warnung); }
+  .termin.gross { font-size: 14px; padding: 8px 12px; border-radius: var(--leo-r-m); }
   .zelle { border-radius: var(--leo-r-m); border: 1px dashed var(--leo-linie-fein); }
   .zelle.heute { background: color-mix(in srgb, var(--leo-akzent-hell) 45%, transparent); }
   .st { border-radius: var(--leo-r-m); border: 1px solid var(--leo-linie); background: var(--leo-karte); color: var(--leo-tinte); text-decoration: none; padding: 8px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }

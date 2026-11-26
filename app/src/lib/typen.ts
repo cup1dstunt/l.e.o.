@@ -54,7 +54,7 @@ export interface Kurs {
   zellen: Record<string, Zelle>; // Schlüssel `${leistungId}:${schuelerId}`
   endnoten: Record<string, number>; // festgelegte Endnote je Schüler
   stundenGehalten: number; // Basis der Fehlzeitenquote
-  lernstoff: Record<string, { text: string; hausaufgabe: string }>; // je Datum
+  lernstoff: Record<string, Lernstoff>; // je Datum
   uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
   sitzplan: Sitzplan;
   untis?: { klasseId: number; fachId: number }; // Herkunft WebUntis: Klasse + Fach
@@ -64,10 +64,50 @@ export interface Kurs {
   gruppenAktiv?: string; // id des Gruppensatzes, der im Sitzplan erscheint
   muendlich?: MuendlichEinstellung; // Raster und Schwelle für die mündlichen Leistungen (FB7, E110)
   einschaetzungen?: Record<string, RasterEinschaetzung>; // Schlüssel `${monat}:${schuelerId}`
-  projekte?: Projekt[]; // Gruppenarbeit über mehrere Stunden (P9, E114), neueste zuerst
+  projekte?: Projekt[]; // Gruppenarbeit über mehrere Stunden (P9, E116), neueste zuerst
+  reihen?: Reihe[]; // Semesterplanung (PB16, E114): Unterrichtsreihen in Reihenfolge
+  untisStunden?: string[]; // echte Termine laut WebUntis im Schuljahr, `${datum}|${beginn}|${ende}` (auch Blockwochen, A/B-Wochen)
 }
 
-/** Gruppenarbeit über mehrere Stunden bis ein Halbjahr (P9, E114): feste Gruppen, Gruppennote aus dem Raster, Abweichung je Mitglied. */
+/** Was in einer Stunde dran ist (PB15) und wo man stehengeblieben ist (PB1). */
+export interface Lernstoff {
+  text: string; // Thema / Stoff
+  hausaufgabe: string;
+  stand?: string; // „Wo wir stehengeblieben sind“, beim Abschließen der Stunde gespeichert
+}
+
+/** Unterrichtsreihe der Semesterplanung: Titel und wie viele Blöcke sie braucht (E114). */
+export interface Reihe {
+  id: string;
+  titel: string;
+  bloecke: number;
+}
+
+/** Kalendereintrag (K2, E115). Unterrichtsfrei + keine Klassen = für alle eigenen Klassen frei. */
+export interface Termin {
+  id: string;
+  datum: string; // ISO-Datum
+  bis?: string; // letzter Tag bei mehrtägigen Terminen
+  beginn?: string; // HH:MM, fehlt = ganztägig
+  ende?: string;
+  titel: string;
+  art: TerminArt;
+  kursIds?: string[]; // betroffene Klassen (Ausfall, Exkursion, Abgabe)
+  unterrichtFrei?: boolean; // zählt in der Semesterplanung nicht als Block
+  notiz?: string;
+  quelle?: 'ics'; // aus einer Kalenderdatei (z. B. IServ), beim nächsten Import ersetzt
+  uid?: string; // UID aus der Kalenderdatei
+}
+export type TerminArt = 'konferenz' | 'aufsicht' | 'sprechtag' | 'abgabe' | 'ausflug' | 'ausfall' | 'frei' | 'sonstiges';
+
+/** Ferien und Feiertage (aus WebUntis); ohne Abgleich nimmt L.E.O. Beispielwerte (semester.ts). */
+export interface FreieZeit {
+  name: string;
+  von: string;
+  bis: string;
+}
+
+/** Gruppenarbeit über mehrere Stunden bis ein Halbjahr (P9, E116): feste Gruppen, Gruppennote aus dem Raster, Abweichung je Mitglied. */
 export interface Projekt {
   id: string;
   titel: string;
@@ -108,7 +148,7 @@ export interface Raster {
   fach: string; // z. B. „Englisch“, leer = fachübergreifend
   bereiche: RasterBereich[];
   vorlage?: true; // eingebaute Vorlage, nicht änderbar (kopieren geht)
-  art?: 'projekt'; // Projektraster für die Gruppenarbeit (E114), fehlt = mündliche Leistungen
+  art?: 'projekt'; // Projektraster für die Gruppenarbeit (E116), fehlt = mündliche Leistungen
 }
 
 export interface RasterBereich {
@@ -248,7 +288,10 @@ export interface Einstellungen {
   eigeneVorlagen?: EigeneVorlage[]; // Sitzplan-Vorlagen der Lehrkraft (E86), für alle Klassen nutzbar
   bausteine?: Baustein[]; // eigene Textbausteine (E110); fehlt = Startsatz aus bausteine.ts
   raster?: Raster[]; // eigene Kriterienraster (E110), Vorlagen liegen in raster.ts
-  projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E114)
+  projektMail?: { betreff: string; text: string }; // eigene Vorlage der Rückmeldung zur Gruppenarbeit (E116)
+  ferien?: FreieZeit[]; // Ferien und Feiertage laut WebUntis (getHolidays)
+  halbjahrGrenze?: string; // erster Tag des 2. Halbjahres, fehlt = 1. Februar
+  module?: { planung?: boolean; kalender?: boolean }; // abschaltbare Module (Projektregel), fehlt = an
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */
@@ -280,6 +323,7 @@ export interface Daten {
   verspaetungen: Verspaetung[];
   notizen: Notiz[];
   nachschreiben: NachTermin[];
+  termine: Termin[];
   stundenplan: Stunde[];
   einstellungen: Einstellungen;
 }

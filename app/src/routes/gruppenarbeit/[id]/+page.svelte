@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Gruppenarbeit einer Klasse (P9, E114): Projekte mit festen Gruppen über mehrere Stunden,
+  // Gruppenarbeit einer Klasse (P9, E116): Projekte mit festen Gruppen über mehrere Stunden,
   // Gruppennote aus dem Projektraster, Abweichung je Mitglied, Übernahme als eine Notenbuchspalte.
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
