@@ -8,11 +8,10 @@
   import { bilden, staerke } from '$lib/gruppen';
   import { fuellen, mailLink, schulAdresse } from '$lib/nachschreiben';
   import {
-    projektRasterAlle, projektRaster, gruppenErgebnis, einzelNote, nichtEingeteilt, laeuft, neuesProjekt, satzAbgleichen,
+    projektRasterAlle, projektRaster, gruppenErgebnis, projektErgebnis, nichtEingeteilt, laeuft, neuesProjekt, satzAbgleichen,
     verschieben, belegeMitglied, insNotenbuch, projektMailWerte, PROJEKT_MAIL_STANDARD, PROJEKT_PLATZHALTER,
-    GRUENDE_BESSER, GRUENDE_SCHLECHTER, SCHRITT_MAX
+    produktKriterien, arbeitKriterien, kriteriumGewichtP, anteilProdukt, einzelStufeSetzen, STANDARD_ANTEIL_PRODUKT
   } from '$lib/projekt';
-  import { kriteriumGewicht } from '$lib/raster';
   import type { Projekt, Schueler } from '$lib/typen';
   import KursKopf from '$lib/ui/KursKopf.svelte';
 
@@ -29,6 +28,9 @@
   const p = $derived(projekte.find((x) => x.id === projektId) ?? projekte.find((x) => laeuft(x, heute)) ?? projekte[0]);
   const raster = $derived(p ? projektRaster(d, p) : null);
   const kriterien = $derived(raster ? raster.bereiche.flatMap((b) => b.kriterien) : []);
+  const kProdukt = $derived(raster ? produktKriterien(raster) : []);
+  const kArbeit = $derived(raster ? arbeitKriterien(raster) : []);
+  const anteil = $derived(p && raster ? anteilProdukt(raster, p) : STANDARD_ANTEIL_PRODUKT);
   let gruppeId = $state<string | null>(null);
   const g = $derived(p?.gruppen.find((x) => x.id === gruppeId) ?? p?.gruppen[0]);
   const erg = $derived(p && raster && g ? gruppenErgebnis(raster, g, kurs.profil, p) : null);
@@ -87,22 +89,11 @@
     if (g.stufen[kid] === st) delete g.stufen[kid]; else g.stufen[kid] = st;
     speichern();
   }
-  function abweichen(sid: string, delta: number) {
-    if (!p) return;
-    const a = p.abweichung[sid] ?? { schritte: 0 };
-    const neu = Math.max(-SCHRITT_MAX, Math.min(SCHRITT_MAX, a.schritte + delta));
-    // Richtung gewechselt: der alte Grund passt nicht mehr
-    p.abweichung[sid] = { schritte: neu, ...(a.grund && Math.sign(neu) === Math.sign(a.schritte) ? { grund: a.grund } : {}) };
-    if (!neu) delete p.abweichung[sid];
+  function einzeln(sid: string, kid: string, st: 1 | 2 | 3 | 4) {
+    if (!p || !g) return;
+    einzelStufeSetzen(p, g, sid, kid, st);
     speichern();
   }
-  function grund(sid: string, t: string) {
-    if (!p?.abweichung[sid]) return;
-    const a = p.abweichung[sid];
-    a.grund = a.grund === t ? undefined : t;
-    speichern();
-  }
-  let mitgliedAuf = $state<string | null>(null);
 
   // ---------- Gruppen ändern ----------
   let markiert = $state<string | null>(null);
@@ -170,8 +161,13 @@
     p.gewichte = { ...(p.gewichte ?? {}), [kid]: Math.max(0, Math.min(5, Math.round(w * 2) / 2)) };
     speichern();
   }
-  const gewSumme = $derived(p ? kriterien.reduce((a, kr) => a + kriteriumGewicht({ muendlich: { rasterId: '', mindestSmileys: 0, gewichte: p.gewichte } }, kr), 0) : 0);
-  const gewVon = (kr: (typeof kriterien)[number]) => kriteriumGewicht({ muendlich: { rasterId: '', mindestSmileys: 0, gewichte: p?.gewichte } }, kr);
+  const gewVon = (kr: (typeof kriterien)[number]) => (p ? kriteriumGewichtP(p, kr) : 1);
+  const summe = (ks: typeof kriterien) => ks.reduce((a, kr) => a + gewVon(kr), 0);
+  function anteilSetzen(w: number) {
+    if (!p) return;
+    p.anteilProdukt = Math.max(0, Math.min(100, Math.round(w / 5) * 5));
+    speichern();
+  }
 
   // ---------- Mail ----------
   const vorlage = $derived(d.einstellungen.projektMail ?? PROJEKT_MAIL_STANDARD);
@@ -243,26 +239,34 @@
               <input class="eingabe gname" bind:value={g.name} oninput={() => { speichern(); satzAbgleichen(kurs, p, neueId); }} aria-label="Name der Gruppe" />
               <input class="eingabe raum" bind:value={g.thema} oninput={speichern} placeholder="Thema der Gruppe, z. B. Fast Fashion" aria-label="Thema" />
             </div>
-            <h3>Ergebnis der Gruppe · {raster.name}</h3>
-            {#each kriterien as kr (kr.id)}
+            {#snippet kriterium(kr: (typeof kriterien)[number])}
               <div class="krit">
                 <div class="kname"><b>{kr.name}</b><button class="gchip" onclick={() => (gewOffen = true)} title="Gewicht ändern">×{gz(gewVon(kr))}</button></div>
                 <div class="stufen" role="group" aria-label={kr.name}>
                   {#each [4, 3, 2, 1] as st, i}
-                    <button class="stufe" aria-pressed={g.stufen[kr.id] === st} onclick={() => stufe(kr.id, st as 1 | 2 | 3 | 4)}><b>{st}</b> <span>{kr.stufen[i]}</span></button>
+                    <button class="stufe" aria-pressed={g!.stufen[kr.id] === st} onclick={() => stufe(kr.id, st as 1 | 2 | 3 | 4)}><b>{st}</b> <span>{kr.stufen[i]}</span></button>
                   {/each}
                 </div>
               </div>
-            {/each}
+            {/snippet}
+            {#if kProdukt.length}
+              <h3>Handlungsprodukt · für die ganze Gruppe{kArbeit.length ? ` · ${anteil} %` : ''}</h3>
+              {#each kProdukt as kr (kr.id)}{@render kriterium(kr)}{/each}
+            {/if}
+            {#if kArbeit.length}
+              <h3>Arbeitsweise · {100 - anteil} %</h3>
+              <p class="klein leise">Was du hier für die Gruppe wählst, gilt für alle. Bei den Mitgliedern unten änderst du es je Person, z. B. für die Beteiligung.</p>
+              {#each kArbeit as kr (kr.id)}{@render kriterium(kr)}{/each}
+            {/if}
 
             <h3>Mitglieder</h3>
-            <p class="klein leise">Alle bekommen die Gruppennote. Weiche nur ab, wenn jemand deutlich mehr oder weniger beigetragen hat. Daneben steht, was L.E.O. im Projektzeitraum weiß.</p>
+            <p class="klein leise">Daneben steht, was L.E.O. im Projektzeitraum weiß.{kArbeit.length ? ' Umrandet = Stufe der Gruppe, gefüllt = eigene Stufe.' : ''}</p>
             <ul class="mitglieder">
               {#each g.mitglieder as sid (sid)}
                 {@const s = person(sid)}
-                {@const a = p.abweichung[sid]}
                 {@const b = belegeMitglied(d, kurs.id, p, sid)}
-                {@const en = einzelNote(kurs.profil, erg?.note ?? null, a?.schritte ?? 0)}
+                {@const pe = projektErgebnis(raster, g, sid, kurs.profil, p)}
+                {@const eigen = p.einzelStufen?.[sid] ?? {}}
                 {#if s}
                   <li class="mg">
                     <div class="mzeile">
@@ -271,18 +275,20 @@
                         {#if b.fehlStunden}<span class:warnt={b.fehlStunden >= 4}>fehlte {b.fehlStunden} Std. ({b.fehlTage.map(datumKurz).join(', ')})</span>{:else}nie gefehlt{/if}
                         · {b.smileys ? `${b.smileys} Smileys Ø ${zahl(b.schnitt, 1)}` : 'keine Smileys'}{b.zuSpaet ? ` · ${b.zuSpaet}× zu spät` : ''}
                       </span>
-                      <span class="abw" role="group" aria-label="Abweichung">
-                        <button class="knopf leise rund" disabled={(a?.schritte ?? 0) <= -SCHRITT_MAX} onclick={() => abweichen(sid, -1)} aria-label="schlechter">−</button>
-                        <span class="schritte" class:besser={(a?.schritte ?? 0) > 0} class:schlechter={(a?.schritte ?? 0) < 0}>{a?.schritte ? (a.schritte > 0 ? `+${a.schritte}` : a.schritte) : '±0'}</span>
-                        <button class="knopf leise rund" disabled={(a?.schritte ?? 0) >= SCHRITT_MAX} onclick={() => abweichen(sid, 1)} aria-label="besser">+</button>
-                      </span>
-                      <b class="zahl note gross-n">{anzeige(en)}</b>
+                      <b class="zahl note gross-n" title={pe.weg.join('\n')}>{anzeige(pe.note)}</b>
                       <a class="link klein" href={mail(s)} onclick={() => mailGeoeffnet(sid)} title="Rückmeldung an die schulische Adresse">{p.mails?.[sid] ? '✓ Mail' : 'Mail'}</a>
                     </div>
-                    {#if a?.schritte}
-                      <div class="chips gruende">
-                        {#each a.schritte > 0 ? GRUENDE_BESSER : GRUENDE_SCHLECHTER as t}<button class="chip {a.schritte > 0 ? 'pos' : 'neg'}" aria-pressed={a.grund === t} onclick={() => grund(sid, t)}>{t}</button>{/each}
-                        <input class="eingabe eigen" placeholder="eigener Grund" value={a.grund && ![...GRUENDE_BESSER, ...GRUENDE_SCHLECHTER].includes(a.grund) ? a.grund : ''} onchange={(e) => { a.grund = (e.currentTarget as HTMLInputElement).value.trim() || undefined; speichern(); }} />
+                    {#if kArbeit.length}
+                      <div class="einzel">
+                        {#each kArbeit as kr (kr.id)}
+                          <div class="ez"><span class="klein">{kr.name}</span>
+                            <span class="mini-stufen" role="group" aria-label="{kr.name} für {name(s)}">
+                              {#each [4, 3, 2, 1] as st, i}
+                                <button class="ms" class:vorgabe={eigen[kr.id] === undefined && g.stufen[kr.id] === st} aria-pressed={eigen[kr.id] === st} title={kr.stufen[i]} onclick={() => einzeln(sid, kr.id, st as 1 | 2 | 3 | 4)}>{st}</button>
+                              {/each}
+                            </span>
+                          </div>
+                        {/each}
                       </div>
                     {/if}
                   </li>
@@ -302,8 +308,9 @@
         <!-- Projekt -->
         <aside class="karte projekt">
           <button class="kachel" onclick={() => (gewOffen = true)} title="Gewichte ändern">
-            <span class="zeile"><h2 class="raum">Gruppennote {g?.name}</h2><span class="klein akzent">Gewichte ›</span></span>
+            <span class="zeile"><h2 class="raum">Note {g?.name}</h2><span class="klein akzent">Gewichte ›</span></span>
             <span class="gross zahl">{anzeige(erg?.note)}</span>
+            {#if kArbeit.length && kProdukt.length}<span class="klein leise">Handlungsprodukt {anteil} % · Arbeitsweise {100 - anteil} %. Ohne eigene Stufen der Mitglieder.</span>{/if}
           </button>
           {#if erg}<p class="klein leise">{erg.offen ? `${erg.offen} Kriterien noch offen, sie zählen nicht mit.` : 'Alle Kriterien eingeschätzt.'}</p>
             <button class="knopf leise klein" aria-expanded={wegOffen} onclick={() => (wegOffen = !wegOffen)}>{wegOffen ? '▾' : '▸'} Rechenweg</button>
@@ -378,16 +385,30 @@
     <div class="hintergrund" role="presentation" onclick={(e) => e.target === e.currentTarget && (gewOffen = false)}>
       <div class="schweben dialog" role="dialog" aria-label="Gewichte">
         <h2>Gewichte · {p.titel}</h2>
-        <table class="gtab"><tbody>
-          {#each kriterien as kr (kr.id)}
-            {@const w = gewVon(kr)}
-            <tr><td>{kr.name}</td>
-              <td class="zeile"><button class="knopf leise rund" onclick={() => gewSetzen(kr.id, w - 0.5)} aria-label="weniger">−</button><b class="zahl gwert">{gz(w)}</b><button class="knopf leise rund" onclick={() => gewSetzen(kr.id, w + 0.5)} aria-label="mehr">+</button></td>
-              <td class="zahl leise">{gewSumme ? Math.round((w / gewSumme) * 100) : 0} %</td></tr>
-          {/each}
-        </tbody></table>
-        <p class="klein leise">Die Gruppennote ist der gewichtete Durchschnitt der Stufen, umgerechnet wie beim mündlichen Raster. Die Gewichte gelten nur für dieses Projekt.</p>
-        <div class="gfuss"><button class="knopf leise" disabled={!p.gewichte} onclick={() => { delete p.gewichte; speichern(); }}>Standard</button><button class="knopf haupt" onclick={() => (gewOffen = false)}>Fertig</button></div>
+        {#if kProdukt.length && kArbeit.length}
+          <div class="anteil">
+            <span class="raum">Handlungsprodukt <b class="zahl">{anteil} %</b></span>
+            <button class="knopf leise rund" onclick={() => anteilSetzen(anteil - 10)} aria-label="weniger Handlungsprodukt">−</button>
+            <button class="knopf leise rund" onclick={() => anteilSetzen(anteil + 10)} aria-label="mehr Handlungsprodukt">+</button>
+            <span class="raum rechts">Arbeitsweise <b class="zahl">{100 - anteil} %</b></span>
+          </div>
+        {/if}
+        {#each [['Handlungsprodukt', kProdukt], ['Arbeitsweise', kArbeit]] as [titel, ks]}
+          {@const liste = ks as typeof kriterien}
+          {#if liste.length}
+            <h3>{titel}</h3>
+            <table class="gtab"><tbody>
+              {#each liste as kr (kr.id)}
+                {@const w = gewVon(kr)}
+                <tr><td>{kr.name}</td>
+                  <td class="zeile"><button class="knopf leise rund" onclick={() => gewSetzen(kr.id, w - 0.5)} aria-label="weniger">−</button><b class="zahl gwert">{gz(w)}</b><button class="knopf leise rund" onclick={() => gewSetzen(kr.id, w + 0.5)} aria-label="mehr">+</button></td>
+                  <td class="zahl leise">{summe(liste) ? Math.round((w / summe(liste)) * 100) : 0} %</td></tr>
+              {/each}
+            </tbody></table>
+          {/if}
+        {/each}
+        <p class="klein leise">Handlungsprodukt und Arbeitsweise sind je der gewichtete Durchschnitt ihrer Stufen; beide zusammen nach deinem Anteil. Die Prozente in den Tabellen gelten innerhalb des Teils. Stufe 4 = {fos ? '15 Punkte' : 'Note 1'}. Alles gilt nur für dieses Projekt.</p>
+        <div class="gfuss"><button class="knopf leise" disabled={!p.gewichte && p.anteilProdukt === undefined} onclick={() => { delete p.gewichte; delete p.anteilProdukt; speichern(); }}>Standard</button><button class="knopf haupt" onclick={() => (gewOffen = false)}>Fertig</button></div>
       </div>
     </div>
   {/if}
@@ -420,18 +441,21 @@
   .gchip { margin-left: 6px; border: 1px solid var(--leo-linie); background: var(--leo-flaeche-leise); color: var(--leo-akzent); border-radius: var(--leo-r-pill); font: inherit; font-size: var(--leo-text-xs); font-weight: 600; padding: 1px 7px; cursor: pointer; }
   .mitglieder { list-style: none; margin: 6px 0; padding: 0; }
   .mg { padding: 8px 0; border-bottom: 1px solid var(--leo-linie-fein); }
-  .mzeile { display: grid; grid-template-columns: 150px 1fr auto 36px 48px; align-items: center; gap: 10px; }
+  .mzeile { display: grid; grid-template-columns: 150px 1fr 36px 48px; align-items: center; gap: 10px; }
   .mname { border: 0; background: none; font: inherit; font-weight: 600; text-align: left; color: inherit; padding: 4px; border-radius: var(--leo-r-s); cursor: pointer; }
   .mname[aria-pressed='true'] { background: var(--leo-auswahl); outline: 2px solid var(--leo-akzent); }
   .warnt { color: var(--leo-warnung); font-weight: 600; }
-  .abw { display: inline-flex; align-items: center; gap: 4px; }
   .rund { min-width: 40px; justify-content: center; }
-  .schritte { min-width: 30px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--leo-leise); }
-  .schritte.besser { color: var(--leo-akzent); }
-  .schritte.schlechter { color: var(--leo-warnung); }
   .gross-n { font-size: 18px; }
-  .gruende { margin: 6px 0 0 150px; align-items: center; }
-  .eigen { min-height: 34px; padding: 4px 10px; width: 160px; }
+  .einzel { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 6px 0 0 4px; }
+  .ez { display: inline-flex; align-items: center; gap: 8px; }
+  .mini-stufen { display: inline-flex; gap: 4px; }
+  .ms { min-width: 36px; min-height: 36px; border: 1px solid var(--leo-linie); background: var(--leo-taste); border-radius: var(--leo-r-s); font: inherit; font-weight: 700; color: var(--leo-tinte); cursor: pointer; }
+  .ms.vorgabe { border: 2px solid var(--leo-akzent); background: var(--leo-karte); color: var(--leo-akzent); }
+  .ms[aria-pressed='true'] { background: var(--leo-akzent); border-color: var(--leo-akzent); color: var(--leo-auf-akzent); }
+  .anteil { display: flex; align-items: center; gap: 8px; background: var(--leo-flaeche-leise); border-radius: var(--leo-r-m); padding: 10px 12px; margin: 8px 0; }
+  .anteil .rechts { text-align: right; }
+  .dialog h3 { margin: 12px 0 0; }
   .notizen { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
   .projekt { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 120px; }
   .projekt .knopf { white-space: normal; justify-content: center; text-align: center; height: auto; min-height: 44px; padding-block: 8px; line-height: 1.25; }
@@ -453,10 +477,8 @@
     .spalten { grid-template-columns: 1fr; }
     .krit { grid-template-columns: 1fr; }
     .stufen { grid-template-columns: repeat(2, 1fr); }
-    .mzeile { grid-template-columns: 1fr auto 40px; }
+    .mzeile { grid-template-columns: 1fr 40px; }
     .belege { grid-column: 1 / -1; grid-row: 2; }
     .mzeile .link { grid-column: 1 / -1; }
-    .gruende { margin-left: 0; }
-    .eigen { width: 100%; }
   }
 </style>

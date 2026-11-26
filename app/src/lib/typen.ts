@@ -116,9 +116,11 @@ export interface Projekt {
   bis: string; // ISO-Datum, Abgabe oder Präsentation
   rasterId: string; // Projektraster (Raster mit art „projekt“)
   gewichte?: Record<string, number>; // Gewicht je Kriterium in diesem Projekt, fehlt = aus dem Raster
+  anteilProdukt?: number; // Anteil Handlungsprodukt in Prozent, Rest Arbeitsweise (E118), fehlt = 50
   zaehltAls: 'sl' | 'mitarbeit'; // Notenbuch: Tests/Sonstiges oder mündliche Leistungen
   gruppen: ProjektGruppe[];
-  abweichung: Record<string, { schritte: number; grund?: string }>; // je Schüler, + = besser als die Gruppe
+  einzelStufen?: Record<string, Record<string, 1 | 2 | 3 | 4>>; // Schüler → Kriterium der Arbeitsweise → eigene Stufe, fehlt = Stufe der Gruppe
+  abweichung?: Record<string, { schritte: number; grund?: string }>; // veraltet (erste Fassung), wird nicht mehr gerechnet
   leistungId?: string; // Notenbuchspalte, entsteht beim ersten Übernehmen
   satzId?: string; // Gruppensatz, über den die Gruppen im Sitzplan erscheinen
   mails?: Record<string, string>; // Schüler → Datum, an dem die Rückmeldung geöffnet wurde
@@ -130,7 +132,7 @@ export interface ProjektGruppe {
   name: string; // G1, G2 … oder eigener Name
   thema: string;
   mitglieder: string[];
-  stufen: Record<string, 1 | 2 | 3 | 4>; // Kriterium-id → Stufe für das Gruppenergebnis
+  stufen: Record<string, 1 | 2 | 3 | 4>; // Kriterium-id → Stufe der Gruppe (Arbeitsweise: Vorgabe für alle Mitglieder)
   notizen: { datum: string; text: string }[]; // Stand der Gruppe, neueste zuerst
 }
 
@@ -175,6 +177,7 @@ export interface Raster {
 
 export interface RasterBereich {
   name: string;
+  einzeln?: true; // Projektraster (E118): je Person bewertet (Arbeitsweise), sonst einmal für die Gruppe (Handlungsprodukt)
   gewicht: number; // nicht mehr in der Rechnung (E113); es zählt das Gewicht je Kriterium
   kriterien: RasterKriterium[];
 }
