@@ -148,7 +148,7 @@ Browser verschlüsseln Daten (F2), gleichen ab (F4) und installieren die App nur
 
 Ungetestet: Ich habe keinen Zugriff auf dein Unraid. Wenn ein Schritt anders aussieht, schick mir einen Screenshot.
 
-## Selbsteinschätzung der Schüler per Link (FB7b, E114)
+## Selbsteinschätzung der Schüler per Link (FB7b, E116)
 
 Schüler öffnen den Bogen unter `https://<deine-adresse>/e/#<token>`. Dafür muss L.E.O. aus dem Internet über HTTPS erreichbar sein, und das Gerät der Lehrkraft muss mit dem Abgleich verbunden sein. Der Server sieht keine Namen und kann die Antworten nicht lesen.
 

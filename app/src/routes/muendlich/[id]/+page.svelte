@@ -49,7 +49,7 @@
   const erg = $derived(rasterErgebnis(raster, stufen, kurs.profil, kurs));
   let wegOffen = $state(false);
 
-  // Selbsteinschätzung per Link (FB7b, E114): zählt nicht zur Note, steht neben dem eigenen Raster
+  // Selbsteinschätzung per Link (FB7b, E116): zählt nicht zur Note, steht neben dem eigenen Raster
   const selbstAn = $derived(!!kurs.muendlich?.selbst);
   const runde = $derived(kurs.selbst?.[monat]);
   const selbstA = $derived(akt ? runde?.antworten[akt.s.id] : undefined);

@@ -1,4 +1,4 @@
-// @ts-nocheck – reines Browser-JavaScript für den Schülerbogen (FB7b, E114), geprüft durch tests/selbst.test.ts.
+// @ts-nocheck – reines Browser-JavaScript für den Schülerbogen (FB7b, E116), geprüft durch tests/selbst.test.ts.
 // Verschlüsselt die Antwort im Browser des Schülers: ECDH P-256 mit einmaligem Schlüssel + AES-GCM,
 // Zusatzdaten = Hash des Links (gegen Vertauschen). Gegenstück: src/lib/selbst.ts antwortLesen.
 export const b64 = (u) => btoa(String.fromCharCode(...new Uint8Array(u))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

@@ -6,6 +6,9 @@
   import { zellSchluessel, rechne, warnungen } from '$lib/rechnen';
   import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
   import { onMount } from 'svelte';
+  import { naechsterBlock, reiheText } from '$lib/semester';
+  import { eintraege, artName } from '$lib/kalender';
+  import { isoDatum } from '$lib/hilfen';
 
   const d = app.d!;
   let jetzt = $state(new Date());
@@ -47,6 +50,22 @@
     }
     return a.join(' · ');
   };
+
+  // Semesterplanung (E114): Was ist in der Stunde geplant? Kalender (E115): die nächsten 14 Tage
+  const planAn = $derived(d.einstellungen.module?.planung !== false);
+  const kalenderAn = $derived(d.einstellungen.module?.kalender !== false);
+  const geplantFuer = (kursId: string, datum: string) => {
+    const k = kurs(kursId);
+    const b = naechsterBlock(d, k, datum);
+    if (!b || b.datum !== datum) return '';
+    return [reiheText(b), k.lernstoff[datum]?.text].filter(Boolean).join(' · ');
+  };
+  const hauptDatum = $derived.by(() => {
+    if (!haupt || !('tagText' in haupt) || !haupt.tagText) return hISO;
+    for (let i = 1; i <= 7; i++) { const t = new Date(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate() + i); if (t.getDay() === haupt.tag) return isoDatum(t); }
+    return hISO;
+  });
+  const demnaechst = $derived(eintraege(d, hISO, isoDatum(new Date(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate() + 14))).filter((e) => e.art !== 'ferien' || e.datum >= hISO).slice(0, 6));
 
   // Offene Punkte: offene Monatsnoten
   const offen = $derived.by(() => {
@@ -103,7 +122,10 @@
           <p class="leise zahl">{haupt.beginn} bis {haupt.ende}</p>
         {/if}
         {#if k.uebergang}
-          <div class="uebergang"><span class="klein leise">Übergang aus der letzten Stunde ({datumKurz(k.uebergang.datum)})</span><p>{k.uebergang.text}</p></div>
+          <div class="uebergang"><span class="klein leise">Wo ihr stehengeblieben seid ({datumKurz(k.uebergang.datum)})</span><p>{k.uebergang.text}</p></div>
+        {/if}
+        {#if planAn && geplantFuer(k.id, hauptDatum)}
+          <p class="klein geplant"><span class="leise">Geplant:</span> {geplantFuer(k.id, hauptDatum)} · <a href="/planung/{k.id}">Planung</a></p>
         {/if}
         <div class="knoepfe">
           <a class="knopf haupt" href="/stunde/{k.id}">Stunde öffnen</a>
@@ -156,10 +178,20 @@
       </ul>
     </section>
 
-    <section class="karte platzhalter">
-      <h2>Kalender</h2>
-      <p class="leise">Folgt später (V9, E76). Hier erscheinen Klausurtermine und Termine der Schule.</p>
-    </section>
+    {#if kalenderAn}
+      <section class="karte">
+        <a class="titelzeile" href="/stundenplan?ansicht=monat"><h2 class="raum">Demnächst</h2><span class="klein">Kalender ›</span></a>
+        {#if !demnaechst.length}<p class="leise">In den nächsten zwei Wochen nichts eingetragen.</p>{/if}
+        <ul class="liste">
+          {#each demnaechst as e (e.art + e.id)}
+            <li>
+              <a href={e.href ?? '/stundenplan?ansicht=monat'}>{e.datum === hISO ? 'Heute' : datumWt(e.datum)}{e.beginn ? ` ${e.beginn}` : ''} · {e.titel}</a>
+              <span class="klein leise">{e.klasse ?? (e.art === 'klausur' || e.art === 'test' || e.art === 'nachschreiben' || e.art === 'ferien' ? '' : artName(e.art))}{e.frei ? ' · unterrichtsfrei' : ''}</span>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
   </div>
 </div>
 
@@ -190,6 +222,7 @@
   .kursname { font-size: 30px; font-weight: 750; }
   .uebergang { background: var(--leo-flaeche-leise); border: 1px solid var(--leo-linie-fein); border-radius: var(--leo-r-m); padding: 10px 14px; }
   .uebergang p { margin: 4px 0 0; }
+  .geplant { margin: 8px 0 0; }
   .knoepfe { display: flex; gap: 10px; flex-wrap: wrap; }
   .knoepfe .knopf { min-height: 48px; }
   .liste { list-style: none; padding: 0; margin: 10px 0 0; }
@@ -199,6 +232,5 @@
   .rot { color: var(--leo-warnung); font-weight: 600; }
   .gold { color: #8a6200; font-weight: 600; }
   .mini2 { margin-left: auto; }
-  .platzhalter { border-style: dashed; background: transparent; }
   @media (max-width: 900px) { .raster { grid-template-columns: 1fr; } .laeuft { grid-row: auto; } .seite { padding: 16px; } .kopf { padding: 12px 16px; } }
 </style>

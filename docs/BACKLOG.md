@@ -142,9 +142,9 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
 | K1 | Persönlicher Stundenplan aus WebUntis (Export/ICS als Start), mit Vertretungen | K, B | 1 | M |
-| K2 | Kalender: Termine, Klausuren, Abgaben, Konferenzen, Aufsichten | B | 1 | M |
-| K3 | Import anderer Pläne aus IServ (iCal) | B | 2 | S |
-| K4 | ICS-Export (z. B. Google Kalender) | B | 2 | S |
+| K2 | ✅ im Prototyp 25.11. (E115). Kalender: Termine, Klausuren, Abgaben, Konferenzen, Aufsichten | B | 1 | M |
+| K3 | ✅ als Datei-Import im Prototyp 25.11. (E115); Abo-Link aus IServ offen. Import anderer Pläne aus IServ (iCal) | B | 2 | S |
+| K4 | ✅ als Datei im Prototyp 25.11. (E115); Abo-Link offen. ICS-Export (z. B. Google Kalender) | B | 2 | S |
 | K5 | Notizen je Schüler: Kürzel, Datum, Suche | B | 2 | S |
 | K6 | Eltern-/Beratungsgespräche mit Vereinbarung und Wiedervorlage | B | 2 | M |
 | K7 | Notizen privat oder für Klassenleitung freigeben | C | 2 | S |
@@ -348,7 +348,7 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 
 | # | Punkt | Herkunft | Prio | Aufwand | Status |
 |---|---|---|---|---|---|
-| PB1 | **Wo sind wir stehengeblieben:** Notiz am Kurs (Klasse + Fach), erscheint in der nächsten Stunde oben und auf der Startseite (konkretisiert PF10) | K | 1 | S | im Prototyp |
+| PB1 | **Wo sind wir stehengeblieben:** Notiz am Kurs (Klasse + Fach), erscheint in der nächsten Stunde oben und auf der Startseite (konkretisiert PF10) | K | 1 | S | im Prototyp, Stand je Tag im Rückblick (E114) |
 | PB2 | **Was-wäre-wenn:** welche Note in einer offenen Leistung nötig ist, um eine Gesamtnote zu erreichen (I36) | C, K bestätigt | 1 | S | im Prototyp (Rechenweg-Fenster) |
 | PB3 | **Warnampel:** unter der Grenze, auf der Kippe, zu wenige Noten; Fehlzeitengrenze in der Schülerkarte (I37, Q6) | C, K bestätigt | 1 | S | im Prototyp |
 | PB4 | **Nachschreiber-Liste** bei E an Klausuren (I44), mit Namen und Termin | C, K bestätigt | 1 | S | Zähler im Prototyp, Liste offen |
@@ -361,9 +361,9 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 | PB11 | **Wochenrückblick:** was diese Woche erfasst wurde, wer ohne Mitarbeitseintrag blieb, offene Nachschreiber | C, K bestätigt | 2 | S | offen |
 | PB12 | **Verschlüsselter Export** der lokalen Daten (Passwort), weil die Daten nur im Gerät liegen (E79) | C, K bestätigt | 1 | M | gebaut 20.11. (F3, E102): verschlüsselte Datei + 7 Tagesstände |
 | PB13 | **Stundenplan als Wochenübersicht oder Liste**, gekoppelt mit WebUntis/IServ | K | 1 | M | Woche/Tag umschaltbar im Prototyp (19.11., Entwurf A+B), Quelle WebUntis |
-| PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | offen |
-| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | einfache Fassung im Prototyp (Reiter „Planung“) |
-| PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | Zählung mit Beispiel-Ferien im Prototyp, Quelle WebUntis offen |
+| PB14 | **Kalender** mit WebUntis/IServ gekoppelt, um Stunden dort vorzubereiten (ergänzt PF13, E76) | K | 2 | L | im Prototyp (E115): Monat im Stundenplan, ICS-Datei hin und zurück |
+| PB15 | **Stundenplanung:** jede kommende Stunde planbar (Stoff, Hausaufgabe, Material), erscheint in der Live-Stunde als Lernstoff | K | 1 | M | im Prototyp (E114), Material/Dateien offen |
+| PB16 | **Semesterplanung:** wie viele Blöcke habe ich mit der Klasse im Halbjahr (ohne Ferien, Feiertage, Ausfälle), damit der Unterricht danach geplant werden kann | K | 1 | M | im Prototyp (E114): WebUntis-Termine und -Ferien, Unterrichtsreihen; mit echtem WebUntis ungetestet |
 | PB17 | **Live-Stunde: Werkzeuge für die Stunde** sammeln (Zufall, Gruppen, Timer, Beamer-Modus PF25, Lernstoff, Übergang); was fehlt noch? | K | 1 | M | teilweise im Prototyp |
 | PB18 | **Abgleich zwischen Geräten** (Handy, iPad, PC) trotz lokaler Daten: Datei, eigener Sync-Dienst auf dem Unraid oder Ende-zu-Ende-verschlüsselt (E79, V10) | C | 1 | L | gebaut 20.11. (F4, E103): eigener Dienst auf dem Unraid, Ende-zu-Ende-verschlüsselt; ungetestet auf Unraid/iPad |
 | PB19 | **App-Pakete** für Windows/macOS (Tauri) und Android/iOS (Capacitor) aus derselben Browser-App (E79) | C | 2 | M | offen |
@@ -380,8 +380,8 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | FB4 | Sitzplan-Editor mit Vorlagen und Drag and Drop (E86), Raumvorlagen später je Raum teilen | K | 1 | L | Grundfassung in 0.5; eigene Vorlagen („Als Vorlage merken“, für alle Klassen) seit 19.11. |
 | FB5 | Live-Stunde: Liste/Sitzplan umschaltbar (E86) | K | 1 | S | in 0.5; Liste heißt „Alphabet“, im Sitzplan Schalter Anwesenheit/Mündlich (19.11.) |
 | FB6 | Anwesenheit da/fehlt, Verspätung mit Uhrzeit (E84); E/UE später aus WebUntis | K | 1 | S | in 0.5; Zeitvorschläge jetzt/+5…+30 min (19.11.) |
-| FB7 | **Mündliche Leistungen kriterienorientiert:** Rasterbogen (Kriterien, Mitarbeit ist eines), Selbsteinschätzungsbogen für Schüler zum Verteilen, Vergleich Selbst-/Fremdeinschätzung (E85, verzahnt mit BEWERTUNGSBOEGEN.md) | K | 1 | L | Raster springt ein (E110) im Prototyp, 25.11.2026; Selbsteinschätzung per Link gebaut (FB7b, E114) |
-| FB7b | **Selbsteinschätzung per Link** (E111): Einmal-Link per Mail an die IServ-Adresse, Formular auf dem eigenen Server, Antworten verschlüsselt ohne Namen, Erinnerung an die Fehlenden, Selbst- und Fremdbild nebeneinander mit markierten Abweichungen | K | 1 | L | gebaut 25.11.2026 (E114), ungetestet auf Unraid und echten Schülerhandys |
+| FB7 | **Mündliche Leistungen kriterienorientiert:** Rasterbogen (Kriterien, Mitarbeit ist eines), Selbsteinschätzungsbogen für Schüler zum Verteilen, Vergleich Selbst-/Fremdeinschätzung (E85, verzahnt mit BEWERTUNGSBOEGEN.md) | K | 1 | L | Raster springt ein (E110) im Prototyp, 25.11.2026; Selbsteinschätzung per Link gebaut (FB7b, E116) |
+| FB7b | **Selbsteinschätzung per Link** (E111): Einmal-Link per Mail an die IServ-Adresse, Formular auf dem eigenen Server, Antworten verschlüsselt ohne Namen, Erinnerung an die Fehlenden, Selbst- und Fremdbild nebeneinander mit markierten Abweichungen | K | 1 | L | gebaut 25.11.2026 (E116), ungetestet auf Unraid und echten Schülerhandys |
 | FB7c | **Raster vorbefüllen** aus Smileys und Bausteinen je Kriterium (Weg 3), Lehrkraft bestätigt oder tippt um | K, C | 2 | M | offen |
 | FB7d | **Raster aus Word/PDF hochladen** und als Entwurf übernehmen (BEWERTUNGSBOEGEN 4) | K | 2 | M | offen |
 | FB8 | Klausuren : AT fest 50 : 50, nur mündlich : Tests frei (E83) | K | 1 | S | in 0.5 |

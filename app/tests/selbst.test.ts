@@ -1,4 +1,4 @@
-// Prüft die Selbsteinschätzung per Link (FB7b, E114) ohne Browser: Verschlüsselung Schüler → Lehrkraft,
+// Prüft die Selbsteinschätzung per Link (FB7b, E116) ohne Browser: Verschlüsselung Schüler → Lehrkraft,
 // Mails, Vergleich und die Endpunkte im Abgleich-Dienst (echter HTTP-Server).
 // Aufruf: npm test
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';

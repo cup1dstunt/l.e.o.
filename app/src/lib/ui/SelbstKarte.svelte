@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Selbsteinschätzung per Link (FB7b, E114): Runde je Klasse und Monat, Einmal-Links per Mail, Antworten holen.
+  // Selbsteinschätzung per Link (FB7b, E116): Runde je Klasse und Monat, Einmal-Links per Mail, Antworten holen.
   // Der Server sieht keine Namen und kann die Antworten nicht lesen; die Zuordnung steht nur in diesem Gerät.
   import { untrack } from 'svelte';
   import { app, abgleich, speichern, zeige, dienstRufen } from '$lib/speicher.svelte';

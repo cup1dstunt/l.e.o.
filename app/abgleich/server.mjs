@@ -14,7 +14,7 @@ const scrypt = promisify(scryptCb);
 const PORT = Number(process.env.ABGLEICH_PORT ?? 8129);
 const ORDNER = process.env.ABGLEICH_DATEN ?? '/daten';
 const EINLADUNG = process.env.LEO_EINLADUNG ?? '';
-const ARTEN = new Set(['schueler', 'kurse', 'mitarbeit', 'fehlzeiten', 'verspaetungen', 'notizen', 'nachschreiben', 'stundenplan', 'einstellungen']);
+const ARTEN = new Set(['schueler', 'kurse', 'mitarbeit', 'fehlzeiten', 'verspaetungen', 'notizen', 'nachschreiben', 'termine', 'stundenplan', 'einstellungen']);
 const MAX_KOERPER = 16 * 1024 * 1024; // eine Anfrage
 const MAX_SATZ = 4 * 1024 * 1024; // ein Datensatz (z. B. eine Klasse mit allen Noten)
 const MAX_SAETZE = 50_000; // je Konto
@@ -219,7 +219,7 @@ const wege = {
   }
 };
 
-// ---------- Selbsteinschätzung per Link (FB7b, E114) ----------
+// ---------- Selbsteinschätzung per Link (FB7b, E116) ----------
 // Eine Datei je Runde in ORDNER/selbst. Darin: Bogen (Kriterien ohne Namen, öffentlicher Schlüssel), Frist,
 // Hashes der Einmal-Links und je Link die im Schüler-Browser verschlüsselte Antwort. Keine Namen, keine Klartexte.
 // Schüler-Endpunkte brauchen keine Anmeldung, nur den Link (128 Bit Zufall). Runden verfallen 60 Tage nach der Frist.

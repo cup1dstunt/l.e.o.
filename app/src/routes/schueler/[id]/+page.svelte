@@ -73,7 +73,7 @@
       anteile: [1, 2, 3, 4, 5].map((x) => (st.length ? st.filter((y) => y === x).length / st.length : 0)),
       schnitt: st.length ? st.reduce((a, b) => a + b, 0) / st.length : null, trend: '',
       wenig: st.length < min, raster: kurs ? !!einschaetzungVon(kurs, k, s.id) : false,
-      selbst: !!kurs?.selbst?.[k]?.antworten[s.id] // Selbsteinschätzung per Link (E114)
+      selbst: !!kurs?.selbst?.[k]?.antworten[s.id] // Selbsteinschätzung per Link (E116)
     }));
     liste.forEach((x, i) => { const v = liste[i - 1]; if (i > 0 && x.schnitt !== null && v.schnitt !== null) { const dlt = x.schnitt - v.schnitt; x.trend = dlt < -0.25 ? '↗' : dlt > 0.25 ? '↘' : '→'; } });
     return liste;

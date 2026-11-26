@@ -1,4 +1,4 @@
-// Selbsteinschätzung der Schüler per Link (FB7b, E111, E114).
+// Selbsteinschätzung der Schüler per Link (FB7b, E111, E116).
 // Ablauf: Lehrkraft erstellt für Klasse + Monat eine Runde. Jeder Schüler bekommt einen Einmal-Link per Mail
 // an die schulische Adresse. Das Formular (static/e/index.html) läuft auf dem eigenen Server und verschlüsselt
 // die Antwort im Browser des Schülers mit dem öffentlichen Schlüssel der Runde. Der Server sieht keine Namen
@@ -94,7 +94,7 @@ export function vergleich(kriterien: RasterKriterium[], selbst: Record<string, n
 export const GROSSE_ABWEICHUNG = 2;
 export const abweichungen = (v: Vergleich[]) => v.filter((x) => x.abstand !== null && Math.abs(x.abstand) >= GROSSE_ABWEICHUNG);
 
-// ---------- Mails (E114: Vorlage frei änderbar, Platzhalter in {}) ----------
+// ---------- Mails (E116: Vorlage frei änderbar, Platzhalter in {}) ----------
 export const SELBST_MAIL = {
   betreff: 'Selbsteinschätzung {fach}: {monat}',
   text:
