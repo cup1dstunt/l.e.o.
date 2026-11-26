@@ -1,6 +1,6 @@
 # Modul Kalender: Abgleich mit WebUntis und IServ
 
-Stand 26.11.2026, Vorschlag V15 (Konstantin: „so machen wir das“). Baut auf E115 (Kalender) und E114 (Semesterplanung) auf.
+Stand 26.11.2026, Vorschlag V17 (Konstantin: „so machen wir das“). Baut auf E115 (Kalender) und E114 (Semesterplanung) auf.
 Backlog: K3, K4, K10, PB14. Umsetzung als Entwurf in der PR „Kalenderabgleich mit IServ-Abo und WebUntis-Prüfungen“, **noch nicht mit echtem IServ oder echten WebUntis-Prüfungen getestet**.
 
 ## 1 Ziel

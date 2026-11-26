@@ -121,7 +121,7 @@ Jede Kachel klappt auf und zeigt, wofür L.E.O. die Daten braucht, und welche Fe
 - **So kommt der Browser an WebUntis:** Der nginx im Container reicht `/WebUntis/` an `osz-lus.webuntis.com` durch (ohne Zwischenspeicher und ohne Zugriffsprotokoll). Für eine andere Schule im Compose unter `environment:` `UNTIS_SERVER=<schule>.webuntis.com` setzen.
 - **Ungetestet:** Ich konnte weder WebUntis erreichen noch das nginx-Image starten. Wenn der Test „Durchreicher antwortet mit 502“ meldet, liegt es am Container (DNS oder Zertifikat), bei „Benutzer oder Schlüssel falsch“ an der Anmeldung. Die Uhr des Geräts muss stimmen, sonst passt der Einmalcode des Schlüssels nicht.
 
-## IServ-Kalender abonnieren (V15, Entwurf)
+## IServ-Kalender abonnieren (V17, Entwurf)
 
 - Im Compose unter `environment:` `ISERV_SERVER=<adresse des Schul-IServ ohne https://>` eintragen (z. B. `osz-lus.de`, bitte prüfen) und neu starten. Leer = aus.
 - Dann in L.E.O. unter Stundenplan › Monat › Kachel „IServ“ den Abo-/Export-Link eines IServ-Kalenders einfügen. Der Link bleibt verschlüsselt auf dem Gerät.
