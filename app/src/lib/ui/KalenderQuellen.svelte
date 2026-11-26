@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Abgleich des Kalenders (K3, K10, V15): zwei klickbare Kacheln, WebUntis und IServ, die ihren Stand und Rechenweg aufklappen.
+  // Abgleich des Kalenders (K3, K10, V17): zwei klickbare Kacheln, WebUntis und IServ, die ihren Stand und Rechenweg aufklappen.
   // Kein Dialog: Link einfügen, Merken, fertig. Danach gleicht L.E.O. von selbst ab (wie WebUntis alle 30 Minuten).
   import { app, speichern, zeige, geheimSetzen } from '$lib/speicher.svelte';
   import { iserv, iservAbgleichen, iservGemerkt } from '$lib/iserv.svelte';

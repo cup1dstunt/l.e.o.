@@ -64,7 +64,7 @@ server {
     add_header Cache-Control "no-store" always;
   }
 
-  # Durchreicher zum IServ-Kalender (V15): nur lesen (GET), nur an ISERV_SERVER, ohne Cookies und ohne Protokoll.
+  # Durchreicher zum IServ-Kalender (V17): nur lesen (GET), nur an ISERV_SERVER, ohne Cookies und ohne Protokoll.
   # Der Abo-Link enthält einen geheimen Schlüssel; er steht im Pfad und wird deshalb nirgends protokolliert.
   location = /iserv-server {
     access_log off;

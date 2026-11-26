@@ -1,4 +1,4 @@
-// Prüft den Kalenderabgleich (K3, K10, V15): Wiederholungen, Abgleich je Quelle, WebUntis-Prüfungen, IServ-Link.
+// Prüft den Kalenderabgleich (K3, K10, V17): Wiederholungen, Abgleich je Quelle, WebUntis-Prüfungen, IServ-Link.
 // Alles mit erfundenen Daten, ohne Netz. Aufruf: npm test
 import { ausIcs, wiederholungen, quelleAbgleichen, abgleichText, eintraege, alsIcs } from '../src/lib/kalender.ts';
 import { semesterPlan } from '../src/lib/semester.ts';

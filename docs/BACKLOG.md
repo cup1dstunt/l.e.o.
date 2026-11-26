@@ -37,12 +37,12 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
-| S1 | Klassen/Kurse/Schüler je Semester aus WebUntis (Export-Datei als Start) | K, B | 1 | M |
-| S2 | Felder: Name, Alter (aus Geburtsdatum), Geschlecht, Mail dienstlich, Mail privat (optional) | K | 1 | S |
+| S1 | Klassen/Kurse/Schüler je Semester aus WebUntis (Export-Datei als Start). Abgleich + Export ergänzt die vollständige Klassenliste (E119) | K, B | 1 | M |
+| S2 | Felder: Name, Alter (aus Geburtsdatum), Geschlecht, Mail dienstlich. ~~Mail privat~~ entfällt (Konstantin 26.11.). Umgesetzt im Export-Import (E119) | K | 1 | S |
 | S3 | Schalter „Bin ich Klassenleitung?“: ja → ganze Klasse, alle Fächer; nein → eigene Kurse | B | 1 | S |
 | S4 | Zentraler Import durch Admin für die ganze Schule | C | 2 | M |
 | S5 | Alternativquellen: IServ, CSV/Excel mit Spaltenzuordnung | K, B | 2 | M |
-| S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4) | K, B | 2 | M |
+| S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4). Einfügen aus IServ-Text gebaut (E119) | K, B | 2 | M |
 | S7 | Offizielle Untis-Platform-API (Stammdaten, Stundenplan, Fehlzeiten) | B | 2 | L |
 | S8 | Inoffizielle WebUntis-JSON-RPC mit Rückfall auf Datei-Import | B | 3 | M |
 | S9 | iDoceo-Import (nett, nicht entscheidend; Wechsel zum Semesterende) | B | 3 | M |
@@ -56,7 +56,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | N1 | Notenbuch **exakt nach Konstantins iDoceo-Vorlagen** (Struktur, Berechnungen, Ansicht); Grundlage Screenshots | K, B | 1 | L |
 | N2 | Vorlagen als Daten, später für Kollegen teilbar | C | 2 | M |
 | N3 | Projektbewertungen als Spalten (Werkstatt-Export JSON/CSV) | K, B | 2 | S |
-| N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte) | K, C | 3 | S |
+| N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte). **Entwurf 26.11.:** CSV aus EWH einlesen, optionales Modul (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | K, C | 3 | S |
 | N5 | Rechenweg der Endnote anzeigen | C | 2 | S |
 | N6 | Was-wäre-wenn / Zielnote („was braucht er in der nächsten Klausur?“) | C | 3 | S |
 | N8 | Seiten je Kurs (Noten, Mitarbeit, Anwesenheit, frei ergänzbar wie Orga/Hausaufgaben) | K (Screenshots) | 1 | M |
@@ -144,21 +144,25 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 |---|---|---|---|---|
 | K1 | Persönlicher Stundenplan aus WebUntis (Export/ICS als Start), mit Vertretungen | K, B | 1 | M |
 | K2 | ✅ im Prototyp 25.11. (E115). Kalender: Termine, Klausuren, Abgaben, Konferenzen, Aufsichten | B | 1 | M |
-| K3 | ✅ als Datei-Import im Prototyp 25.11. (E115); Abo-Link aus IServ offen. Import anderer Pläne aus IServ (iCal) | B | 2 | S |
+| K3 | ✅ als Datei-Import im Prototyp 25.11. (E115); Abo-Link aus IServ als Entwurf 26.11. (V15). Import anderer Pläne aus IServ (iCal) | B | 2 | S |
 | K4 | ✅ als Datei im Prototyp 25.11. (E115); Abo-Link offen. ICS-Export (z. B. Google Kalender) | B | 2 | S |
 | K5 | Notizen je Schüler: Kürzel, Datum, Suche | B | 2 | S |
 | K6 | Eltern-/Beratungsgespräche mit Vereinbarung und Wiedervorlage | B | 2 | M |
 | K7 | Notizen privat oder für Klassenleitung freigeben | C | 2 | S |
 | K8 | Sprechstunden über die eigene Termin-App (`easyappointments-lnu`) | C | 3 | M |
 | K9 | Schuljahreswechsel-Assistent (archivieren, neue Kurse, Vorlagen übernehmen) | C | 2 | M |
+| K10 | Entwurf 26.11. (V15). Kalenderabgleich: WebUntis-Prüfungen und Ausfälle, IServ-Abo, Wiederholungen, eigene Festlegungen bleiben ([MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md)). Später: CalDAV, falls IServ keinen Abo-Link hat; ICS-Abo-Link aus L.E.O. heraus (K4) | K | 2 | M |
 
 ## Auswertung & Konferenz
 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
-| A1 | Statistiken überall sammeln, übersichtlich darstellen | B | 2 | M |
+| A1 | Statistiken überall sammeln, übersichtlich darstellen. **Entwurf 26.11.:** Reiter „Auswertung“ je Klasse und Klassenvergleich (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | B | 2 | M |
 | A2 | Verlaufsdiagramme je Schüler, Kurs, Klasse (Noten, Mitarbeit, Fehlzeiten, Hausaufgaben) | B | 2 | M |
 | A3 | Konferenzansicht: ganze Klasse, alle Fehlzeiten aller Fächer, Kurzübersicht je Schüler | B | 2 | M |
+| A6 | EWH-Noten direkt abrufen statt CSV (Weg B: Abrufschlüssel und Lese-Endpunkt in EWH), erst wenn beide schulweit laufen | C | 3 | M |
+| A7 | Auswertung drucken bzw. als PDF | C | 3 | S |
+| A8 | Halbjahresvergleich je Klasse nach dem Schuljahreswechsel (K9) | C | 3 | S |
 | A4 | Endnoten **aktiv** an die Klassenleitung schicken (statt Zettel/Rundmail), nur wer will (E29) | C | 2 | M |
 | A5 | Leistungsstand per Knopfdruck: Diktat → KI-Text, keine Klarnamen an KI | B | 3 | M |
 
@@ -341,7 +345,7 @@ Quelle: [prototyp-feedback/2026-11-09.md](prototyp-feedback/2026-11-09.md), Ents
 | PF23 | **Rechenweg hinter Info-Knopf** in der Schülerkarte, freiwerdenden Platz sinnvoll nutzen (E74) | K | 1 | S |
 | PF24 | **Platzhalter Startseite** mit Kachel „Kalender folgt später“ (V9, zu bestätigen) | C | 2 | S |
 | PF25 | **Beamer-Modus** nur mit Gruppenauslosung, zufälligem Namenziehen (gern als Rad) und Timer (E78); verzahnt mit U10 | K | 2 | M |
-| PF22 | **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
+| PF22 | Plan und Entwurf 26.11. (V15, [MODULE.md](MODULE.md)). **Modul-Abgrenzung:** Lernstoff/Übergang (Stunde), Kalender, Raumplan (Sitzplan), Historie (Notenbuch) so schneiden, dass Nutzer Module abwählen können (Projektregel), z. B. Notenbuch ohne Kalender | C | 1 | S |
 
 ## Aus dem Prototyp 0.4 und dem Brainstorming (17.11.2026)
 

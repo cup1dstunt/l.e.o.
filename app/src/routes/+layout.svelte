@@ -1,10 +1,12 @@
 <script lang="ts">
   import '../app.css';
   import { page } from '$app/state';
-  import { app, abgleich, laden, sperren, lebenszeichen, abgleichPlanen } from '$lib/speicher.svelte';
+  import { app, abgleich, laden, sperren, lebenszeichen, abgleichPlanen, speichern } from '$lib/speicher.svelte';
   import Hinweisleiste from '$lib/ui/Hinweisleiste.svelte';
   import Anmeldung from '$lib/ui/Anmeldung.svelte';
   import Suche from '$lib/ui/Suche.svelte';
+  import Einrichtung from '$lib/ui/Einrichtung.svelte';
+  import { istAn, modulFuerPfad, umschalten, type ModulId } from '$lib/module';
   import { sitzung } from '$lib/sitzung.svelte';
   import { untisAutoVersuchen } from '$lib/untisauto.svelte';
   import { iservAbgleichen } from '$lib/iserv.svelte';
@@ -51,16 +53,27 @@
     else delete document.documentElement.dataset.theme;
   });
 
-  const nav = [
+  const alleNav: { href: string; text: string; icon: string; modul?: ModulId }[] = [
     { href: '/', text: 'Heute', icon: 'M12 7v5l3 2 M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18' },
-    { href: '/stundenplan', text: 'Stundenplan', icon: 'M4 6h16v14H4z M4 10h16 M8 3v5 M16 3v5' },
+    { href: '/stundenplan', text: 'Stundenplan', icon: 'M4 6h16v14H4z M4 10h16 M8 3v5 M16 3v5', modul: 'stundenplan' },
     { href: '/klassen', text: 'Klassen', icon: 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z' },
     { href: '/schueler', text: 'Schüler', icon: 'M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M4 21c0-4 4-6 8-6s8 2 8 6' },
     { href: '/mehr', text: 'Mehr', icon: 'M5 12h.01 M12 12h.01 M19 12h.01' }
   ];
+  const nav = $derived(alleNav.filter((n) => !n.modul || istAn(app.d?.einstellungen, n.modul)));
+  // Seite eines ausgeschalteten Moduls (z. B. alter Link): Hinweis statt leerer Seite
+  const gesperrt = $derived.by(() => {
+    const m = modulFuerPfad(page.url.pathname);
+    return m && !istAn(app.d?.einstellungen, m.id) ? m : undefined;
+  });
+  function modulEinschalten(id: ModulId) {
+    const e = app.d!.einstellungen;
+    e.module = umschalten(e, id, true);
+    speichern();
+  }
   const aktiv = (href: string) =>
     href === '/' ? page.url.pathname === '/' || page.url.pathname.startsWith('/stunde/')
-    : href === '/klassen' ? /^\/(klassen|kurs|planung|sitzplan)/.test(page.url.pathname)
+    : href === '/klassen' ? /^\/(klassen|kurs|planung|sitzplan|auswertung|ewh)/.test(page.url.pathname)
     : page.url.pathname.startsWith(href);
   const lage = $derived(breite < 720 ? 'unten' : (app.d?.einstellungen.navigation ?? 'links'));
 </script>
@@ -71,6 +84,9 @@
   <div class="laden">L.E.O. lädt …</div>
 {:else if !sitzung.entsperrt || !app.d}
   <Anmeldung bind:entsperrt={sitzung.entsperrt} />
+{:else if app.d.einstellungen.eingerichtet === false}
+  <Einrichtung />
+  <Hinweisleiste />
 {:else}
   <div class="rahmen {lage}" style:--unten={lage === 'unten' ? '64px' : '0px'}>
     <nav aria-label="Hauptnavigation">
@@ -99,7 +115,16 @@
     </nav>
     <main>
       {#if app.fehler}<div class="fehler">{app.fehler}</div>{/if}
-      {@render children()}
+      {#if gesperrt}
+        <section class="karte aus">
+          <h1>{gesperrt.name} ist ausgeschaltet</h1>
+          <p>{gesperrt.text}</p>
+          <p class="leise">Deine Daten dazu sind noch da. Einschalten holt alles zurück.</p>
+          <div class="zeile"><button class="knopf haupt" onclick={() => modulEinschalten(gesperrt.id)}>Einschalten</button><a class="knopf leise" href="/mehr#module">Alle Module</a></div>
+        </section>
+      {:else}
+        {@render children()}
+      {/if}
     </main>
   </div>
   <Hinweisleiste />
@@ -126,5 +151,9 @@
   .unten nav a:not(.logo):not(.status) { width: auto; flex: 1; border-radius: 0; background: none; padding: 8px 0; }
   .unten nav a.aktiv { background: none; }
   .unten main { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .aus { margin: 32px; max-width: 560px; display: flex; flex-direction: column; gap: 10px; }
+  .aus h1 { font-size: 20px; margin: 0; }
+  .aus p { margin: 0; line-height: 1.5; }
+  @media (max-width: 720px) { .aus { margin: 16px; } }
   .fehler { background: var(--leo-warnung-hell); color: var(--leo-warnung); padding: 10px 16px; }
 </style>

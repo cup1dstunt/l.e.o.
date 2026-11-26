@@ -1,4 +1,4 @@
-// IServ-Kalender-Abo im Browser (K3, K10, V15). Liest nur. Kein Dialog: Änderungen als Hinweisleiste,
+// IServ-Kalender-Abo im Browser (K3, K10, V17). Liest nur. Kein Dialog: Änderungen als Hinweisleiste,
 // Fehler nur als Zeile im Kalender. Automatisch wie WebUntis (beim Entsperren, beim Zurückkehren, alle 30 Minuten).
 import { app, speichern, zeige, geheimHolen } from './speicher.svelte';
 import { ausIcs, quelleAbgleichen, abgleichText } from './kalender';
@@ -16,7 +16,8 @@ export async function iservGemerkt(): Promise<boolean> {
 /** Abgleich mit dem gemerkten Link. `vonHand`: auch wenn er laut Zeitplan noch nicht dran ist. Gibt die Meldung zurück. */
 export async function iservAbgleichen(vonHand = false): Promise<string> {
   const d = app.d;
-  if (!d || d.einstellungen.module?.kalender === false || iserv.laeuft) return '';
+  // Auch bei ausgeschaltetem Modul Kalender: Ausschalten blendet nur aus (MODULE.md), die Planung rechnet weiter mit den Terminen
+  if (!d || iserv.laeuft) return '';
   const ka = d.einstellungen.kalender ?? {};
   if (!vonHand && !faellig({
     an: ka.iservAuto !== false, zugangGemerkt: true, erstUebernahme: true,

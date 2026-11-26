@@ -1,6 +1,9 @@
 <script lang="ts">
   import { PRUEFUNGEN, verbindungstest, bericht, anmelden, fehlerMeldung, type Pruefung, type Zugang } from '$lib/untis';
-  import { holen, uebernehmen, stammdatenEinlesen, type Ergebnis } from '$lib/untisimport';
+  import { holen, uebernehmen, bekanntAus, type Ergebnis } from '$lib/untisimport';
+  import { FELDER, stammdatenPruefen, stammdatenAnwenden, schulmailsEinlesen, mailStand, type Vorschau, type Feld } from '$lib/stammdaten';
+  import { name } from '$lib/hilfen';
+  import { adressVorschlag } from '$lib/nachschreiben';
   import { app, zeige, speichern, geheimHolen, geheimSetzen } from '$lib/speicher.svelte';
   import { MERK, untisAuto } from '$lib/untisauto.svelte';
   import { ABSTAND_MIN } from '$lib/untisauto';
@@ -61,7 +64,7 @@
     try {
       const sz = await anmelden({ schule, benutzer, art, geheim });
       try {
-        const paket = await holen(sz, (t) => (schritt = t));
+        const paket = await holen(sz, (t) => (schritt = t), { bekannt: bekanntAus(d) });
         schritt = 'Übernehmen';
         ergebnis = uebernehmen(d, paket, { beispielEntfernen: beispielDa && beispielEntfernen, benutzer, schule });
         speichern();
@@ -74,18 +77,53 @@
     }
   }
 
-  // ---------- Stammdaten-Export (Geburtsdatum, Nachteilsausgleich) ----------
+  // ---------- Stammdaten-Export (Geburtsdatum, Klassenliste, Schulmail, Nachteilsausgleich), E119 ----------
+  // Erst Vorschau, dann übernehmen. Die Dateien bleiben nur im Arbeitsspeicher, bis „Übernehmen“ getippt ist.
   let exportDatei = $state<HTMLInputElement>();
+  let texte = $state<string[]>([]);
+  let vorschauen = $state<Vorschau[]>([]);
+  let wahl = $state<Record<string, Set<number>>>({}); // `${datei}|${kursId}` → aufzunehmende Zeilen
   async function exportLesen(e: Event) {
-    const dateien = [...((e.currentTarget as HTMLInputElement).files ?? [])];
-    let g = 0, z = 0;
-    for (const f of dateien) {
-      const r = stammdatenEinlesen(d, await f.text());
-      g += r.gelesen; z += r.zugeordnet;
-    }
+    const feld = e.currentTarget as HTMLInputElement; // nach await ist currentTarget leer
+    const dateien = [...(feld.files ?? [])];
+    texte = await Promise.all(dateien.map((f) => f.text()));
+    vorschauen = texte.map((t) => stammdatenPruefen(d, t));
+    wahl = {};
+    vorschauen.forEach((v, i) => v.neu.forEach((g) => (wahl[`${i}|${g.kursId}`] = new Set(g.zeilen.map((_, j) => j)))));
+    feld.value = '';
+  }
+  function spalteSetzen(i: number, feld: Feld, spalte: string) {
+    const z = { ...vorschauen[i].zuordnung, [feld]: spalte || undefined };
+    vorschauen[i] = stammdatenPruefen(d, texte[i], z);
+    vorschauen[i].neu.forEach((g) => (wahl[`${i}|${g.kursId}`] = new Set(g.zeilen.map((_, j) => j))));
+  }
+  function umschalten(k: string, j: number) {
+    const s = new Set(wahl[k] ?? []);
+    if (s.has(j)) s.delete(j); else s.add(j);
+    wahl = { ...wahl, [k]: s };
+  }
+  function exportUebernehmen() {
+    let z = 0, g = 0, m = 0, n = 0;
+    vorschauen.forEach((v, i) => {
+      const aufnehmen = Object.fromEntries(v.neu.map((gr) => [gr.kursId, [...(wahl[`${i}|${gr.kursId}`] ?? [])]]));
+      const r = stammdatenAnwenden(d, v, { aufnehmen });
+      z += r.zugeordnet; g += r.geburt; m += r.mail; n += r.neu;
+    });
     speichern();
-    zeige(`${z} von ${g} Zeilen zugeordnet${g - z ? ' (andere Schüler ignoriert)' : ''}`);
-    (e.currentTarget as HTMLInputElement).value = '';
+    texte = []; vorschauen = []; wahl = {};
+    zeige(`${z} zugeordnet, ${g} Geburtsdaten, ${m} Schulmails${n ? `, ${n} Schüler aufgenommen` : ''}`);
+  }
+  const fehltAnzahl = $derived(vorschauen.reduce((a, v, i) => a + v.neu.reduce((b, gr) => b + (wahl[`${i}|${gr.kursId}`]?.size ?? 0), 0), 0));
+
+  // ---------- Schulmails aus IServ (S6) ----------
+  let mailText = $state('');
+  const meine = $derived(d.schueler.filter((s) => d.kurse.some((k) => k.schueler.includes(s.id))));
+  const mails = $derived(mailStand(meine));
+  function mailsLesen() {
+    const r = schulmailsEinlesen(d, mailText, new Set(meine.map((s) => s.id)));
+    speichern();
+    mailText = '';
+    zeige(r.gefunden ? `${r.zugeordnet} von ${r.gefunden} Adressen zugeordnet${r.unklar ? `, ${r.unklar} nicht eindeutig (nicht gespeichert)` : ''}` : 'Keine Adresse der Schule im Text gefunden');
   }
 
   async function testen() {
@@ -169,13 +207,66 @@
     </section>
 
     <section class="karte">
-      <h2>Geburtsdatum und Nachteilsausgleich</h2>
-      <p>WebUntis gibt das Geburtsdatum nur im Stammdaten-Bericht heraus. In WebUntis: <b>Stammdaten › Schüler › Klasse wählen › Bericht › CSV</b>. Die Datei hier einlesen, auch mehrere auf einmal.</p>
-      <p class="klein leise">Übernommen werden nur Geburtsdatum, Klasse und Nachteilsausgleich von Schülern, die schon in L.E.O. sind. Adressen, Telefon und Mail aus der Datei werden ignoriert.</p>
+      <h2>Klassenliste, Geburtsdatum und Schulmail</h2>
+      <p>Der Abgleich kennt nur Schüler, die in deinen Stunden schon einmal gefehlt haben oder zu spät kamen. Die vollständige Liste und das Geburtsdatum stehen im Export je Klasse. In WebUntis: <b>Stammdaten › Schüler › Klasse wählen › Bericht › CSV</b>. Die Datei hier einlesen, auch mehrere auf einmal.</p>
+      <p class="klein leise">Übernommen werden Name, Geburtsdatum, Geschlecht, Klasse, Nachteilsausgleich und die schulische Mailadresse (@osz-lus.de), nur für deine Klassen. Private Adressen, Anschrift und Telefon werden nicht gespeichert.</p>
       <div class="zeile wrap">
         <button class="knopf" onclick={() => exportDatei?.click()}>Export einlesen</button>
         <input type="file" accept=".csv,.txt,text/csv,text/plain" multiple bind:this={exportDatei} onchange={exportLesen} hidden />
       </div>
+
+      {#each vorschauen as v, i}
+        <div class="detail">
+          <h3>Datei {vorschauen.length > 1 ? i + 1 : ''} · {v.gelesen} Zeilen</h3>
+          <p class="klein leise">Spalten</p>
+          <div class="spalten">
+            {#each FELDER as f}
+              <label class="klein"><span class={!v.zuordnung[f.feld] && f.noetig ? 'warn' : 'leise'}>{f.titel}</span>
+                <select value={v.zuordnung[f.feld] ?? ''} onchange={(e) => spalteSetzen(i, f.feld, (e.currentTarget as HTMLSelectElement).value)}>
+                  <option value="">– nicht da –</option>
+                  {#each v.kopf as k}<option value={k}>{k}</option>{/each}
+                </select>
+              </label>
+            {/each}
+          </div>
+          {#if v.fehlt.length}
+            <p class="klein warn">Bitte die Spalten für Vor- und Nachname wählen.</p>
+          {:else}
+            <p class="klein">{v.treffer.length} schon in L.E.O. (werden ergänzt){v.ignoriert ? ` · ${v.ignoriert} aus anderen Klassen (ignoriert)` : ''}{v.privatIgnoriert ? ` · ${v.privatIgnoriert} ${v.privatIgnoriert === 1 ? 'private Mailadresse' : 'private Mailadressen'} (ignoriert)` : ''}</p>
+            {#each v.neu as g (g.kursId)}
+              {@const k = `${i}|${g.kursId}`}
+              <p class="klein"><b>{g.kurs}:</b> {g.zeilen.length} {g.zeilen.length === 1 ? 'Schüler fehlt' : 'Schüler fehlen'} in L.E.O. Antippen nimmt jemanden heraus (z. B. andere Teilungsgruppe).</p>
+              <div class="chips zeile wrap">
+                {#each g.zeilen as z, j}
+                  <button class="pille klein" aria-pressed={wahl[k]?.has(j)} onclick={() => umschalten(k, j)}>{z.vorname} {z.nachname}</button>
+                {/each}
+              </div>
+            {/each}
+          {/if}
+        </div>
+      {/each}
+      {#if vorschauen.length}
+        <div class="zeile wrap">
+          <button class="knopf haupt" onclick={exportUebernehmen} disabled={vorschauen.every((v) => v.fehlt.length)}>Übernehmen{fehltAnzahl ? ` (${fehltAnzahl} aufnehmen)` : ''}</button>
+          <button class="knopf leise" onclick={() => { texte = []; vorschauen = []; }}>Verwerfen</button>
+        </div>
+      {/if}
+    </section>
+
+    <section class="karte">
+      <h2>Schulmail aus IServ</h2>
+      <p class="klein"><b class="zahl">{mails.hinterlegt}</b> hinterlegt · <b class="zahl">{mails.muster}</b> nach Muster v.nachname@osz-lus.de{mails.pruefen ? `, davon ${mails.pruefen} bitte prüfen (Umlaut, Doppelname …)` : ''}</p>
+      <p class="klein leise">Adressen aus IServ hier einfügen, zum Beispiel aus dem Adressbuch, der Mitgliederliste einer Klassengruppe oder einem Verteiler. Steht der Name in derselben Zeile, ordnet L.E.O. danach zu, sonst nach dem Teil vor dem @. Nur eindeutige Treffer werden gespeichert.</p>
+      <textarea class="eingabe" rows="4" bind:value={mailText} placeholder="Anna Muster <a.muster@osz-lus.de>"></textarea>
+      <div class="zeile wrap"><button class="knopf" onclick={mailsLesen} disabled={!mailText.trim()}>Adressen zuordnen</button></div>
+      {#if mails.pruefen}
+        <details>
+          <summary class="klein">Bitte prüfen</summary>
+          <ul class="klein">
+            {#each meine.filter((s) => !s.mailDienst?.trim() && adressVorschlag(s.vorname, s.nachname).pruefen.length) as s}<li><a href="/schueler/{s.id}">{name(s)}</a> <span class="leise">{adressVorschlag(s.vorname, s.nachname).adresse} · {adressVorschlag(s.vorname, s.nachname).pruefen.join(', ')}</span></li>{/each}
+          </ul>
+        </details>
+      {/if}
     </section>
   {/if}
 
@@ -253,6 +344,9 @@
   dd { margin: 0; }
   code { font-family: var(--leo-schrift-mono); font-size: 12px; }
   .chip { min-height: 26px; }
+  .spalten { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .spalten label { display: flex; flex-direction: column; gap: 2px; }
+  textarea.eingabe { width: 100%; margin: 8px 0; }
   .bericht { width: 100%; margin-top: 10px; font-family: var(--leo-schrift-mono); font-size: 12px; }
   @media (max-width: 720px) { .seite { padding: 16px; } .kacheln { grid-template-columns: 1fr 1fr; } }
 </style>

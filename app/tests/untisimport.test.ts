@@ -79,5 +79,23 @@ gleich('Schüler über id (Text)', fi('5')?.id, 5);
 gleich('Schüler über key', fi('S-18')?.id, 6);
 gleich('Schüler unbekannt', fi('S-99'), undefined);
 
+// Kurzer Abgleich (E119): ältere WebUntis-Fehlzeiten bleiben, im Fenster wird ersetzt
+{
+  const dk = beispielDaten(new Date('2026-11-18T10:00'));
+  const voll: Paket = { ...paket, fehlzeiten: [
+    { key: '1-2', untisId: 9002, datum: '2026-09-10', beginn: '08:00', stunden: 2, status: 'E', grund: 'K' },
+    { key: '1-2', untisId: 9002, datum: '2026-11-11', beginn: '08:00', stunden: 2, status: 'offen', grund: '' }
+  ], verspaetungen: [] };
+  uebernehmen(dk, voll, { beispielEntfernen: true, benutzer: 'x', schule: 'osz-lus' });
+  const vollZeit = dk.einstellungen.untis!.vollAbgerufen;
+  gleich('voll merkt Zeitpunkt', !!vollZeit, true);
+  const kurz: Paket = { ...voll, klassenbuchAb: '2026-10-21', fehlzeiten: [
+    { key: '1-2', untisId: 9002, datum: '2026-11-11', beginn: '08:00', stunden: 2, status: 'UE', grund: 'UE' }
+  ] };
+  uebernehmen(dk, kurz, { beispielEntfernen: false, benutzer: 'x', schule: 'osz-lus' });
+  gleich('alt bleibt, neu ersetzt', dk.fehlzeiten.filter((f) => f.quelle === 'untis').map((f) => [f.datum, f.status]).sort(), [['2026-09-10', 'E'], ['2026-11-11', 'UE']]);
+  gleich('kurz behält vollen Zeitpunkt', dk.einstellungen.untis!.vollAbgerufen, vollZeit);
+}
+
 console.log(`${ok} Übernahme-Prüfungen bestanden, ${fehler} fehlgeschlagen`);
 if (fehler) process.exit(1);

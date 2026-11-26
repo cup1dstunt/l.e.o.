@@ -1,6 +1,6 @@
 // Kalender (K2, PB14, E115): eigene Termine plus alles, was L.E.O. ohnehin kennt (Klausuren und Tests mit Datum,
 // Nachschreibetermine, Ferien, Ausfälle). Export als ICS-Datei, Import aus einer Kalenderdatei (z. B. IServ).
-// Abgleich (K3, K10, V15): IServ-Abo und WebUntis-Prüfungen landen als Termine mit `quelle`; die Quelle gewinnt bei
+// Abgleich (K3, K10, V17): IServ-Abo und WebUntis-Prüfungen landen als Termine mit `quelle`; die Quelle gewinnt bei
 // Titel und Zeit, was die Lehrkraft selbst festlegt (Art, Klassen, unterrichtsfrei, ausgeblendet), bleibt.
 // Schülernamen kommen nie in den Export (CLAUDE.md, Datenschutz).
 import type { Daten, Termin, TerminArt } from './typen.ts';

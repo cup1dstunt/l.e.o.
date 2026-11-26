@@ -49,7 +49,7 @@ Offene Fragen aus dem Prototyp-Feedback vom 09.11.2026 ([prototyp-feedback/2026-
 2. Darf ein Pilot mit echten Daten auf einem privat betriebenen Server laufen, oder nur auf einem Server der Schule/des Trägers?
 3. Ist es ok, dass die Klassenleitung alle Fehlzeiten der Klasse sieht? (Noten sieht nur die jeweilige Lehrkraft, E29.)
 4. Aufbewahrungs- und Löschfristen für Noten, Fehlzeiten, Notizen.
-5. Dürfen private Mailadressen der Schüler gespeichert werden (Einwilligung)?
+5. ~~Dürfen private Mailadressen der Schüler gespeichert werden (Einwilligung)?~~ Entfällt: L.E.O. speichert keine privaten Adressen (E119).
 6. Dürfen Schüler ohne eigenes Konto über einen persönlichen Einmal-Link eine Selbsteinschätzung abgeben?
 7. ~~Darf L.E.O. das Schullogo verwenden?~~ Ja, laut Konstantin (E47). Offen: Schullogo als Vektordatei (SVG/PDF/EPS) für scharfe Darstellung.
 
@@ -69,5 +69,5 @@ Offene Fragen aus dem Prototyp-Feedback vom 09.11.2026 ([prototyp-feedback/2026-
 3. Woran erkennt man Lehrkräfte sicher: Rolle oder Gruppe?
 4. Gibt es die IDM-REST-API mit Admin-Token, oder ist ein Export der Benutzerliste möglich (für Schüler-Dienstmails)?
 5. Darf L.E.O. Mails über den IServ-SMTP-Server verschicken (zentrales Konto oder je Lehrkraft)?
-6. Gibt es iCal-Feeds für Schulkalender/Pläne?
+6. Gibt es iCal-Feeds (Abo-/Export-Link) für Schulkalender/Pläne, und läuft IServ unter `osz-lus.de` (für `ISERV_SERVER`)? Falls kein Abo-Link: ist CalDAV freigeschaltet? (V15)
 7. Wie werden Umlaute, ß, Doppel-/Bindestrichnamen und Namensgleichheit in den Schüleradressen (v.nachname@osz-lus.de) umgeschrieben (E106)?

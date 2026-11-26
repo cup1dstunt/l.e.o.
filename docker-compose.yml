@@ -10,7 +10,7 @@ services:
       - "8128:80"   # links den freien Port auf dem Server wählen
     environment:
       - LEO_EINLADUNG=bitte-aendern   # Einladungscode zum Anlegen eines Abgleich-Kontos (F4)
-      - ISERV_SERVER=                 # Adresse des Schul-IServ ohne https://, für das Kalender-Abo (V15)
+      - ISERV_SERVER=                 # Adresse des Schul-IServ ohne https://, für das Kalender-Abo (V17)
     volumes:
       - ./daten:/daten   # verschlüsselte Abgleich-Daten
     restart: unless-stopped

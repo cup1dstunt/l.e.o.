@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { istAn, type ModulId } from '$lib/module';
   import { app } from '$lib/speicher.svelte';
   import { stundenHeute, datumKurz, datumWt, name, minuten, heuteISO } from '$lib/hilfen';
   import { nachschreibLage, terminSicht } from '$lib/nachschreiben';
@@ -7,6 +8,7 @@
   import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
   import { onMount } from 'svelte';
   import { naechsterBlock, reiheText } from '$lib/semester';
+  import { materialListe } from '$lib/material';
   import { eintraege, artName } from '$lib/kalender';
   import { isoDatum } from '$lib/hilfen';
 
@@ -52,8 +54,15 @@
   };
 
   // Semesterplanung (E114): Was ist in der Stunde geplant? Kalender (E115): die nächsten 14 Tage
-  const planAn = $derived(d.einstellungen.module?.planung !== false);
-  const kalenderAn = $derived(d.einstellungen.module?.kalender !== false);
+  const planAn = $derived(istAn(d.einstellungen, 'planung'));
+  const kalenderAn = $derived(istAn(d.einstellungen, 'kalender'));
+  const ablageAn = $derived(istAn(d.einstellungen, 'ablage'));
+  const an = (m: ModulId) => istAn(d.einstellungen, m);
+  // Dateiablage (V14): wie viel Material liegt für die Stunde bereit (Stunde + Reihe + Klasse)?
+  const materialFuerStunde = (kursId: string, datum: string) => {
+    const b = planAn ? naechsterBlock(d, kurs(kursId), datum) : undefined;
+    return materialListe(d.material, kursId, datum, b && b.datum === datum ? b.reihe?.id : undefined).filter((m) => !m.loesung).length;
+  };
   const geplantFuer = (kursId: string, datum: string) => {
     const k = kurs(kursId);
     const b = naechsterBlock(d, k, datum);
@@ -89,12 +98,19 @@
 </header>
 
 <div class="seite">
+  {#if !d.kurse.length}
+    <section class="karte leer">
+      <h2>Noch keine Klassen</h2>
+      <p>Hol dir Klassen, Schüler und Stundenplan aus WebUntis. Danach steht hier jeden Morgen dein Tag.</p>
+      <div class="zeile"><a class="knopf haupt" href="/mehr/webuntis">WebUntis verbinden</a><a class="knopf leise" href="/mehr#module">Module ansehen</a></div>
+    </section>
+  {/if}
   {#if plan.heute.length}
     <nav class="leiste" aria-label="Stunden heute">
       {#each plan.heute as s}
         {@const k = kurs(s.kursId)}
         {@const vorbei = minuten(s.ende) <= plan.min}
-        <a href={s.ausfall ? undefined : `/stunde/${k.id}`} class="stunde" class:jetzt={s === plan.laeuft} class:vorbei={vorbei && !s.ausfall} class:ausfall={s.ausfall} title={s.ausfall ? 'Ausfall laut WebUntis' : undefined}>
+        <a href={s.ausfall ? undefined : an('stunde') ? `/stunde/${k.id}` : `/kurs/${k.id}`} class="stunde" class:jetzt={s === plan.laeuft} class:vorbei={vorbei && !s.ausfall} class:ausfall={s.ausfall} title={s.ausfall ? 'Ausfall laut WebUntis' : undefined}>
           <span class="zahl klein">{s.beginn}{s.ausfall ? ' · Ausfall' : s === plan.laeuft ? ' · läuft' : vorbei ? ' · ✓' : ''}</span>
           <b>{k.klasse} {k.fach}</b>
           {#if s === plan.laeuft}<span class="mini-balken"><span style:width="{Math.min(100, ((plan.min - minuten(s.beginn)) / (minuten(s.ende) - minuten(s.beginn))) * 100)}%"></span></span>{/if}
@@ -127,10 +143,15 @@
         {#if planAn && geplantFuer(k.id, hauptDatum)}
           <p class="klein geplant"><span class="leise">Geplant:</span> {geplantFuer(k.id, hauptDatum)} · <a href="/planung/{k.id}">Planung</a></p>
         {/if}
+        {#if ablageAn && materialFuerStunde(k.id, hauptDatum)}
+          <p class="klein geplant"><span class="leise">Material:</span> <a href="/stunde/{k.id}">{materialFuerStunde(k.id, hauptDatum)} bereit</a></p>
+        {/if}
         <div class="knoepfe">
-          <a class="knopf haupt" href="/stunde/{k.id}">Stunde öffnen</a>
-          <a class="knopf" href="/stunde/{k.id}?mitarbeit=1">Mitarbeit/Anwesenheit</a>
-          <a class="knopf" href="/kurs/{k.id}?neu=1">+ Leistung</a>
+          {#if an('stunde')}
+            <a class="knopf haupt" href="/stunde/{k.id}">Stunde öffnen</a>
+            <a class="knopf" href="/stunde/{k.id}?mitarbeit=1">{an('muendlich') ? 'Mitarbeit/Anwesenheit' : 'Anwesenheit'}</a>
+          {/if}
+          <a class="knopf" class:haupt={!an('stunde')} href="/kurs/{k.id}?neu=1">+ Leistung</a>
           <a class="knopf leise" href="/kurs/{k.id}">Noten</a>
         </div>
         {#if !plan.laeuft}<p class="klein leise">Zum Testen kannst du jede Stunde jederzeit öffnen.</p>{/if}
@@ -140,12 +161,13 @@
     <section class="karte">
       <h2>Heute erfasst</h2>
       <div class="zahlen">
-        <div><b class="zahl">{heuteMitarbeit}</b><span class="klein leise">Mitarbeit-Einträge</span></div>
+        {#if an('muendlich')}<div><b class="zahl">{heuteMitarbeit}</b><span class="klein leise">Mitarbeit-Einträge</span></div>{/if}
         <div><b class="zahl">{heuteFehlt}</b><span class="klein leise">fehlen</span></div>
         <div><b class="zahl">{heuteZuSpaet}</b><span class="klein leise">verspätet</span></div>
       </div>
     </section>
 
+    {#if an('nachschreiben')}
     <section class="karte">
       <a class="titelzeile" href="/nachschreiben"><h2 class="raum">Nachschreiben</h2><span class="klein">öffnen ›</span></a>
       <div class="zahlen">
@@ -159,6 +181,7 @@
         {/each}
       </ul>
     </section>
+    {/if}
 
     <section class="karte">
       <h2>Offen</h2>
@@ -196,6 +219,8 @@
 </div>
 
 <style>
+  .leer { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .leer p { margin: 0; }
   .kopf { background: var(--leo-karte); border-bottom: 1px solid var(--leo-linie); padding: 14px 32px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .kopf h1 { font-size: 20px; }
   .seite { padding: 20px 32px 40px; max-width: 1500px; }

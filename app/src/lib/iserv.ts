@@ -1,4 +1,4 @@
-// IServ-Kalender abonnieren (K3, K10, V15): reine Logik, ohne Netz testbar. Ablauf im Browser: iserv.svelte.ts.
+// IServ-Kalender abonnieren (K3, K10, V17): reine Logik, ohne Netz testbar. Ablauf im Browser: iserv.svelte.ts.
 // Weg: Abo- bzw. Export-Link aus IServ (ICS, enthält einen geheimen Schlüssel, kein Passwort). Der Browser darf IServ
 // nicht direkt abfragen (CORS), deshalb reicht nginx im L.E.O.-Container `/iserv/…` an genau einen Server durch
 // (ISERV_SERVER), wie bei WebUntis. Der Link liegt verschlüsselt im Tresor dieses Geräts, nie in den Daten oder im Abgleich.

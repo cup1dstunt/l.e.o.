@@ -133,7 +133,7 @@ export function semesterPlan(d: Daten, kurs: Kurs, hj: Halbjahr, heute: string) 
   const alle = bloecke(d, kurs, hj.von, hj.bis);
   const reihen = kurs.reihen ?? [];
   // Eine Klausur belegt den ersten Unterrichtsblock ihres Tages, weitere Blöcke am selben Tag bleiben frei
-  // Auch eine Prüfung der eigenen Klasse aus WebUntis (V15) belegt den Block, wenn sie im Notenbuch noch kein Datum hat
+  // Auch eine Prüfung der eigenen Klasse aus WebUntis (V17) belegt den Block, wenn sie im Notenbuch noch kein Datum hat
   const untisKlausur = new Set((d.termine ?? []).filter((t) => t.quelle === 'untis' && t.art === 'pruefung' && !t.fremd && !t.ausgeblendet && t.kursIds?.includes(kurs.id)).map((t) => t.datum));
   const klausurTage = new Set<string>();
   const plan: PlanBlock[] = alle.map((b) => {
