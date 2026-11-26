@@ -56,7 +56,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | N1 | Notenbuch **exakt nach Konstantins iDoceo-Vorlagen** (Struktur, Berechnungen, Ansicht); Grundlage Screenshots | K, B | 1 | L |
 | N2 | Vorlagen als Daten, später für Kollegen teilbar | C | 2 | M |
 | N3 | Projektbewertungen als Spalten (Werkstatt-Export JSON/CSV) | K, B | 2 | S |
-| N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte) | K, C | 3 | S |
+| N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte). **Entwurf 26.11.:** CSV aus EWH einlesen, optionales Modul (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | K, C | 3 | S |
 | N5 | Rechenweg der Endnote anzeigen | C | 2 | S |
 | N6 | Was-wäre-wenn / Zielnote („was braucht er in der nächsten Klausur?“) | C | 3 | S |
 | N8 | Seiten je Kurs (Noten, Mitarbeit, Anwesenheit, frei ergänzbar wie Orga/Hausaufgaben) | K (Screenshots) | 1 | M |
@@ -156,9 +156,12 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
-| A1 | Statistiken überall sammeln, übersichtlich darstellen | B | 2 | M |
+| A1 | Statistiken überall sammeln, übersichtlich darstellen. **Entwurf 26.11.:** Reiter „Auswertung“ je Klasse und Klassenvergleich (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | B | 2 | M |
 | A2 | Verlaufsdiagramme je Schüler, Kurs, Klasse (Noten, Mitarbeit, Fehlzeiten, Hausaufgaben) | B | 2 | M |
 | A3 | Konferenzansicht: ganze Klasse, alle Fehlzeiten aller Fächer, Kurzübersicht je Schüler | B | 2 | M |
+| A6 | EWH-Noten direkt abrufen statt CSV (Weg B: Abrufschlüssel und Lese-Endpunkt in EWH), erst wenn beide schulweit laufen | C | 3 | M |
+| A7 | Auswertung drucken bzw. als PDF | C | 3 | S |
+| A8 | Halbjahresvergleich je Klasse nach dem Schuljahreswechsel (K9) | C | 3 | S |
 | A4 | Endnoten **aktiv** an die Klassenleitung schicken (statt Zettel/Rundmail), nur wer will (E29) | C | 2 | M |
 | A5 | Leistungsstand per Knopfdruck: Diktat → KI-Text, keine Klarnamen an KI | B | 3 | M |
 
