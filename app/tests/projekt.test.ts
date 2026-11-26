@@ -26,12 +26,13 @@ function kurs(profil: 'FOS' | 'OSZ'): Kurs {
 // Gruppennote wie das mündliche Raster: alle Stufe 4 → Smiley 1 → FOS 14, OSZ 1
 {
   const alle4 = Object.fromEntries(raster.bereiche.flatMap((b) => b.kriterien).map((k) => [k.id, 4])) as Record<string, 4>;
-  gleich('FOS beste', gruppenErgebnis(raster, { stufen: alle4 }, 'FOS', {}).note, 14);
+  gleich('FOS beste', gruppenErgebnis(raster, { stufen: alle4 }, 'FOS', {}).note, 15);
   gleich('OSZ beste', gruppenErgebnis(raster, { stufen: alle4 }, 'OSZ', {}).note, 1);
-  // Inhalt 2 (×2), Rest 4: (2·2 + 4·4) / 6 = 3,33 → Smiley 1,89 → FOS 17 − 5,67 = 11,33 → 11
-  gleich('gewichtet', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 2 } }, 'FOS', {}).note, 11);
+  // Inhalt 2 (×2), Rest 4: (2·2 + 4·4) / 6 = 3,33 → 3 + 4 × 2,33 = 12,33 → 12
+  gleich('gewichtet', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 2 } }, 'FOS', {}).note, 12);
+  gleich('FOS Stufen', [1, 2, 3].map((st) => gruppenErgebnis(raster, { stufen: Object.fromEntries(Object.keys(alle4).map((k) => [k, st])) as Record<string, 1> }, 'FOS', {}).note), [3, 7, 11]);
   // eigenes Gewicht im Projekt: Inhalt ×0 → nur die anderen zählen
-  gleich('Gewicht 0', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 1 } }, 'FOS', { gewichte: { 'p-inhalt': 0 } }).note, 14);
+  gleich('Gewicht 0', gruppenErgebnis(raster, { stufen: { ...alle4, 'p-inhalt': 1 } }, 'FOS', { gewichte: { 'p-inhalt': 0 } }).note, 15);
   gleich('leer', gruppenErgebnis(raster, { stufen: {} }, 'FOS', {}).note, null);
 }
 
@@ -63,13 +64,13 @@ gleich('ohne Gruppennote', einzelNote('OSZ', null, 1), null);
 
   // Notenbuch: Spalte unter Tests/Sonstiges, Einzelnoten mit Abweichung, ohne Gruppennote bleibt leer
   const alle4 = Object.fromEntries(raster.bereiche.flatMap((b) => b.kriterien).map((kr) => [kr.id, 4]));
-  p.gruppen[0].stufen = { ...alle4, 'p-inhalt': 2 }; // 11
+  p.gruppen[0].stufen = { ...alle4, 'p-inhalt': 2 }; // 12
   p.abweichung = { a: { schritte: 1, grund: 'trägt die Gruppe' }, e: { schritte: -2 } };
   k.zellen['vorher:e'] = { wert: 3 };
   const r = insNotenbuch(k, p, raster, id);
   gleich('gesetzt/ohne', [r.gesetzt, r.ohne], [2, 3]);
   gleich('Spalte', [r.leistung.gruppe, r.leistung.art, r.leistung.name, k.leistungen.indexOf(r.leistung)], ['sl', 'Projekt', 'Podcast', 1]);
-  gleich('Noten', [k.zellen[`${r.leistung.id}:a`]?.wert, k.zellen[`${r.leistung.id}:e`]?.wert, k.zellen[`${r.leistung.id}:c`]], [12, 9, undefined]);
+  gleich('Noten', [k.zellen[`${r.leistung.id}:a`]?.wert, k.zellen[`${r.leistung.id}:e`]?.wert, k.zellen[`${r.leistung.id}:c`]], [13, 10, undefined]);
   // zweites Übernehmen: gleiche Spalte, Wechsel zu mündlich verschiebt sie
   p.zaehltAls = 'mitarbeit';
   const r2 = insNotenbuch(k, p, raster, id);
@@ -80,7 +81,7 @@ gleich('ohne Gruppennote', einzelNote('OSZ', null, 1), null);
 
   const s1: Schueler = { id: 'a', vorname: 'Ada', nachname: 'A', geburt: '', geschlecht: 'w', mailDienst: '' };
   const w = projektMailWerte(k, p, raster, s1);
-  gleich('Mail Noten', [w.gruppennote, w.note], ['11 Punkte', '12 Punkte']);
+  gleich('Mail Noten', [w.gruppennote, w.note], ['12 Punkte', '13 Punkte']);
   gleich('Mail Kriterium', w.kriterien.split('\n')[0], '- Fachlicher Inhalt: Stufe 2 von 4, lückenhaft oder mit Fehlern');
 }
 

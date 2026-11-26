@@ -4,7 +4,7 @@
 // Reine Logik ohne Oberfläche, deshalb einzeln testbar.
 import type { Daten, Kurs, Leistung, Profil, Projekt, ProjektGruppe, Raster, RasterKriterium, Schueler } from './typen.ts';
 import { rasterErgebnis, type RasterErgebnis } from './raster.ts';
-import { zellSchluessel } from './rechnen.ts';
+import { zellSchluessel, kaufm } from './rechnen.ts';
 
 type Stufen4 = [string, string, string, string];
 const k = (id: string, name: string, stufen: Stufen4, gewicht?: number): RasterKriterium => ({ id, name, stufen, ...(gewicht ? { gewicht } : {}) });
@@ -56,8 +56,15 @@ export const projektRaster = (d: Pick<Daten, 'einstellungen'>, p: Pick<Projekt, 
   projektRasterAlle(d).find((r) => r.id === p.rasterId) ?? PROJEKT_VORLAGEN[0];
 
 /** Ergebnis der Gruppe: gleiche Rechnung wie das mündliche Raster (E113), mit den Gewichten des Projekts. */
+/** Gruppennote (E118): gewichteter Durchschnitt wie das mündliche Raster (E113). OSZ wie dort (Stufe 4 → 1, Stufe 1 → 5).
+ *  FOS eigene Umrechnung, damit 15 Punkte möglich sind (Konstantin 26.11.): Stufe 4 = 15, 3 = 11, 2 = 7, 1 = 3 Punkte, linear. */
 export function gruppenErgebnis(raster: Raster, g: Pick<ProjektGruppe, 'stufen'>, profil: Profil, p: Pick<Projekt, 'gewichte'>): RasterErgebnis {
-  return rasterErgebnis(raster, g.stufen, profil, { muendlich: { rasterId: raster.id, mindestSmileys: 0, gewichte: p.gewichte } });
+  const e = rasterErgebnis(raster, g.stufen, profil, { muendlich: { rasterId: raster.id, mindestSmileys: 0, gewichte: p.gewichte } });
+  if (profil !== 'FOS' || e.schnitt === null) return e;
+  const roh = 3 + 4 * (e.schnitt - 1);
+  const note = Math.max(0, Math.min(15, kaufm(roh)));
+  const fmt = (x: number) => x.toLocaleString('de-DE', { maximumFractionDigits: 2 });
+  return { ...e, note, weg: [...e.weg.slice(0, 2), `In Notenpunkte: 3 + 4 × (${fmt(e.schnitt)} − 1) = ${fmt(roh)} → ${note} Punkte (Stufe 4 = 15, 3 = 11, 2 = 7, 1 = 3)`] };
 }
 
 /** Einzelnote: Gruppennote plus Abweichung. „Besser“ heißt bei FOS mehr Punkte, bei OSZ eine kleinere Note. */

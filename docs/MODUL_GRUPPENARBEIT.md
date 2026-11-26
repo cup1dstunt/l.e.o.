@@ -12,7 +12,7 @@ Gruppen, die länger als eine Stunde bestehen (Podcast, Präsentation, Projekt �
 4. **Abschließen:** „Ins Notenbuch übernehmen“ (eine Spalte unter Tests/Sonstiges oder mündlich, wiederholbar), Rückmeldung per Mail je Schüler.
 
 ## Rechnung
-Gruppennote wie das mündliche Raster (E113): gewichteter Durchschnitt der Stufen → Smiley-Skala → Note bzw. Punkte. Einzelnote = Gruppennote + Abweichung (FOS: + Punkte, OSZ: − Note), begrenzt auf die Skala. Code: `app/src/lib/projekt.ts`, Tests: `app/tests/projekt.test.ts`.
+Gruppennote: gewichteter Durchschnitt der Stufen wie das mündliche Raster (E113). OSZ: umgerechnet wie dort (Stufe 4 → Note 1, Stufe 1 → Note 5). FOS: eigene Umrechnung, damit 15 Punkte möglich sind (Konstantin 26.11.): Stufe 4 = 15, 3 = 11, 2 = 7, 1 = 3 Punkte, dazwischen linear, kaufmännisch gerundet. Einzelnote = Gruppennote + Abweichung (FOS: + Punkte, OSZ: − Note), begrenzt auf die Skala. Code: `app/src/lib/projekt.ts`, Tests: `app/tests/projekt.test.ts`.
 
 ## Verzahnung
 | Modul | Wie |
@@ -26,5 +26,4 @@ Gruppennote wie das mündliche Raster (E113): gewichteter Durchschnitt der Stufe
 
 ## Offen
 - Selbst- und Partnereinschätzung der Gruppen per Link (mit FB7b).
-- FOS: Stufe 4 in allen Kriterien ergibt 14 Punkte (Umrechnung wie Smileys, E68). Soll ein Projekt 15 erreichen können?
 - Ungetestet auf iPad; PC und Handy-Breite im Browser geprüft.
