@@ -69,5 +69,5 @@ Offene Fragen aus dem Prototyp-Feedback vom 09.11.2026 ([prototyp-feedback/2026-
 3. Woran erkennt man Lehrkräfte sicher: Rolle oder Gruppe?
 4. Gibt es die IDM-REST-API mit Admin-Token, oder ist ein Export der Benutzerliste möglich (für Schüler-Dienstmails)?
 5. Darf L.E.O. Mails über den IServ-SMTP-Server verschicken (zentrales Konto oder je Lehrkraft)?
-6. Gibt es iCal-Feeds für Schulkalender/Pläne?
+6. Gibt es iCal-Feeds (Abo-/Export-Link) für Schulkalender/Pläne, und läuft IServ unter `osz-lus.de` (für `ISERV_SERVER`)? Falls kein Abo-Link: ist CalDAV freigeschaltet? (V15)
 7. Wie werden Umlaute, ß, Doppel-/Bindestrichnamen und Namensgleichheit in den Schüleradressen (v.nachname@osz-lus.de) umgeschrieben (E106)?
