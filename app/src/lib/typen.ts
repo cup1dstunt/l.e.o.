@@ -25,6 +25,7 @@ export interface Leistung {
   gewicht: number; // relativ innerhalb der Gruppe (E41)
   datum?: string;
   monat?: string; // nur Monatsnoten, Format JJJJ-MM
+  ewh?: { titel: string; geholt: string }; // Noten aus EWH Korrektur übernommen (optionales Modul, N4)
 }
 
 export interface Zelle {
@@ -82,6 +83,22 @@ export interface Reihe {
   id: string;
   titel: string;
   bloecke: number;
+}
+
+/** Material je Stunde (Modul Dateiablage, V14): Datei oder Link an Reihe, Stunde oder Klasse. */
+export interface Material {
+  id: string;
+  kursId: string;
+  ort: 'reihe' | 'stunde' | 'klasse';
+  reiheId?: string; // bei ort „reihe“: gilt für jeden Block der Reihe
+  datum?: string; // bei ort „stunde“: ISO-Datum des Blocks
+  titel: string;
+  art: 'datei' | 'link';
+  url?: string; // bei Links
+  datei?: { id: string; name: string; typ: string; groesse: number }; // Inhalt liegt im Speicher „dateien“
+  loesung?: boolean; // nur für die Lehrkraft (Lösung, Erwartungshorizont)
+  gezeigt?: string[]; // Daten, an denen es in der Live-Stunde geöffnet wurde
+  erstellt: string; // ISO-Zeit
 }
 
 /** Kalendereintrag (K2, E115). Unterrichtsfrei + keine Klassen = für alle eigenen Klassen frei. */
@@ -365,6 +382,7 @@ export interface Daten {
   notizen: Notiz[];
   nachschreiben: NachTermin[];
   termine: Termin[];
+  material: Material[];
   stundenplan: Stunde[];
   einstellungen: Einstellungen;
 }

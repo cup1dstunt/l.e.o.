@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { entscheiden, kursMischen, rufen, geraetName } from '../src/lib/abgleich.ts';
-import { einrichten, schluesselAus, verschluesseln, entschluesseln, nachweis, oeffnen, umpacken, rohText } from '../src/lib/tresor.ts';
+import { einrichten, schluesselAus, verschluesseln, entschluesseln, nachweis, oeffnen, umpacken, rohText, dateiVerschluesseln, dateiEntschluesseln } from '../src/lib/tresor.ts';
 import { datensatz } from '../src/lib/ablage.ts';
 import { beispielDaten } from '../src/lib/beispiel.ts';
 
@@ -129,6 +129,30 @@ try {
   const falsch = await nachweis('x', 'lehrer.test', R);
   for (let i = 0; i < 4; i++) await status(() => rufen('anmelden', { basis: b, body: { benutzer: 'lehrer.test', nachweis: falsch } }));
   gleich('nach 5 Fehlversuchen gesperrt', await status(() => rufen('anmelden', { basis: b, body: { benutzer: 'lehrer.test', nachweis: nw2 } })), 429);
+
+  // Dateiinhalte (Dateiablage, V14): roh, verschlüsselt, je Konto ein Ordner
+  const klartext = new TextEncoder().encode('Arbeitsblatt Unit 6 – Aufgabe 1');
+  const geheim = await dateiVerschluesseln(k, 'dTest12345', klartext.buffer);
+  const dUrl = (id: string) => `${b}/abgleich/datei?id=${id}`;
+  const mitToken = (t: string) => ({ authorization: 'Bearer ' + t });
+  gleich('Datei ohne Token: 401', (await fetch(dUrl('dTest12345'), { method: 'PUT', body: geheim })).status, 401);
+  gleich('Datei-id ungültig: 400', (await fetch(dUrl('../x'), { headers: mitToken(a.token) })).status, 400);
+  gleich('noch nicht da: 404', (await fetch(dUrl('dTest12345'), { headers: mitToken(a.token) })).status, 404);
+  gleich('zu kurz (nicht verschlüsselt): 400', (await fetch(dUrl('dTest12345'), { method: 'PUT', headers: mitToken(a.token), body: new Uint8Array(5) })).status, 400);
+  const hoch = await fetch(dUrl('dTest12345'), { method: 'PUT', headers: { ...mitToken(a.token), 'content-type': 'application/octet-stream' }, body: geheim });
+  gleich('Datei hochgeladen', [hoch.status, (await hoch.json()).groesse], [200, geheim.length]);
+  const runter = await fetch(dUrl('dTest12345'), { headers: mitToken(a.token) });
+  const bytes = new Uint8Array(await runter.arrayBuffer());
+  gleich('Datei wieder geholt, gleiche Bytes', [runter.status, bytes.length, bytes.every((x, i) => x === geheim[i])], [200, geheim.length, true]);
+  gleich('mit dem Schlüssel des Kontos lesbar', new TextDecoder().decode(await dateiEntschluesseln(await schluesselAus(roh2!), 'dTest12345', bytes)), 'Arbeitsblatt Unit 6 – Aufgabe 1');
+  gleich('andere Datei-id passt nicht (Prüfsumme)', await dateiEntschluesseln(k, 'dAnders1234', bytes).then(() => 'gelesen', () => 'abgelehnt'), 'abgelehnt');
+  const ablage = readdirSync(path.join(ordner, 'dateien'));
+  const dInhalt = readFileSync(path.join(ordner, 'dateien', ablage[0], 'dTest12345.bin'));
+  gleich('auf dem Server nur Geheimtext', dInhalt.includes(Buffer.from('Arbeitsblatt')), false);
+  gleich('zu groß: 413', await fetch(dUrl('dGross1234'), { method: 'PUT', headers: mitToken(a.token), body: new Uint8Array(16 * 1024 * 1024) }).then((r) => r.status, () => 413), 413);
+  gleich('Datei löschen', (await fetch(dUrl('dTest12345'), { method: 'DELETE', headers: mitToken(a.token) })).status, 200);
+  gleich('danach weg', (await fetch(dUrl('dTest12345'), { headers: mitToken(a.token) })).status, 404);
+  gleich('nochmal löschen schadet nicht', (await fetch(dUrl('dTest12345'), { method: 'DELETE', headers: mitToken(a.token) })).status, 200);
 
   // Server neu starten: Daten bleiben
   const { dienst: dienst2 } = await import('../abgleich/server.mjs?neu' as string);

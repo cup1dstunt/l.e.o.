@@ -17,9 +17,12 @@ gleich('Kern braucht nichts', MODULE.filter((m) => m.kern && m.braucht?.length).
 // Ohne Einstellung: Standard, Kern immer an, „bald“ immer aus
 gleich('leer notenbuch', istAn(undefined, 'notenbuch'), true);
 gleich('leer planung', istAn({}, 'planung'), true);
-gleich('leer dateiablage', istAn({}, 'dateiablage'), false);
+gleich('leer dateiablage', istAn({}, 'ablage'), true);
 gleich('kern nicht ausschaltbar', istAn({ module: { notenbuch: false } }, 'notenbuch'), true);
-gleich('bald nicht einschaltbar', istAn({ module: { statistik: true } }, 'statistik'), false);
+gleich('leer statistik', istAn({}, 'statistik'), true);
+gleich('EWH standardmäßig aus', istAn({}, 'ewh'), false);
+gleich('EWH einschaltbar', istAn({ module: { ewh: true } }, 'ewh'), true);
+gleich('Import bleibt in Vorbereitung', istAn({ module: { import: true } }, 'import'), false);
 
 // Alte Einstellung aus E114 bleibt gültig
 gleich('alt planung aus', istAn({ module: { planung: false, kalender: true } }, 'planung'), false);
@@ -44,9 +47,11 @@ gleich('zufall an nimmt stunde mit', istAn({ module: umschalten({ module: { stun
 gleich('pfad muendlich', modulFuerPfad('/muendlich/k1')?.id, 'muendlich');
 gleich('pfad mehr muendlich frei', modulFuerPfad('/mehr/muendlich'), undefined);
 gleich('pfad nachschreiben', modulFuerPfad('/nachschreiben')?.id, 'nachschreiben');
+gleich('pfad auswertung', modulFuerPfad('/auswertung/k1')?.id, 'statistik');
+gleich('pfad EWH', modulFuerPfad('/ewh/k1')?.id, 'ewh');
 gleich('pfad heute frei', modulFuerPfad('/'), undefined);
-gleich('reiter standard', kursReiter({}).map((r) => r.text), ['Noten', 'Stunde', 'Sitzplan', 'Mündlich', 'Gruppenarbeit', 'Anwesenheit', 'Planung']);
-gleich('reiter nur notenbuch', kursReiter({ module: { stunde: false, sitzplan: false, muendlich: false, gruppenarbeit: false, anwesenheit: false, planung: false } }).map((r) => r.text), ['Noten']);
+gleich('reiter standard', kursReiter({}).map((r) => r.text), ['Noten', 'Stunde', 'Sitzplan', 'Mündlich', 'Gruppenarbeit', 'Anwesenheit', 'Planung', 'Auswertung']);
+gleich('reiter nur notenbuch', kursReiter({ module: { stunde: false, sitzplan: false, muendlich: false, gruppenarbeit: false, anwesenheit: false, planung: false, statistik: false } }).map((r) => r.text), ['Noten']);
 
 // Startwege: alles ausdrücklich gesetzt, Vorschlag wirkt samt Abhängigkeiten
 for (const w of STARTWEGE) {
@@ -58,6 +63,7 @@ for (const w of STARTWEGE) {
 gleich('papier ohne kalender', istAn({ module: auswahlFuer('papier') }, 'kalender'), false);
 gleich('upz ohne sitzplan', istAn({ module: auswahlFuer('upz') }, 'sitzplan'), false);
 gleich('idoceo mit sitzplan', istAn({ module: auswahlFuer('idoceo') }, 'sitzplan'), true);
+gleich('idoceo mit Dateiablage und Auswertung', istAn({ module: auswahlFuer('idoceo') }, 'ablage') && istAn({ module: auswahlFuer('idoceo') }, 'statistik'), true);
 
 console.log(`module: ${ok} ok, ${fehler} Fehler`);
 if (fehler) process.exit(1);

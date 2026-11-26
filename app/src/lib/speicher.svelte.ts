@@ -5,7 +5,8 @@ import { beispielDaten } from './beispiel.ts';
 import { hashen, neuesSalz } from './sicherheit.ts';
 import * as tresorFn from './tresor.ts';
 import type { Tresor, Datenschluessel, GeheimSatz, GeheimText } from './tresor.ts';
-import type { Daten, Kurs } from './typen.ts';
+import type { Daten, Kurs, Material } from './typen.ts';
+import { MAX_DATEI, dateienInBenutzung, zeigbar } from './material.ts';
 import { ARTEN, zerlegen, unterschied, datensatz, zusammensetzen, schluessel as satzSchluessel, type Art, type Datensatz } from './ablage.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
 import * as sich from './sicherung.ts';
@@ -17,6 +18,7 @@ function migrieren(d: Daten): Daten {
   d.verspaetungen ??= [];
   d.nachschreiben ??= [];
   d.termine ??= [];
+  d.material ??= [];
   d.einstellungen.liveAnsicht ??= 'liste';
   d.einstellungen.sperreMinuten ??= 15;
   d.einstellungen.eingerichtet ??= true; // vorhandene Daten aus der Zeit vor dem Einrichtungsassistenten
@@ -38,7 +40,7 @@ const DB_ALT = 'leo-prototyp';
 const DB = 'leo';
 // Speicher außer den Objektarten: tresor (verpackter Schlüssel, Abgleich-Verbindung, gemerkte Zugangsdaten),
 // staende (F3, automatische Stände), ausgang (F4, noch nicht gesendete Änderungen)
-type Speicher = Art | 'tresor' | 'staende' | 'ausgang';
+type Speicher = Art | 'tresor' | 'staende' | 'ausgang' | 'dateien'; // dateien: Inhalte der Dateiablage (V14)
 
 function oeffnenAlt(): Promise<IDBDatabase> {
   return new Promise((res, rej) => {
@@ -51,9 +53,9 @@ function oeffnenAlt(): Promise<IDBDatabase> {
 let dbOffen: Promise<IDBDatabase> | undefined;
 function oeffnen(): Promise<IDBDatabase> {
   dbOffen ??= new Promise((res, rej) => {
-    const r = indexedDB.open(DB, 5); // 2: tresor (F2), 3: staende + ausgang (F3, F4), 4: nachschreiben (F8), 5: termine (E115)
+    const r = indexedDB.open(DB, 6); // 2: tresor (F2), 3: staende + ausgang (F3, F4), 4: nachschreiben (F8), 5: termine (E115), 6: material + dateien (V14)
     r.onupgradeneeded = () => {
-      for (const s of [...ARTEN, 'tresor', 'staende']) if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s, { keyPath: 'id' });
+      for (const s of [...ARTEN, 'tresor', 'staende', 'dateien']) if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s, { keyPath: 'id' });
       if (!r.result.objectStoreNames.contains('ausgang')) r.result.createObjectStore('ausgang', { keyPath: 'key' });
     };
     r.onsuccess = () => res(r.result);
@@ -218,6 +220,7 @@ async function datenLesen() {
 function nachEntsperren() {
   tagesstand().catch(() => { /* Stand ist Zugabe, darf nichts aufhalten */ });
   geheimUebernehmen().catch(() => {});
+  dateienAufraeumen().catch(() => {});
   if (verbindung) abgleichPlanen(200);
 }
 
@@ -268,6 +271,7 @@ async function verschluesselungEinrichten(passwort: string) {
   app.verschluesselt = true;
   merken(roh);
   await staendeUmschluesseln(undefined, schluessel); // ohne HTTPS angelegte Tagesstände jetzt verschlüsseln
+  await dateienUmschluesseln(undefined, schluessel);
   // Probe: verschlüsselt gelesen muss dasselbe herauskommen, erst dann den unverschlüsselten Rückfall löschen
   const probe = await lesen();
   if (JSON.stringify(probe) === JSON.stringify(stand)) indexedDB.deleteDatabase(DB_ALT);
@@ -536,6 +540,7 @@ async function abgleichJetzt() {
       if (!a.mehr) break;
     }
     const wieder = await ausgangSenden(v);
+    await dateienSenden(v, k);
     abgleich.zuletzt = new Date().toISOString();
     abgleich.fehler = '';
     if (wieder) abgleichPlanen(1000); // Server hatte inzwischen Neueres: gleich noch einmal holen
@@ -749,6 +754,7 @@ async function kontoUebernehmen(benutzer: string, roh: Uint8Array<ArrayBuffer>, 
     const kAlt = schluessel;
     const frisch = !tresor && !app.d?.einstellungen.passwort; // neues Gerät mit Beispieldaten
     await staendeUmschluesseln(kAlt, kNeu);
+    await dateienUmschluesseln(kAlt, kNeu);
     if (kAlt) await geheimeUmschluesseln(kAlt, kNeu);
     schluessel = kNeu;
     if (app.d && !frisch) await standAnlegen('vorher');
@@ -802,6 +808,137 @@ export async function ausstehend(): Promise<number> {
 /** Erreichbarkeit des Dienstes und ob Konten angelegt werden können. */
 export async function dienstStatus(): Promise<{ ok: boolean; kontoAnlegen: boolean }> {
   try { return await rufen('status'); } catch { return { ok: false, kontoAnlegen: false }; }
+}
+
+// ---------- Dateiablage (V14): Inhalte im Speicher „dateien“, verschlüsselt mit dem Datenschlüssel ----------
+// Angaben zum Material sind die Datenart `material`, hier liegt nur der Inhalt. verschluesselt = mit Datenschlüssel,
+// oben = liegt (so) auf dem Server, weg = gelöscht, beim nächsten Abgleich auch auf dem Server entfernen.
+interface DateiSatz { id: string; typ: string; groesse: number; verschluesselt: boolean; inhalt?: ArrayBuffer; oben?: boolean; weg?: true }
+
+const dateiFehler = (t: string) => new Error(t);
+async function dateiRoh(id: string, inhalt: ArrayBuffer): Promise<{ verschluesselt: boolean; inhalt: ArrayBuffer }> {
+  if (!schluessel) return { verschluesselt: false, inhalt };
+  return { verschluesselt: true, inhalt: (await tresorFn.dateiVerschluesseln(schluessel, id, inhalt)).buffer };
+}
+
+/** Datei ablegen. Gibt die Datei-id zurück; die Angaben (Material) legt die Oberfläche an. */
+export async function dateiAblegen(f: File): Promise<{ id: string; name: string; typ: string; groesse: number }> {
+  if (f.size > MAX_DATEI) throw dateiFehler(`${f.name} ist größer als 15 MB.`);
+  const id = 'd' + Date.now().toString(36) + crypto.getRandomValues(new Uint32Array(2)).join('').slice(0, 10);
+  const typ = f.type || 'application/octet-stream';
+  const r = await dateiRoh(id, await f.arrayBuffer());
+  await vorgang(['dateien'], (t) => t.objectStore('dateien').put({ id, typ, groesse: f.size, ...r } satisfies DateiSatz));
+  if (verbindung) abgleichPlanen(500);
+  return { id, name: f.name, typ, groesse: f.size };
+}
+
+/** Wo liegt der Inhalt? hier = auf diesem Gerät; oben = auch auf dem Server; fehlt = nicht auf diesem Gerät. */
+export async function dateiStand(ids: string[]): Promise<Record<string, 'hier' | 'oben' | 'fehlt'>> {
+  const out: Record<string, 'hier' | 'oben' | 'fehlt'> = {};
+  for (const id of ids) {
+    const x = await holen<DateiSatz>('dateien', id);
+    out[id] = !x?.inhalt || x.weg ? 'fehlt' : x.oben ? 'oben' : 'hier';
+  }
+  return out;
+}
+
+/** Inhalt holen: aus diesem Gerät, sonst vom Server (dann hier behalten). */
+export async function dateiHolen(id: string, typ: string): Promise<Blob> {
+  let x = await holen<DateiSatz>('dateien', id);
+  if (!x?.inhalt || x.weg) {
+    if (!verbindung || !schluessel) throw dateiFehler('Die Datei liegt auf einem anderen Gerät. Mit Abgleich (Mehr › Abgleich) kommt sie hierher.');
+    let r: Response;
+    try { r = await fetch('/abgleich/datei?id=' + encodeURIComponent(id), { headers: { authorization: 'Bearer ' + verbindung.token }, cache: 'no-store' }); }
+    catch { throw dateiFehler('Server nicht erreichbar, die Datei liegt nicht auf diesem Gerät.'); }
+    if (!r.ok) throw dateiFehler(r.status === 404 ? 'Die Datei ist noch nicht auf dem Server. Das Gerät, auf dem sie liegt, lädt sie beim nächsten Abgleich hoch.' : `Datei konnte nicht geladen werden (Fehler ${r.status}).`);
+    const inhalt = await r.arrayBuffer();
+    x = { id, typ, groesse: Math.max(0, inhalt.byteLength - 28), verschluesselt: true, inhalt, oben: true };
+    await tresorFn.dateiEntschluesseln(schluessel, id, inhalt); // passt der Schlüssel? Sonst nicht speichern
+    await vorgang(['dateien'], (t) => t.objectStore('dateien').put(x!));
+  }
+  let roh = x.inhalt!;
+  if (x.verschluesselt) {
+    if (!schluessel) throw dateiFehler('L.E.O. ist gesperrt.');
+    roh = await tresorFn.dateiEntschluesseln(schluessel, id, roh);
+  }
+  return new Blob([roh], { type: x.typ || typ });
+}
+
+/** Nicht mehr gebrauchte Inhalte entfernen (beim Entsperren, damit „Rückgängig“ in der Sitzung noch geht). */
+export async function dateienAufraeumen() {
+  if (!app.d) return;
+  const gebraucht = dateienInBenutzung(app.d.material ?? []);
+  const alleD = await alle<DateiSatz>('dateien');
+  const weg = alleD.filter((x) => !x.weg && !gebraucht.has(x.id));
+  if (!weg.length) return;
+  await vorgang(['dateien'], (t) => {
+    for (const x of weg) x.oben ? t.objectStore('dateien').put({ id: x.id, typ: x.typ, groesse: 0, verschluesselt: x.verschluesselt, weg: true } satisfies DateiSatz) : t.objectStore('dateien').delete(x.id);
+  });
+}
+
+/** Neu abgelegte Inhalte hochladen, gelöschte auf dem Server entfernen. Nur verschlüsselte verlassen das Gerät. */
+async function dateienSenden(v: Verbindung, k: Datenschluessel) {
+  const gebraucht = app.d ? dateienInBenutzung(app.d.material ?? []) : new Set<string>();
+  for (const x of await alle<DateiSatz>('dateien')) {
+    if (verbindung !== v || schluessel !== k) return;
+    const url = '/abgleich/datei?id=' + encodeURIComponent(x.id);
+    const kopf = { authorization: 'Bearer ' + v.token };
+    if (x.weg) {
+      if (gebraucht.has(x.id)) continue; // inzwischen wieder benutzt (z. B. vom anderen Gerät kopiert)
+      const r = await fetch(url, { method: 'DELETE', headers: kopf }).catch(() => null);
+      if (r?.ok) await vorgang(['dateien'], (t) => t.objectStore('dateien').delete(x.id));
+      continue;
+    }
+    if (x.oben || !x.verschluesselt || !x.inhalt || !gebraucht.has(x.id)) continue;
+    const r = await fetch(url, { method: 'PUT', headers: { ...kopf, 'content-type': 'application/octet-stream' }, body: x.inhalt }).catch(() => null);
+    if (!r) return; // offline: beim nächsten Abgleich
+    if (r.ok) await vorgang(['dateien'], (t) => t.objectStore('dateien').put({ ...x, oben: true }));
+    else if (r.status === 507) { abgleich.fehler = 'Speicherplatz für Dateien auf dem Server ist voll.'; return; }
+  }
+}
+
+/** Neuer Schlüssel (Verschlüsselung eingerichtet oder Konto übernommen): Inhalte neu verschlüsseln, neu hochladen. */
+async function dateienUmschluesseln(alt: Datenschluessel | undefined, neu: Datenschluessel) {
+  const neue: DateiSatz[] = [];
+  for (const x of await alle<DateiSatz>('dateien')) {
+    if (x.weg || !x.inhalt) continue; // Löschauftrag galt dem alten Konto
+    try {
+      const klar = x.verschluesselt ? (alt ? await tresorFn.dateiEntschluesseln(alt, x.id, x.inhalt) : null) : x.inhalt;
+      if (!klar) continue;
+      neue.push({ ...x, verschluesselt: true, oben: false, inhalt: (await tresorFn.dateiVerschluesseln(neu, x.id, klar)).buffer });
+    } catch { /* nicht lesbar: fällt weg */ }
+  }
+  await vorgang(['dateien'], (t) => { t.objectStore('dateien').clear(); for (const x of neue) t.objectStore('dateien').put(x); });
+}
+
+/** Material öffnen. Das Fenster geht sofort auf (sonst blockt Safari), der Inhalt kommt nach. */
+export async function materialOeffnen(m: Material, herunterladen = false): Promise<boolean> {
+  if (m.art === 'link') {
+    if (m.url) window.open(m.url, '_blank', 'noopener');
+    return !!m.url;
+  }
+  if (!m.datei) return false;
+  const zeigen = !herunterladen && zeigbar(m.datei.typ);
+  const w = zeigen ? window.open('', '_blank') : null;
+  try {
+    const blob = await dateiHolen(m.datei.id, m.datei.typ);
+    const url = URL.createObjectURL(blob);
+    setTimeout(() => URL.revokeObjectURL(url), 5 * 60_000);
+    if (w) w.location.href = url;
+    else {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = m.datei.name;
+      document.body.append(a);
+      a.click();
+      a.remove();
+    }
+    return true;
+  } catch (e) {
+    w?.close();
+    zeige((e as Error).message);
+    return false;
+  }
 }
 
 export const neueId = () => Math.random().toString(36).slice(2, 10);

@@ -7,7 +7,7 @@ export const MODUL_IDS = [
   'klassen', 'notenbuch',
   'stunde', 'muendlich', 'selbst', 'sitzplan', 'zufall', 'gruppenarbeit',
   'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'planung',
-  'dateiablage', 'statistik', 'import'
+  'ablage', 'statistik', 'ewh', 'import'
 ] as const;
 export type ModulId = (typeof MODUL_IDS)[number];
 
@@ -67,9 +67,12 @@ export const MODULE: Modul[] = [
   { id: 'planung', name: 'Semesterplanung', text: 'Unterrichtsreihen auf die freien Blöcke legen, „Wo wir stehengeblieben sind“.', bereich: 'organisation', standard: true,
     pfade: ['/planung/'], reiter: { text: 'Planung', pfad: '/planung/', aktiv: 'planung' } },
 
+  { id: 'ablage', name: 'Dateiablage', text: 'Material je Stunde oder Reihe.', bereich: 'organisation', standard: true },
+  { id: 'statistik', name: 'Auswertung', text: 'Verläufe und Muster über Klassen und Halbjahre.', bereich: 'organisation', standard: true,
+    pfade: ['/auswertung'], reiter: { text: 'Auswertung', pfad: '/auswertung/', aktiv: 'auswertung' } },
+  { id: 'ewh', name: 'EWH-Übernahme', text: 'Klausurnoten aus EWH Korrektur übernehmen.', bereich: 'organisation', standard: false,
+    pfade: ['/ewh/'] },
   // In Vorbereitung (eigene Threads): nur der Platz im Register, damit die Auswahl schon jetzt stimmt
-  { id: 'dateiablage', name: 'Dateiablage', text: 'Material je Stunde oder Reihe.', bereich: 'organisation', standard: false, bald: true },
-  { id: 'statistik', name: 'Statistik', text: 'Verläufe und Muster über Klassen und Halbjahre.', bereich: 'organisation', standard: false, bald: true },
   { id: 'import', name: 'Import', text: 'Klassen und Noten aus Excel, UPZ oder iDoceo übernehmen.', bereich: 'organisation', standard: false, bald: true }
 ];
 
@@ -155,7 +158,7 @@ export const STARTWEGE: Startweg[] = [
       'Was du nicht brauchst, bleibt aus. Unter Mehr › Module kommt es mit einem Tipp dazu.'
     ] },
   { id: 'idoceo', name: 'iDoceo', text: 'Notenbuch, Smileys, Anwesenheit auf dem iPad.',
-    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender'],
+    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'ablage', 'statistik'],
     tipps: [
       'Das Notenbuch ist aufgebaut wie die iDoceo-Vorlagen: Klausuren und Sonstige je 50 %, Sonstige aus mündlich und Tests.',
       'Smileys gibt es weiter, Kommentare kommen aus Textbausteinen statt aus der Tastatur.',
@@ -176,7 +179,7 @@ export const STARTWEGE: Startweg[] = [
       'Die Endnote überträgst du in die Excel der Schule, ein Export ist nicht nötig.'
     ] },
   { id: 'neu', name: 'Noch nichts Festes', text: 'Ich fange neu an oder probiere aus.',
-    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'planung'],
+    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'planung', 'ablage', 'statistik'],
     tipps: [
       'Mit den Beispieldaten kannst du alles gefahrlos ausprobieren.',
       'Fang mit „Heute“ an: Dort steht die laufende Stunde mit allem, was du dafür brauchst.'

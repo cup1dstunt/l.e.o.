@@ -3,7 +3,7 @@
   import type { Snippet } from 'svelte';
   import { app } from '$lib/speicher.svelte';
   import { kursReiter } from '$lib/module';
-  let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan' | 'anwesenheit' | 'muendlich' | 'gruppenarbeit'; info?: string; rechts?: Snippet } = $props();
+  let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan' | 'anwesenheit' | 'muendlich' | 'gruppenarbeit' | 'auswertung'; info?: string; rechts?: Snippet } = $props();
 </script>
 
 <header class="kopf">

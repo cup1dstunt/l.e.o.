@@ -5,7 +5,7 @@
 </script>
 
 <div class="seite">
-  <h1>Klassen</h1>
+  <div class="zeile"><h1 class="raum">Klassen</h1>{#if istAn(d.einstellungen, 'statistik')}<a class="knopf" href="/auswertung">Alle Klassen vergleichen</a>{/if}</div>
   {#if !d.kurse.length}
     <section class="karte leer"><p>Noch keine Klassen. Unter <a href="/mehr/webuntis">Mehr › WebUntis</a> holst du sie aus deinem Stundenplan.</p></section>
   {/if}

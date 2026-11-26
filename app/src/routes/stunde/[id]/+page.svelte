@@ -1,7 +1,7 @@
 <script lang="ts">
   import { istAn } from '$lib/module';
   import { page } from '$app/state';
-  import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
+  import { app, speichern, zeige, neueId, materialOeffnen } from '$lib/speicher.svelte';
   import { schuelerVon, kurzname, name, heuteISO, minuten, stundenHeute, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
@@ -13,6 +13,8 @@
   import { lehrersicht } from '$lib/sitzplan';
   import Werkzeuge from '$lib/ui/Werkzeuge.svelte';
   import { blockAm, reiheText } from '$lib/semester';
+  import MaterialListe from '$lib/ui/MaterialListe.svelte';
+  import { materialListe, zuletztGezeigt, alsGezeigt } from '$lib/material';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -162,6 +164,13 @@
   const planAn = $derived(istAn(d.einstellungen, 'planung'));
   const block = $derived(planAn ? blockAm(d, kurs, heute) : undefined);
   let mehrBlock = $state(false);
+  // Dateiablage (V14): Material der Stunde, der Reihe und der Klasse; was zuletzt gezeigt wurde
+  const ablageAn = $derived(istAn(d.einstellungen, 'ablage'));
+  const material = $derived(ablageAn ? materialListe(d.material, kurs.id, heute, block?.reihe?.id) : []);
+  const zuletzt = $derived(ablageAn ? zuletztGezeigt(d.material, kurs.id, heute) : null);
+  async function wiederOeffnen(m: (typeof d.material)[number]) {
+    if ((await materialOeffnen(m)) && alsGezeigt(m, heute)) speichern();
+  }
   function blockMehr() {
     if (!block?.reihe) return;
     const r = kurs.reihen?.find((x) => x.id === block.reihe!.id);
@@ -213,6 +222,7 @@
     {#if kurs.uebergang && kurs.uebergang.datum !== heute}
       <div class="stehen"><b>Wo wir stehengeblieben sind</b> <span class="leise klein">({datumKurz(kurs.uebergang.datum)})</span><p>{kurs.uebergang.text}</p>
         {#if block && (reiheText(block) || lernstoff?.text)}<p class="klein"><span class="leise">Heute geplant:</span> {[reiheText(block), lernstoff?.text].filter(Boolean).join(' · ')}</p>{/if}
+        {#if zuletzt}<p class="klein zuletzt"><span class="leise">Zuletzt gezeigt ({datumKurz(zuletzt.datum)}):</span> {#each zuletzt.material as m}<button class="pille" onclick={() => wiederOeffnen(m)}>{m.titel}</button>{/each}</p>{/if}
       </div>
     {:else if block && reiheText(block)}
       <div class="stehen geplant"><b>Heute geplant</b> <span class="leise klein">{reiheText(block)}</span>{#if lernstoff?.text}<p>{lernstoff.text}</p>{/if}</div>
@@ -303,6 +313,12 @@
             <h2>Lernstoff</h2>
             <label class="feld"><span>Inhalt der Stunde</span><textarea rows="3" bind:value={lernstoff.text} oninput={speichern} placeholder="Tippen oder diktieren"></textarea></label>
             <label class="feld"><span>Hausaufgabe</span><input bind:value={lernstoff.hausaufgabe} oninput={speichern} /></label>
+          </section>
+          {/if}
+          {#if ablageAn}
+          <section class="karte stapel">
+            <h2>Material</h2>
+            <MaterialListe {kurs} eintraege={material} ziel={{ ort: 'stunde', datum: heute }} live leer="Für heute liegt nichts bereit. Neues hängt an dieser Stunde." />
           </section>
           {/if}
           <section class="karte stapel">
@@ -425,6 +441,7 @@
   .wrap { flex-wrap: wrap; }
   .stehen { background: var(--leo-stern-hell); border: 1px solid #ecd28a; border-radius: var(--leo-r-l); padding: 12px 18px; }
   .stehen p { margin: 4px 0 0; font-size: 15px; }
+  .zuletzt { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0 0; }
   .stehen.geplant { background: var(--leo-flaeche-leise); border-color: var(--leo-linie-fein); }
   .gnr { color: var(--leo-akzent); font-size: 11px; margin-right: 3px; }
   .stapel { display: flex; flex-direction: column; gap: 10px; }
