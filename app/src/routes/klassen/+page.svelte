@@ -4,7 +4,7 @@
 </script>
 
 <div class="seite">
-  <h1>Klassen</h1>
+  <div class="zeile"><h1 class="raum">Klassen</h1>{#if d.einstellungen.module?.statistik !== false}<a class="knopf" href="/auswertung">Alle Klassen vergleichen</a>{/if}</div>
   <div class="raster">
     {#each d.kurse as k}
       <div class="karte">
