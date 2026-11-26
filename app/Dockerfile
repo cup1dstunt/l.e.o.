@@ -13,7 +13,9 @@ FROM nginx:1.27-alpine
 # Node nur für den kleinen Abgleich-Dienst (F4), der nginx reicht /abgleich/ an ihn durch
 RUN apk add --no-cache nodejs
 # Vorlage statt fester Datei: WebUntis-Server und DNS werden beim Start eingesetzt (V11)
+# ISERV_SERVER: Adresse des Schul-IServ ohne https:// (z. B. schule.de), leer = IServ-Abo aus (V15)
 ENV UNTIS_SERVER=osz-lus.webuntis.com \
+    ISERV_SERVER= \
     NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
     ABGLEICH_DATEN=/daten \
     LEO_EINLADUNG=

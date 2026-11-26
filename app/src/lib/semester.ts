@@ -46,7 +46,7 @@ export function aktuellesHalbjahr(d: Daten, heute: string): Halbjahr {
 
 /** Gilt ein Termin für diese Klasse an diesem Tag zu dieser Zeit als unterrichtsfrei? */
 export function freiDurchTermin(t: Termin, kursId: string, datum: string, beginn: string, ende: string) {
-  if (!t.unterrichtFrei) return false;
+  if (!t.unterrichtFrei || t.ausgeblendet) return false;
   if (t.kursIds?.length && !t.kursIds.includes(kursId)) return false;
   if (datum < t.datum || datum > (t.bis || t.datum)) return false;
   if (t.beginn && t.ende && (minuten(t.ende) <= minuten(beginn) || minuten(t.beginn) >= minuten(ende))) return false;
@@ -133,9 +133,11 @@ export function semesterPlan(d: Daten, kurs: Kurs, hj: Halbjahr, heute: string) 
   const alle = bloecke(d, kurs, hj.von, hj.bis);
   const reihen = kurs.reihen ?? [];
   // Eine Klausur belegt den ersten Unterrichtsblock ihres Tages, weitere Blöcke am selben Tag bleiben frei
+  // Auch eine Prüfung der eigenen Klasse aus WebUntis (V15) belegt den Block, wenn sie im Notenbuch noch kein Datum hat
+  const untisKlausur = new Set((d.termine ?? []).filter((t) => t.quelle === 'untis' && t.art === 'pruefung' && !t.fremd && !t.ausgeblendet && t.kursIds?.includes(kurs.id)).map((t) => t.datum));
   const klausurTage = new Set<string>();
   const plan: PlanBlock[] = alle.map((b) => {
-    const k = b.zustand === 'unterricht' && !klausurTage.has(b.datum) && b.leistungen.some((l) => l.art === 'Klausur');
+    const k = b.zustand === 'unterricht' && !klausurTage.has(b.datum) && (b.leistungen.some((l) => l.art === 'Klausur') || untisKlausur.has(b.datum));
     if (k) klausurTage.add(b.datum);
     return { ...b, klausur: k };
   });

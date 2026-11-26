@@ -41,6 +41,9 @@ export function meldung(v: Vorher, e: Ergebnis): string {
   else if (df < 0 || e.offen !== v.offen) teile.push('Fehlzeiten aktualisiert');
   const dv = e.verspaetungen - v.verspaetungen;
   if (dv > 0) teile.push(dv === 1 ? '1 Verspätung neu' : `${dv} Verspätungen neu`);
+  const p = e.pruefungen;
+  if (p?.neu) teile.push(p.neu === 1 ? '1 Prüfung neu im Kalender' : `${p.neu} Prüfungen neu im Kalender`);
+  else if (p && (p.geaendert || p.entfallen)) teile.push('Prüfungen im Kalender aktualisiert');
   if (!teile.length) return '';
   return `WebUntis: ${teile.join(', ')}${e.offen ? ` (${e.offen} offen)` : ''}`;
 }

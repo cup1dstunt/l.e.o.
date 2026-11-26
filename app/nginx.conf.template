@@ -1,4 +1,4 @@
-# L.E.O. Prototyp. Vorlage: Beim Start setzt das nginx-Image ${UNTIS_SERVER} und ${NGINX_LOCAL_RESOLVERS} ein.
+# L.E.O. Prototyp. Vorlage: Beim Start setzt das nginx-Image ${UNTIS_SERVER}, ${ISERV_SERVER} und ${NGINX_LOCAL_RESOLVERS} ein.
 server {
   listen 80;
   server_name _;
@@ -61,6 +61,43 @@ server {
     proxy_cache off;
     proxy_read_timeout 30s;
     client_max_body_size 256k;
+    add_header Cache-Control "no-store" always;
+  }
+
+  # Durchreicher zum IServ-Kalender (V15): nur lesen (GET), nur an ISERV_SERVER, ohne Cookies und ohne Protokoll.
+  # Der Abo-Link enthält einen geheimen Schlüssel; er steht im Pfad und wird deshalb nirgends protokolliert.
+  location = /iserv-server {
+    access_log off;
+    default_type text/plain;
+    add_header Cache-Control "no-store" always;
+    return 200 "${ISERV_SERVER}";
+  }
+  location /iserv/ {
+    access_log off;
+    set $iserv_host "${ISERV_SERVER}";
+    if ($iserv_host = "") { return 404; }
+    limit_except GET { deny all; }
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=300s ipv6=off;
+    resolver_timeout 5s;
+    rewrite ^/iserv/(.*)$ /$1 break;
+    proxy_pass https://$iserv_host;
+    proxy_ssl_server_name on;
+    proxy_ssl_name $iserv_host;
+    proxy_ssl_verify on;
+    proxy_ssl_verify_depth 3;
+    proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+    proxy_set_header Host $iserv_host;
+    proxy_set_header Cookie "";
+    proxy_set_header Authorization "";
+    proxy_set_header Referer "";
+    proxy_set_header X-Forwarded-For "";
+    proxy_set_header X-Real-IP "";
+    proxy_hide_header Set-Cookie;
+    proxy_buffering on;
+    proxy_cache off;
+    proxy_read_timeout 30s;
+    proxy_max_temp_file_size 0;
+    client_max_body_size 1k;
     add_header Cache-Control "no-store" always;
   }
 
