@@ -37,12 +37,12 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 
 | # | Punkt | Herkunft | Prio | Aufwand |
 |---|---|---|---|---|
-| S1 | Klassen/Kurse/Schüler je Semester aus WebUntis (Export-Datei als Start) | K, B | 1 | M |
-| S2 | Felder: Name, Alter (aus Geburtsdatum), Geschlecht, Mail dienstlich, Mail privat (optional) | K | 1 | S |
+| S1 | Klassen/Kurse/Schüler je Semester aus WebUntis (Export-Datei als Start). Abgleich + Export ergänzt die vollständige Klassenliste (E119) | K, B | 1 | M |
+| S2 | Felder: Name, Alter (aus Geburtsdatum), Geschlecht, Mail dienstlich. ~~Mail privat~~ entfällt (Konstantin 26.11.). Umgesetzt im Export-Import (E119) | K | 1 | S |
 | S3 | Schalter „Bin ich Klassenleitung?“: ja → ganze Klasse, alle Fächer; nein → eigene Kurse | B | 1 | S |
 | S4 | Zentraler Import durch Admin für die ganze Schule | C | 2 | M |
 | S5 | Alternativquellen: IServ, CSV/Excel mit Spaltenzuordnung | K, B | 2 | M |
-| S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4) | K, B | 2 | M |
+| S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4). Einfügen aus IServ-Text gebaut (E119) | K, B | 2 | M |
 | S7 | Offizielle Untis-Platform-API (Stammdaten, Stundenplan, Fehlzeiten) | B | 2 | L |
 | S8 | Inoffizielle WebUntis-JSON-RPC mit Rückfall auf Datei-Import | B | 3 | M |
 | S9 | iDoceo-Import (nett, nicht entscheidend; Wechsel zum Semesterende) | B | 3 | M |

@@ -1,6 +1,6 @@
 // Prüft, wann der automatische WebUntis-Abgleich läuft und was die Hinweisleiste meldet (WU2).
 // Aufruf: npm test
-import { faellig, meldung, ABSTAND_MIN, PAUSE_NACH_FEHLER_MIN } from '../src/lib/untisauto.ts';
+import { faellig, meldung, ABSTAND_MIN, PAUSE_NACH_FEHLER_MIN, abgleichArt, tageZurueck, statusWechsel } from '../src/lib/untisauto.ts';
 
 let ok = 0;
 let fehler = 0;
@@ -31,6 +31,19 @@ gleich('nichts geändert: still', meldung(v, e), '');
 gleich('neuer Schüler, Fehlzeiten', meldung(v, { ...e, schuelerNeu: 1, fehlzeiten: 16, offen: 3 }), 'WebUntis: 1 neuer Schüler, 4 Fehlzeiten neu (3 offen)');
 gleich('Status geklärt', meldung(v, { ...e, offen: 0 }), 'WebUntis: Fehlzeiten aktualisiert');
 gleich('Klassen und Verspätung', meldung({ ...v, offen: 0 }, { ...e, kurseNeu: 2, offen: 0, verspaetungen: 5 }), 'WebUntis: 2 neue Klassen, 1 Verspätung neu');
+
+// Voll einmal am Tag, sonst kurz (E119)
+const heute = new Date('2026-11-20T10:00');
+gleich('ohne vollen Abgleich: voll', abgleichArt(undefined, heute), 'voll');
+gleich('heute schon voll: kurz', abgleichArt(new Date('2026-11-20T07:30').toISOString(), heute), 'kurz');
+gleich('gestern voll: voll', abgleichArt(new Date('2026-11-19T18:00').toISOString(), heute), 'voll');
+gleich('28 Tage zurück', tageZurueck(28, heute), '2026-10-23');
+
+// Statuswechsel der Klassenleitung
+const fz = (id: string, status: 'E' | 'UE' | 'offen') => ({ id, kursId: 'k', schuelerId: 's', datum: '2026-11-10', stunden: 2, status, quelle: 'untis' as const });
+const alt = { a: 'offen' as const, b: 'offen' as const, c: 'E' as const };
+gleich('Wechsel', statusWechsel(alt, [fz('a', 'E'), fz('b', 'UE'), fz('c', 'E'), fz('d', 'offen')]), { entschuldigt: 1, unentschuldigt: 1 });
+gleich('Meldung mit Wechsel', meldung({ ...v, status: alt }, { ...e, offen: 0 }, [fz('a', 'E'), fz('b', 'UE'), fz('c', 'E')]), 'WebUntis: 1 jetzt entschuldigt, 1 jetzt unentschuldigt');
 
 console.log(`${ok} Prüfungen zum automatischen Abgleich bestanden, ${fehler} fehlgeschlagen`);
 if (fehler) process.exit(1);

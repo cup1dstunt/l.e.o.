@@ -25,7 +25,7 @@ kann aber auch einen Benutzer mit Schlüssel nutzen.
 | Verspätungen | ja, im Klassenbuch | Format | Verspätungsübersicht (Abgleich mit eigenen Einträgen) |
 | Klassenleitung | ja | – | Rolle Klassenleitung |
 | Prüfungen/Klausurtermine | teilweise | ob gepflegt | später Kalender (PF13, PB14) |
-| Private oder dienstliche Mail | nein | – | kommt aus IServ bzw. Eingabe (S6) |
+| Schulische Mail | nein (höchstens im Export) | – | aus IServ einfügen, Export oder Muster v.nachname@osz-lus.de (S6, E106, E119). **Private Mail wird nicht gespeichert** (E119) |
 
 ## 3 Zugriffswege
 
@@ -112,6 +112,7 @@ Weil das ein amtlicher Eintrag ist, gelten strenge Regeln:
    dazu ein Knopf „Jetzt abgleichen“. Im Browser gibt es keinen Abruf im Hintergrund, in der nativen App später schon.
    Umgesetzt seit 20.11.2026 (E108, `app/src/lib/untisauto.ts`): nur mit gemerktem Schlüssel und nach der ersten Übernahme von Hand,
    abschaltbar unter Mehr › WebUntis.
+   Seit 26.11.2026 (E119): voller Abgleich über das Halbjahr einmal am Tag, dazwischen nur die letzten 28 Tage; die Hinweisleiste nennt auch neue Entscheidungen der Klassenleitung (entschuldigt/unentschuldigt).
 5. **Ohne Netz:** alles läuft weiter mit dem letzten Stand; die Kachel zeigt „Stand: heute 07:41“.
 
 ## 5 Datenmodell (Fundament, gilt auch für die spätere App)
@@ -149,7 +150,7 @@ Weil das ein amtlicher Eintrag ist, gelten strenge Regeln:
 2. Stundenplan und Klassen übernehmen (Heute zeigt echte Stunden). **Gebaut 18.11.2026 zusammen mit 3 und 4** (Mehr › WebUntis › Jetzt abgleichen), mit erfundenem WebUntis im Browser getestet, nicht mit echten Daten.
 3. Schüler übernehmen mit Abgleich (neu/Abgang).
 4. Fehlzeiten mit E/UE, Klausur-Status im Notenbuch, 30-%-Kachel.
-5. Datei-Import als Rückfall mit Spaltenzuordnung.
+5. Datei-Import als Rückfall mit Spaltenzuordnung. **Gebaut 26.11.2026 (E119)**: Vorschau mit erkannten Spalten (deutsch/englisch, von Hand änderbar), ergänzt fehlende Schüler der eigenen Klassen zum Antippen, Geburtsdatum, Geschlecht, Schulmail. Ungetestet mit einem echten Export, weil dessen Spaltenköpfe noch nicht bekannt sind.
 6. **Stufe 2: Anwesenheit senden** (3.4), erst nach Freigabe durch die Schule und zuerst nur in Konstantins eigenen Stunden.
    Vorher einmal mitschauen, welche Aufrufe die WebUntis-Webseite beim Eintragen macht (ohne Schülerdaten zu speichern).
 

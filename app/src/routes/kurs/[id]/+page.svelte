@@ -258,7 +258,7 @@
             {#each liste as s, si}
               {@const e = ergebnisse[s.id]}
               <tr class:aktivzeile={aktiv?.s === s}>
-                <th class="name" scope="row"><a href="/schueler/{s.id}?kurs={kurs.id}">{name(s)}</a>{#if s.nta}&nbsp;<span class="nta" title={s.nta}>N</span>{/if}<div class="klein leise">{alter(s)} J.{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></th>
+                <th class="name" scope="row"><a href="/schueler/{s.id}?kurs={kurs.id}">{name(s)}</a>{#if s.nta}&nbsp;<span class="nta" title={s.nta}>N</span>{/if}<div class="klein leise">{alter(s) === null ? 'Alter ?' : `${alter(s)} J.`}{#each warnungen(kurs, e) as w} · <span class="w-{w.art}">{w.text}</span>{/each}</div></th>
                 {#each [spalten.klausuren, spalten.mitarbeit, spalten.sl] as gruppe, gi}
                   {#each gruppe as l}
                     {@const z = zelle(l, s)}
