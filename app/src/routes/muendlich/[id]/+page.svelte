@@ -11,6 +11,7 @@
     monatsSpalte, monatsNameLang, STANDARD_MINDEST, rasterDerEinschaetzung, kriteriumAktiv, kriteriumGewicht
   } from '$lib/raster';
   import type { Schueler } from '$lib/typen';
+  import { projektHinweise } from '$lib/projekt';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import Smiley from '$lib/ui/Smiley.svelte';
 
@@ -170,7 +171,7 @@
           {#each raster.bereiche as b (b.name)}
             <h3>{b.name}</h3>
             {#each b.kriterien as kr (kr.id)}
-              {@const bl = belege(d, bausteine, kurs.id, akt.s.id, monat, kr)}
+              {@const bl = [...belege(d, bausteine, kurs.id, akt.s.id, monat, kr), ...(kr.id === 'zusammenarbeit' ? projektHinweise(kurs, akt.s.id, monat) : [])]}
               {@const an = kriteriumAktiv(kurs, kr)}
               <div class="krit" class:aus={!an}>
                 <div class="kname"><b>{kr.name}</b>{#if an}<button class="gchip" onclick={() => (gewOffen = true)} title="Gewicht ändern">×{gz(kriteriumGewicht(kurs, kr))}</button>{/if}{#if kr.optional}<button class="pille mini" aria-pressed={an} onclick={() => zusatzUmschalten(kr.id)}>{an ? 'eingeschaltet' : 'einschalten'}</button>{/if}{#if bl.length && an}<span class="klein leise block">{#each bl as t, i}{i ? ' · ' : ''}<span class:spaet={verspaetet(t)}>{t}</span>{/each}</span>{/if}</div>
