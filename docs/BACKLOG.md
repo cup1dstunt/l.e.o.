@@ -144,14 +144,14 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 |---|---|---|---|---|
 | K1 | Persönlicher Stundenplan aus WebUntis (Export/ICS als Start), mit Vertretungen | K, B | 1 | M |
 | K2 | ✅ im Prototyp 25.11. (E115). Kalender: Termine, Klausuren, Abgaben, Konferenzen, Aufsichten | B | 1 | M |
-| K3 | ✅ als Datei-Import im Prototyp 25.11. (E115); Abo-Link aus IServ als Entwurf 26.11. (V15). Import anderer Pläne aus IServ (iCal) | B | 2 | S |
+| K3 | ✅ als Datei-Import im Prototyp 25.11. (E115); Abo-Link aus IServ als Entwurf 26.11. (V17). Import anderer Pläne aus IServ (iCal) | B | 2 | S |
 | K4 | ✅ als Datei im Prototyp 25.11. (E115); Abo-Link offen. ICS-Export (z. B. Google Kalender) | B | 2 | S |
 | K5 | Notizen je Schüler: Kürzel, Datum, Suche | B | 2 | S |
 | K6 | Eltern-/Beratungsgespräche mit Vereinbarung und Wiedervorlage | B | 2 | M |
 | K7 | Notizen privat oder für Klassenleitung freigeben | C | 2 | S |
 | K8 | Sprechstunden über die eigene Termin-App (`easyappointments-lnu`) | C | 3 | M |
 | K9 | Schuljahreswechsel-Assistent (archivieren, neue Kurse, Vorlagen übernehmen) | C | 2 | M |
-| K10 | Entwurf 26.11. (V15). Kalenderabgleich: WebUntis-Prüfungen und Ausfälle, IServ-Abo, Wiederholungen, eigene Festlegungen bleiben ([MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md)). Später: CalDAV, falls IServ keinen Abo-Link hat; ICS-Abo-Link aus L.E.O. heraus (K4) | K | 2 | M |
+| K10 | Entwurf 26.11. (V17). Kalenderabgleich: WebUntis-Prüfungen und Ausfälle, IServ-Abo, Wiederholungen, eigene Festlegungen bleiben ([MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md)). Später: CalDAV, falls IServ keinen Abo-Link hat; ICS-Abo-Link aus L.E.O. heraus (K4) | K | 2 | M |
 
 ## Auswertung & Konferenz
 

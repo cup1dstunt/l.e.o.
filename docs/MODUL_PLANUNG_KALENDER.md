@@ -44,6 +44,6 @@ Bilder: [konzept/planung-kalender/](konzept/planung-kalender/).
 
 - Mit echtem WebUntis ungetestet: `getHolidays` und die echten Termine kommen erst beim nächsten Abgleich.
 - Thema und Hausaufgabe hängen am Tag: zwei Blöcke derselben Klasse an einem Tag teilen sich ein Thema.
-- ICS-Export nur als Datei. Abgleich mit IServ (Abo-Link) und WebUntis-Prüfungen sowie das Auflösen von Wiederholungen: [MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md) (V15, Entwurf).
+- ICS-Export nur als Datei. Abgleich mit IServ (Abo-Link) und WebUntis-Prüfungen sowie das Auflösen von Wiederholungen: [MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md) (V17, Entwurf).
 - Beispiel-Ferien enthalten nur Herbst-, Weihnachts- und Winterferien und die gesetzlichen Feiertage.
 - Material/Dateiablage je Stunde: eigener Plan [MODUL_DATEIABLAGE.md](MODUL_DATEIABLAGE.md) (V14).
