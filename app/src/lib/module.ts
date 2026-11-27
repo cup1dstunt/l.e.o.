@@ -5,7 +5,7 @@ import type { Einstellungen } from './typen.ts';
 
 export const MODUL_IDS = [
   'klassen', 'notenbuch',
-  'stunde', 'muendlich', 'selbst', 'sitzplan', 'zufall', 'gruppenarbeit',
+  'stunde', 'stand', 'muendlich', 'selbst', 'sitzplan', 'zufall', 'gruppenarbeit',
   'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'planung',
   'ablage', 'statistik', 'ewh', 'import'
 ] as const;
@@ -43,8 +43,9 @@ export const MODULE: Modul[] = [
   { id: 'notenbuch', name: 'Notenbuch', text: 'Leistungen, Gesamtnote mit Rechenweg, Endnote. Rechnet wie die Schulvorgabe (Klausuren : Sonstige 50 : 50).', bereich: 'kern', kern: true, standard: true,
     pfade: ['/kurs/'], reiter: { text: 'Noten', pfad: '/kurs/', aktiv: 'noten' } },
 
-  { id: 'stunde', name: 'Live-Stunde', text: 'Die laufende Stunde auf einem Bildschirm: Anwesenheit antippen, Zeitbalken, Übergang zur nächsten Stunde.', bereich: 'unterricht', standard: true,
+  { id: 'stunde', name: 'Live-Stunde', text: 'Die laufende Stunde auf einem Bildschirm: Anwesenheit antippen, Zeitbalken, Lernstoff und Hausaufgabe.', bereich: 'unterricht', standard: true,
     pfade: ['/stunde/'], reiter: { text: 'Stunde', pfad: '/stunde/', aktiv: 'stunde' } },
+  { id: 'stand', name: 'Wo wir stehengeblieben sind', text: 'Ein Satz am Ende der Stunde, die nächste Stunde der Klasse beginnt damit. Mit Hausaufgabe, Merkern und Verlauf, auch nach Blockwochen.', bereich: 'unterricht', standard: true },
   { id: 'sitzplan', name: 'Sitzplan', text: 'Sitzplan mit Vorlagen, in der Live-Stunde zum Antippen.', bereich: 'unterricht', standard: true,
     pfade: ['/sitzplan/'], reiter: { text: 'Sitzplan', pfad: '/sitzplan/', aktiv: 'sitzplan' } },
   { id: 'muendlich', name: 'Mündliche Leistungen', text: 'Smileys mit Textbausteinen, Kriterienraster, Monatsnote als Vorschlag.', bereich: 'unterricht', standard: true,
@@ -64,7 +65,7 @@ export const MODULE: Modul[] = [
     pfade: ['/stundenplan'] },
   { id: 'kalender', name: 'Kalender', text: 'Monatsansicht mit Klausuren, Nachschreibeterminen, Ferien und eigenen Terminen, abgeglichen mit WebUntis (Prüfungen, Ausfälle) und deinem IServ-Kalender.', bereich: 'organisation', standard: true,
     braucht: ['stundenplan'] },
-  { id: 'planung', name: 'Semesterplanung', text: 'Unterrichtsreihen auf die freien Blöcke legen, „Wo wir stehengeblieben sind“.', bereich: 'organisation', standard: true,
+  { id: 'planung', name: 'Semesterplanung', text: 'Unterrichtsreihen auf die freien Blöcke legen, Thema und Hausaufgabe je Block.', bereich: 'organisation', standard: true,
     pfade: ['/planung/'], reiter: { text: 'Planung', pfad: '/planung/', aktiv: 'planung' } },
 
   { id: 'ablage', name: 'Dateiablage', text: 'Material je Stunde oder Reihe.', bereich: 'organisation', standard: true },
@@ -147,11 +148,11 @@ export interface Startweg {
   tipps: string[];
 }
 
-const ALLE_UNTERRICHT: ModulId[] = ['stunde', 'sitzplan', 'muendlich', 'zufall', 'gruppenarbeit'];
+const ALLE_UNTERRICHT: ModulId[] = ['stunde', 'stand', 'sitzplan', 'muendlich', 'zufall', 'gruppenarbeit'];
 
 export const STARTWEGE: Startweg[] = [
   { id: 'papier', name: 'Papier und Stift', text: 'Notenheft, Klassenliste, Kreuze am Rand.',
-    module: ['stunde', 'muendlich', 'sitzplan', 'zufall', 'anwesenheit', 'nachschreiben', 'stundenplan'],
+    module: ['stunde', 'stand', 'muendlich', 'sitzplan', 'zufall', 'anwesenheit', 'nachschreiben', 'stundenplan'],
     tipps: [
       'In der Live-Stunde tippst du an, wer fehlt und wie jemand mitgemacht hat. Eintippen musst du fast nichts.',
       'Das Notenbuch rechnet die Gesamtnote selbst und zeigt den Rechenweg, du musst nicht mehr nachrechnen.',
@@ -172,7 +173,7 @@ export const STARTWEGE: Startweg[] = [
       'Fehlzeiten über 30 % zeigt die Anwesenheitsübersicht von selbst.'
     ] },
   { id: 'excel', name: 'Eigene Excel-Tabelle', text: 'Selbst gebaute Liste mit eigenen Formeln.',
-    module: ['stunde', 'muendlich', 'anwesenheit', 'nachschreiben', 'stundenplan', 'planung'],
+    module: ['stunde', 'stand', 'muendlich', 'anwesenheit', 'nachschreiben', 'stundenplan', 'planung'],
     tipps: [
       'Gewichte stellst du je Klasse ein, auch für einzelne Noten. Der Rechenweg zeigt jede Zwischensumme wie deine Formeln.',
       'Mit „Was wäre wenn“ probierst du Noten aus, ohne etwas zu ändern.',

@@ -24,6 +24,7 @@ Grundsätze:
 | Kern | Klassen und Schüler | Klassen, Schülerkarte, Suche, Notizen | – | immer |
 | Kern | Notenbuch | Reiter „Noten“, Rechenweg, Endnote | – | immer |
 | Unterricht | Live-Stunde | Reiter „Stunde“, Knöpfe auf Heute | – | an |
+| Unterricht | Wo wir stehengeblieben sind | Band oben in der Stunde, Karte „Für die nächste Stunde“, Nachtrag und Stand auf Heute, Stand und Verlauf in Klassen ([MODUL_STUNDENSTAND.md](MODUL_STUNDENSTAND.md)) | – | an |
 | Unterricht | Sitzplan | Reiter „Sitzplan“, Sitzplan-Ansicht in der Stunde | – | an |
 | Unterricht | Mündliche Leistungen | Reiter „Mündlich“, Smileys in der Stunde, Monatsnote vorschlagen, Abschnitt in der Schülerkarte, Mehr › Mündliche Leistungen | – | an |
 | Unterricht | Selbsteinschätzung | Schalter und Karte im Reiter „Mündlich“ | Mündliche Leistungen | an |
