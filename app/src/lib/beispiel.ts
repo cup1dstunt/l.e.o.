@@ -195,7 +195,7 @@ export function beispielDaten(heute = new Date()): Daten {
 
   const notizen: Notiz[] = [
     { id: 'n1', schuelerId: 's3', datum: '2026-10-12', text: 'Gespräch nach der Stunde: Praktikum ist stressig, Abgabe verschoben.' },
-    { id: 'n2', schuelerId: 's3', datum: '2026-09-28', text: 'Mitarbeit stark bei Gruppenarbeit, übernimmt gern die Präsentation.' },
+    { id: 'n2', schuelerId: 's3', datum: '2026-09-28', text: 'Mündlich stark bei Gruppenarbeit, übernimmt gern die Präsentation.' },
     { id: 'n3', schuelerId: 's5', datum: '2026-10-21', text: 'Klausur 1 unentschuldigt verpasst, Mail an Klassenleitung.' }
   ];
 
