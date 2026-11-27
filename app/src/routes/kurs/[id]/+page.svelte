@@ -222,6 +222,9 @@
   </KursKopf>
 
   <div class="seite">
+    {#if !liste.length}
+      <section class="karte leer"><p>Noch keine Schülerinnen und Schüler in dieser Klasse. Unter <a href="/mehr/webuntis">Mehr › WebUntis</a> holst du die Klassenliste aus WebUntis oder aus dem Stammdaten-Export.</p></section>
+    {/if}
     {#if alsListe}
       <div class="karte liste">
         {#each liste as s}
@@ -450,6 +453,7 @@
 {/if}
 
 <style>
+  .leer { margin-bottom: 14px; }
   .seite { padding: 18px 32px 200px; }
   .tabwrap { padding: 0; overflow: auto; max-height: calc(100dvh - 190px); }
   table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
