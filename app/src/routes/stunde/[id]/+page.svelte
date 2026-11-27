@@ -2,7 +2,7 @@
   import { istAn } from '$lib/module';
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId, materialOeffnen } from '$lib/speicher.svelte';
-  import { schuelerVon, kurznameIn, name, heuteISO, minuten, stundenHeute, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { schuelerVon, kurznameIn, name, heuteISO, minuten, stundenHeute, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -15,6 +15,8 @@
   import { blockAm, reiheText } from '$lib/semester';
   import MaterialListe from '$lib/ui/MaterialListe.svelte';
   import { materialListe, zuletztGezeigt, alsGezeigt } from '$lib/material';
+  import { standSetzen, letzteStunde, tageZwischen, seitText, LANGE_PAUSE, verlauf, vorschlaege as standVorschlaegeFuer, faelligeMerker, merkerDazu, merkerWeg, MERKER_VORSCHLAEGE } from '$lib/stand';
+  import type { Merker } from '$lib/typen';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
@@ -155,12 +157,11 @@
     return m;
   });
 
-  // Lernstoff und Übergang (E70, E78)
+  // Lernstoff (E70, E78)
   $effect.pre(() => {
     if (kurs && !kurs.lernstoff[heute]) kurs.lernstoff[heute] = { text: '', hausaufgabe: '' };
   });
   const lernstoff = $derived(kurs?.lernstoff[heute]);
-  let uebergangNeu = $state('');
   // Semesterplanung (E114): welcher Block der Reihe ist heute dran? Nur wenn das Modul an ist
   const planAn = $derived(istAn(d.einstellungen, 'planung'));
   const block = $derived(planAn ? blockAm(d, kurs, heute) : undefined);
@@ -181,14 +182,45 @@
     speichern();
     zeige(mehrBlock ? `${r.titel}: ein Block mehr, der Plan verschiebt sich` : 'zurückgenommen');
   }
-  function abschliessen() {
-    if (uebergangNeu.trim()) {
-      kurs.uebergang = { text: uebergangNeu.trim(), datum: heute };
-      kurs.lernstoff[heute] = { ...(kurs.lernstoff[heute] ?? { text: '', hausaufgabe: '' }), stand: uebergangNeu.trim() }; // für den Rückblick (PB1)
-      uebergangNeu = '';
-    }
+  // Wo wir stehengeblieben sind (Modul „stand“, V18): oben der Stand der letzten Stunde, rechts der Stand für die nächste.
+  // Der neue Stand wird beim Tippen gespeichert, „Stunde abschließen“ ist dafür nicht mehr nötig.
+  const standAn = $derived(istAn(d.einstellungen, 'stand'));
+  const vorher = $derived(standAn ? letzteStunde(kurs, heute) : undefined);
+  const davor = $derived(vorher && tageZwischen(vorher.datum, heute) >= LANGE_PAUSE ? verlauf(kurs, ablageAn ? d.material : [], vorher.datum, 4).slice(1) : []);
+  let davorZeigen = $state(false);
+  const merkerJetzt = $derived(standAn ? faelligeMerker(kurs, heute) : []);
+  const merkerNeu = $derived((kurs?.merker ?? []).filter((m) => m.seit >= heute));
+  let standText = $state('');
+  let standFuer = '';
+  $effect.pre(() => {
+    if (kurs && standFuer !== kurs.id) { standFuer = kurs.id; standText = kurs.lernstoff[heute]?.stand ?? ''; davorZeigen = false; }
+  });
+  let standFeld = $state<HTMLTextAreaElement>();
+  const thema = $derived(lernstoff?.text?.trim() || block?.reihe?.titel || '');
+  const standVorschlaege = $derived(standVorschlaegeFuer(thema));
+  function standTippen() { standSetzen(kurs, heute, standText); speichern(); }
+  function standVorschlag(v: { wert: string; offen: boolean }) {
+    standText = v.wert;
+    standTippen();
+    if (v.offen && standFeld) { const f = standFeld; setTimeout(() => { f.focus(); f.setSelectionRange(f.value.length, f.value.length); }); }
+  }
+  let merkerText = $state('');
+  function merken(text = merkerText) {
+    if (!merkerDazu(kurs, text, neueId(), heute)) return;
+    if (text === merkerText) merkerText = '';
     speichern();
-    zeige(muendlichAn && ohneEintrag && d.einstellungen.stundenendeHinweis ? `Stunde gespeichert · ${ohneEintrag} ohne mündliche Bewertung` : 'Stunde gespeichert');
+  }
+  function abhaken(m: Merker, wort = 'erledigt') {
+    const zurueck = merkerWeg(kurs, m.id);
+    speichern();
+    zeige(`„${m.text}“ ${wort}`, () => { zurueck?.(); speichern(); });
+  }
+  function abschliessen() {
+    speichern();
+    const teile = ['Stunde gespeichert'];
+    if (muendlichAn && ohneEintrag && d.einstellungen.stundenendeHinweis) teile.push(`${ohneEintrag} ohne mündliche Bewertung`);
+    if (standAn && !standText.trim()) teile.push('noch kein Stand für das nächste Mal');
+    zeige(teile.join(' · '));
   }
   let nurMitarbeit = $state(page.url.searchParams.has('mitarbeit') && istAn(app.d?.einstellungen, 'muendlich'));
   let nurOhne = $state(false);
@@ -220,10 +252,31 @@
       {#if slot.ausfall}<span class="klein leise">Diese Stunde fällt laut WebUntis aus. Zeitbalken zum Testen ab Öffnen.</span>
       {:else if !slot.plan}<span class="klein leise">Keine Stunde laut Plan, Zeitbalken zum Testen ab Öffnen.</span>{/if}
     </div>
-    {#if kurs.uebergang && kurs.uebergang.datum !== heute}
-      <div class="stehen"><b>Wo wir stehengeblieben sind</b> <span class="leise klein">({datumKurz(kurs.uebergang.datum)})</span><p>{kurs.uebergang.text}</p>
+    {#if standAn && (vorher || merkerJetzt.length)}
+      <div class="stehen">
+        <div class="zeile wrap stehkopf">
+          <b>Wo wir stehengeblieben sind</b>
+          {#if vorher}<span class="leise klein">{datumWt(vorher.standDatum)} · {seitText(vorher.standDatum, heute)}</span>{/if}
+          {#if davor.length}<button class="pille klein" aria-pressed={davorZeigen} onclick={() => (davorZeigen = !davorZeigen)}>{davorZeigen ? 'davor ausblenden' : `Lange Pause · ${davor.length === 1 ? 'die Stunde' : `${davor.length} Stunden`} davor`}</button>{/if}
+        </div>
+        {#if vorher?.stand}<p class="standtext">{vorher.stand}</p>
+        {:else if vorher?.thema}<p><span class="leise">Thema:</span> {vorher.thema}</p>{/if}
+        {#if vorher?.hausaufgabe}<p class="klein"><span class="leise">Hausaufgabe bis heute{vorher.datum !== vorher.standDatum ? ` (aufgegeben ${datumKurz(vorher.datum)})` : ''}:</span> {vorher.hausaufgabe}</p>{/if}
+        {#if merkerJetzt.length}
+          <div class="merker" role="group" aria-label="Nicht vergessen">
+            <span class="klein leise">Nicht vergessen:</span>
+            {#each merkerJetzt as m (m.id)}<button class="chip merk" onclick={() => abhaken(m)} title="Antippen, wenn erledigt"><span class="kasten" aria-hidden="true"></span>{m.text}</button>{/each}
+          </div>
+        {/if}
         {#if block && (reiheText(block) || lernstoff?.text)}<p class="klein"><span class="leise">Heute geplant:</span> {[reiheText(block), lernstoff?.text].filter(Boolean).join(' · ')}</p>{/if}
         {#if zuletzt}<p class="klein zuletzt"><span class="leise">Zuletzt gezeigt ({datumKurz(zuletzt.datum)}):</span> {#each zuletzt.material as m}<button class="pille" onclick={() => wiederOeffnen(m)}>{m.titel}</button>{/each}</p>{/if}
+        {#if davorZeigen}
+          <ol class="davor">
+            {#each davor as v (v.datum)}
+              <li><b class="klein">{datumWt(v.datum)}</b> <span>{v.stand || v.thema || 'ohne Eintrag'}</span>{#if v.hausaufgabe}<span class="klein leise"> · HA: {v.hausaufgabe}</span>{/if}{#if v.gezeigt.length}<span class="klein leise"> · gezeigt: {v.gezeigt.join(', ')}</span>{/if}</li>
+            {/each}
+          </ol>
+        {/if}
       </div>
     {:else if block && reiheText(block)}
       <div class="stehen geplant"><b>Heute geplant</b> <span class="leise klein">{reiheText(block)}</span>{#if lernstoff?.text}<p>{lernstoff.text}</p>{/if}</div>
@@ -322,15 +375,29 @@
             <MaterialListe {kurs} eintraege={material} ziel={{ ort: 'stunde', datum: heute }} live leer="Für heute liegt nichts bereit. Neues hängt an dieser Stunde." />
           </section>
           {/if}
+          {#if standAn}
           <section class="karte stapel">
-            <h2>Übergang</h2>
-            {#if kurs.uebergang}<p class="klein"><span class="leise">Letztes Mal ({datumKurz(kurs.uebergang.datum)}):</span> {kurs.uebergang.text}</p>{/if}
-            <label class="feld"><span>Für die nächste Stunde (nur für dich)</span><textarea rows="2" bind:value={uebergangNeu} placeholder="Wo seid ihr stehengeblieben?"></textarea></label>
-            <span class="klein leise">Wird mit „Stunde abschließen“ gespeichert und steht in der Planung im Rückblick.</span>
+            <h2>Für die nächste Stunde</h2>
+            {#if standVorschlaege.length}
+              <div class="vorschlag" role="group" aria-label="Stand antippen">
+                {#each standVorschlaege as v}<button class="chip" aria-pressed={standText === v.wert} onclick={() => standVorschlag(v)}>{v.text}</button>{/each}
+              </div>
+            {/if}
+            <label class="feld"><span>Wo seid ihr stehengeblieben? (nur für dich)</span><textarea rows="2" bind:this={standFeld} bind:value={standText} oninput={standTippen} placeholder="z. B. Aufgabenblock A bis Nr. 4 verglichen"></textarea></label>
+            <span class="klein leise">Wird beim Tippen gespeichert. Die nächste Stunde {kurs.klasse} {kurs.fach} beginnt damit.</span>
             {#if block?.reihe}
               <button class="pille" aria-pressed={mehrBlock} onclick={blockMehr} title="Die Reihe braucht länger: alle folgenden Blöcke rücken einen weiter">{mehrBlock ? `✓ ${block.reihe.titel} +1 Block` : `${block.reihe.titel} braucht 1 Block mehr`}</button>
             {/if}
+            <div class="feld">
+              <span>Nicht vergessen beim nächsten Mal</span>
+              <div class="zeile merkzeile"><input class="eingabe raum" bind:value={merkerText} onkeydown={(e) => e.key === 'Enter' && merken()} placeholder="z. B. Tests zurückgeben" aria-label="Neuer Merker" /><button class="knopf" onclick={() => merken()} disabled={!merkerText.trim()}>Merken</button></div>
+              <div class="vorschlag" role="group" aria-label="Merker antippen">
+                {#each MERKER_VORSCHLAEGE.filter((t) => !(kurs.merker ?? []).some((m) => m.text === t)) as t}<button class="chip" onclick={() => merken(t)}>+ {t}</button>{/each}
+              </div>
+              {#each merkerNeu as m (m.id)}<span class="chip gemerkt">{m.text}<button class="weg" aria-label="„{m.text}“ entfernen" onclick={() => abhaken(m, 'entfernt')}>×</button></span>{/each}
+            </div>
           </section>
+          {/if}
         </aside>
       {/if}
     </div>
@@ -444,6 +511,16 @@
   .stehen { background: var(--leo-stern-hell); border: 1px solid #ecd28a; border-radius: var(--leo-r-l); padding: 12px 18px; }
   .stehen p { margin: 4px 0 0; font-size: 15px; }
   .zuletzt { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0 0; }
+  .stehkopf { gap: 10px; }
+  .merkzeile input { min-width: 0; }
+  .standtext { font-weight: 600; }
+  .merker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 0; }
+  .merk { background: var(--leo-karte); border-color: #ecd28a; }
+  .kasten { width: 14px; height: 14px; border: 2px solid var(--leo-leise); border-radius: 3px; display: inline-block; }
+  .merk:hover .kasten { border-color: var(--leo-akzent); background: var(--leo-akzent-hell); }
+  .davor { margin: 10px 0 0; padding: 8px 0 0 18px; border-top: 1px dashed #ecd28a; display: flex; flex-direction: column; gap: 4px; }
+  .gemerkt { background: var(--leo-flaeche-leise); margin: 0 6px 6px 0; }
+  .weg { border: 0; background: none; color: var(--leo-leise); font-size: 16px; padding: 0 2px 0 6px; min-height: 28px; }
   .stehen.geplant { background: var(--leo-flaeche-leise); border-color: var(--leo-linie-fein); }
   .gnr { color: var(--leo-akzent); font-size: 11px; margin-right: 3px; }
   .stapel { display: flex; flex-direction: column; gap: 10px; }

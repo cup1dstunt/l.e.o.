@@ -80,7 +80,8 @@ export function beispielDaten(heute = new Date()): Daten {
         verteilen(p, [...sch].sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).map((x) => x.id));
         return p;
       })(),
-      uebergang: { text: fos ? 'Unit 6 Reading bis Absatz 3, Vokabeln S. 84 offen' : 'Angebotsvergleich begonnen, Aufgabe 2 fehlt noch', datum: '2026-11-13' }
+      uebergang: { text: fos ? 'Unit 6 Reading bis Absatz 3, Vokabeln S. 84 offen' : 'Angebotsvergleich begonnen, Aufgabe 2 fehlt noch', datum: '2026-11-13' },
+      merker: fos ? [{ id: `${id}-m1`, text: 'Vokabeltest Unit 5 zurückgeben', seit: '2026-11-13' }] : [] // Modul „Wo wir stehengeblieben sind“ (V18)
     };
   }
 
