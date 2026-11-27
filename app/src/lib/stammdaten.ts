@@ -158,7 +158,7 @@ export function stammdatenAnwenden(d: Daten, v: Vorschau, opt: Anwenden = {}): {
     if (z.geburt && s.geburt !== z.geburt) { s.geburt = z.geburt; geburt++; }
     if (z.mail && s.mailDienst !== z.mail) { s.mailDienst = z.mail; mail++; }
     if (z.nta) s.nta = z.nta;
-    if (z.klasse) s.klasse = z.klasse;
+    if (z.klasse) { s.klasse = z.klasse; s.klasseSicher = true; }
     if (z.geschlecht && (istNeu || s.untisId === undefined)) s.geschlecht = z.geschlecht; // WebUntis-Angabe hat Vorrang
   };
   for (const t of v.treffer) {

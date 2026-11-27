@@ -15,6 +15,7 @@ export interface Schueler {
   nta?: string; // Nachteilsausgleich, z. B. „Zeitverlängerung 25 %“
   untisId?: number; // Herkunft WebUntis (V11): Abgleich über diese Nummer
   klasse?: string; // Klassenname laut WebUntis
+  klasseSicher?: boolean; // Klasse stammt aus dem Export bzw. Stammdaten-Bericht, nicht aus dem Stundenplan geraten
   herkunft?: 'datei'; // aus dem Stammdaten-Export aufgenommen (E119); der WebUntis-Abgleich ordnet später über den Namen zu
 }
 
@@ -59,7 +60,7 @@ export interface Kurs {
   lernstoff: Record<string, Lernstoff>; // je Datum
   uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
   sitzplan: Sitzplan;
-  untis?: { klasseId: number; fachId: number }; // Herkunft WebUntis: Klasse + Fach
+  untis?: { klasseId: number; fachId: number; klassen?: number[] }; // Herkunft WebUntis: Klasse + Fach; `klassen` bei zusammengelegten Klassen
   zufall?: ZufallStand; // fairer Zufall über mehrere Stunden (P5, E109)
   gruppenRegeln?: GruppenRegeln; // „nicht zusammen“ / „gern zusammen“ (P7)
   gruppensaetze?: Gruppensatz[]; // gespeicherte Gruppen, neueste zuerst (P8)
