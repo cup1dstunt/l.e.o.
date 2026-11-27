@@ -71,6 +71,7 @@ export function meldung(v: Vorher, e: Ergebnis, nachher?: Fehlzeit[]): string {
   const teile: string[] = [];
   if (e.kurseNeu) teile.push(e.kurseNeu === 1 ? '1 neue Klasse' : `${e.kurseNeu} neue Klassen`);
   if (e.schuelerNeu) teile.push(e.schuelerNeu === 1 ? '1 neuer Schüler' : `${e.schuelerNeu} neue Schüler`);
+  if (e.umgezogen) teile.push(e.umgezogen === 1 ? '1 Schüler aus falscher Klasse genommen' : `${e.umgezogen} Schüler aus falscher Klasse genommen`);
   const df = e.fehlzeiten - v.fehlzeiten;
   const w = v.status && nachher ? statusWechsel(v.status, nachher) : { entschuldigt: 0, unentschuldigt: 0 };
   if (df > 0) teile.push(df === 1 ? '1 Fehlzeit neu' : `${df} Fehlzeiten neu`);

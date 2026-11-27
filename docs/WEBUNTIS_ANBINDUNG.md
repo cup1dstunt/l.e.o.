@@ -127,6 +127,13 @@ Weil das ein amtlicher Eintrag ist, gelten strenge Regeln:
   - WebUntis-Stand (mit E/UE).
   Angezeigt wird der WebUntis-Stand, sobald er da ist. Weichen beide ab, zeigt die Schülerkarte das dezent an
   („Du: fehlt, WebUntis: anwesend“). Zusammengelegt wird nichts automatisch.
+- **Klassenzuordnung (Fehlerbehebung 27.11.2026):** Das Klassenbuch nennt keine Klasse, nur Schüler, Tag, Uhrzeit
+  und Lehrkraft. L.E.O. ordnet deshalb über die eigene Stunde zur selben Zeit zu. Dabei gilt:
+  ausgefallene Stunden zählen nicht (sonst landen Schüler einer Vertretung zur selben Zeit in der ausgefallenen Klasse),
+  zusammengelegte Klassen in einer Stunde (z. B. KA und FOS gemeinsam) sind eine eigene Lerngruppe,
+  die Schüler-Nummer wird zuerst in dem Feld gesucht, zu dem die meisten Nummern passen, und passt eine Zeile zu
+  mehreren eigenen Stunden zugleich, wird nicht geraten. Ist die Klasse eines Schülers aus dem Export bekannt, nimmt
+  L.E.O. ihn aus Klassen heraus, zu denen er nicht gehört (Noten und Einträge bleiben gespeichert).
 - Speicherung: weg vom einen großen Datenblock (`alles`) im Prototyp, hin zu **Tabellen je Objektart mit Schema-Version**
   in IndexedDB. Das ist ohnehin Voraussetzung für Abgleich zwischen Geräten (V10, PB18) und Verschlüsselung (FB1).
 

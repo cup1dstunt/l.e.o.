@@ -98,7 +98,7 @@ export function stammdatenEinlesen(d: Daten, text: string): { gelesen: number; z
     if (geb) s.geburt = geb;
     const nta = (z['attribute.Nachteilsausgleich'] ?? '').trim();
     if (nta && !/^(nein|false|0)$/i.test(nta)) s.nta = /^(ja|true|1|x)$/i.test(nta) ? 'Nachteilsausgleich (laut WebUntis)' : nta;
-    if (z['klasse.name']) s.klasse = z['klasse.name'];
+    if (z['klasse.name']) { s.klasse = z['klasse.name']; s.klasseSicher = true; }
   }
   return { gelesen: zeilen.length, zugeordnet };
 }
@@ -109,7 +109,7 @@ export interface Paket {
   kuerzel: string;
   von: string;
   bis: string;
-  kurse: { klasseId: number; fachId: number; name: string; fach: string; klasse: string; raum: string; gehalten: number; anzahl: number; schueler: Set<number> }[];
+  kurse: { klasseId: number; klassen?: number[]; fachId: number; name: string; fach: string; klasse: string; raum: string; gehalten: number; anzahl: number; schueler: Set<number> }[];
   schueler: { untisId: number; vorname: string; nachname: string; geschlecht: Schueler['geschlecht']; klasse?: string }[];
   stunden: { key: string; tag: number; beginn: string; ende: string }[];
   fehlzeiten: { key: string; untisId: number; datum: string; beginn: string; stunden: number; status: Fehlzeit['status']; grund: string }[];
@@ -137,12 +137,15 @@ export function bekanntAus(d: Daten): Map<string, Set<number>> {
     if (!k.untis) continue;
     const ids = new Set<number>();
     for (const id of k.schueler) { const s = d.schueler.find((x) => x.id === id); if (s?.untisId !== undefined) ids.add(s.untisId); }
-    m.set(kursKey(k.untis.klasseId, k.untis.fachId), ids);
+    m.set(untisKey(k.untis), ids);
   }
   return m;
 }
 
-const kursKey = (klasseId: number, fachId: number) => `${klasseId}-${fachId}`;
+const kursKey = (klasseId: number, fachId: number, klassen?: number[]) =>
+  klassen && klassen.length > 1 ? `${[...klassen].sort((a, b) => a - b).join('+')}-${fachId}` : `${klasseId}-${fachId}`;
+/** Schlüssel einer Klasse aus WebUntis. Zusammengelegte Klassen (z. B. KA und FOS gemeinsam) bekommen einen eigenen Schlüssel. */
+export const untisKey = (u: { klasseId: number; fachId: number; klassen?: number[] }) => kursKey(u.klasseId, u.fachId, u.klassen);
 
 /** Prüfung aus WebUntis, schon auf eigene Klassen bezogen, ohne Schülerliste. */
 export interface Pruefung {
@@ -155,7 +158,7 @@ export interface Pruefung {
   ende?: string;
 }
 
-type KursRef = { key: string; klasseId: number; fachId: number; klasse: string; fach: string; fachKurz?: string };
+type KursRef = { key: string; klasseId: number; klassen?: number[]; fachId: number; klasse: string; fach: string; fachKurz?: string };
 
 /**
  * Prüfungen aus WebUntis (JSON-RPC `getExams` oder Web-Schnittstelle `api/exams`, beide Formen) den eigenen Klassen zuordnen.
@@ -178,7 +181,7 @@ export function pruefungenZuordnen(roh: any[], kurse: KursRef[], klassenNamen: M
     const su = p.subject;
     const suId = typeof su === 'number' ? su : typeof su === 'object' ? su?.id : undefined;
     const suName = norm(typeof su === 'string' ? su : typeof su === 'object' ? su?.name ?? su?.longName : suId !== undefined ? faecher.get(suId) : '');
-    const inKlasse = kurse.filter((k) => klIds.has(k.klasseId) || klNamen.has(norm(k.klasse)));
+    const inKlasse = kurse.filter((k) => (k.klassen ?? [k.klasseId]).some((x) => klIds.has(x)) || k.klasse.split(',').some((x) => klNamen.has(norm(x))));
     if (!inKlasse.length) continue;
     const fachPasst = (k: KursRef) => (suId !== undefined && suId === k.fachId) || (!!suName && [norm(k.fach), norm(k.fachKurz)].includes(suName));
     const eigene = inKlasse.filter(fachPasst);
@@ -248,7 +251,8 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
 
   const kurse = new Map<string, Paket['kurse'][number]>();
   const raumZaehler = new Map<string, Map<string, number>>();
-  const stundenNachSchluessel = new Map<string, { key: string; start: number; ende: number; lehrer: Set<string> }[]>();
+  type EigeneStunde = { key: string; start: number; ende: number; lehrer: Set<string>; te: Set<string> };
+  const stundenNachSchluessel = new Map<string, EigeneStunde[]>();
   const muster = new Map<string, Paket['stunden'][number]>();
   const ausfaelle: Paket['ausfaelle'] = [];
   const termine: Paket['termine'] = [];
@@ -260,10 +264,13 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
     // Stunden ohne Fach (z. B. manche Doppelsteckungen) zählen als „Unterricht“ der Klasse
     const su = s.su?.[0] ?? { id: 0, name: s.lstext || 'Unterricht' };
     if (!kl?.id) continue;
-    const key = kursKey(kl.id, su.id);
+    // Mehrere Klassen in einer Stunde (zusammengelegt) sind eine eigene Lerngruppe. Früher landeten sie unter der
+    // ersten Klasse, dadurch standen z. B. FOS-Schüler in der KA-Klasse.
+    const klIds = [...new Set((s.kl as any[]).map((k) => k?.id).filter((x): x is number => typeof x === 'number'))];
+    const key = kursKey(kl.id, su.id, klIds);
     const klasse = s.kl.map((k: any) => k.name || klassen.get(k.id) || '').filter(Boolean).join(', ');
     const fach = (su.id ? faecher.get(su.id) : '') || su.longname || su.longName || su.name || '';
-    if (!kurse.has(key)) kurse.set(key, { klasseId: kl.id, fachId: su.id, name: `${klasse} ${fach}`.trim(), fach, klasse, raum: '', gehalten: 0, anzahl: 0, schueler: new Set() });
+    if (!kurse.has(key)) kurse.set(key, { klasseId: kl.id, ...(klIds.length > 1 ? { klassen: klIds } : {}), fachId: su.id, name: `${klasse} ${fach}`.trim(), fach, klasse, raum: '', gehalten: 0, anzahl: 0, schueler: new Set() });
     const k = kurse.get(key)!;
     const raum = s.ro?.[0]?.name || raeume.get(s.ro?.[0]?.id) || '';
     if (raum) {
@@ -271,15 +278,17 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
       z.set(raum, (z.get(raum) ?? 0) + 1);
       raumZaehler.set(key, z);
     }
-    const tagKey = String(s.date);
-    const liste = stundenNachSchluessel.get(tagKey) ?? [];
-    liste.push({ key, start: s.startTime, ende: s.endTime, lehrer: new Set((s.te ?? []).map((t: any) => t?.name).filter(Boolean).map((n: string) => 'u:' + n)) });
-    stundenNachSchluessel.set(tagKey, liste);
     termine.push({ key, datum: isoAusUntis(s.date), beginn: zeitAusUntis(s.startTime), ende: zeitAusUntis(s.endTime) });
     if (s.code === 'cancelled') {
       ausfaelle.push({ key, datum: isoAusUntis(s.date), beginn: zeitAusUntis(s.startTime) });
       continue;
     }
+    // Ausgefallene Stunden gehören nicht in die Zuordnung: sonst landen Einträge einer Vertretung oder
+    // verlegten Stunde zur selben Zeit in der ausgefallenen Klasse.
+    const tagKey = String(s.date);
+    const liste = stundenNachSchluessel.get(tagKey) ?? [];
+    liste.push({ key, start: s.startTime, ende: s.endTime, lehrer: new Set((s.te ?? []).map((t: any) => t?.name).filter(Boolean).map((n: string) => 'u:' + n)), te: new Set((s.te ?? []).flatMap((t: any) => [t?.name, t?.id, t?.orgname, t?.orgid]).filter((x: unknown) => x !== undefined && x !== null && x !== '').map(String)) });
+    stundenNachSchluessel.set(tagKey, liste);
     k.anzahl++;
     if (s.date <= heuteN) k.gehalten += einheiten(s.startTime, s.endTime);
     if (s.date >= vor14 && s.date <= in14) {
@@ -294,7 +303,9 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   // Welche Kennung in teacherIds „ich“ bin, ist nicht dokumentiert: gezählt wird, welche Kennung in den
   // eigenen Stunden fast immer vorkommt. Bevorzugt wird das Kürzel aus dem Stundenplan, wenn es passt.
   const ende = Math.min(heuteN, bis);
-  const inMeinenStunden: { z: any; stunde: { key: string; start: number; ende: number; lehrer: Set<string> } }[] = [];
+  // `stunden`: alle eigenen Stunden, die zu der Zeile passen (meist eine). Mehrere nur, wenn ich zur selben Zeit
+  // mehrere Klassen getrennt im Stundenplan habe; dann entscheidet die Klassenliste, nicht die Reihenfolge.
+  const inMeinenStunden: { z: any; stunde: EigeneStunde; stunden: EigeneStunde[] }[] = [];
   const kennungen = new Map<string, Set<string>>();
   const slots = new Set<string>();
   const abIso = opt.ab && opt.ab > isoAusUntis(von) ? opt.ab : '';
@@ -306,15 +317,16 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
     melde(`Klassenbuch ${isoAusUntis(a).slice(8, 10)}.${isoAusUntis(a).slice(5, 7)}. bis ${isoAusUntis(b).slice(8, 10)}.${isoAusUntis(b).slice(5, 7)}.`);
     const zeilen = alsListe(await sz.r('getTimetableWithAbsences', { options: { startDate: a, endDate: b } })) as any[];
     for (const z of zeilen) {
-      const stunde = (stundenNachSchluessel.get(String(z.date)) ?? []).find((x) => x.start <= z.startTime && z.startTime < x.ende);
-      if (!stunde) continue;
+      const stunden = stundenWaehlen(stundenNachSchluessel.get(String(z.date)) ?? [], z);
+      if (!stunden.length) continue;
+      const stunde = stunden[0];
       const slot = `${z.date}-${stunde.start}`;
       slots.add(slot);
       for (const k of kennungenVon(z)) {
         if (!kennungen.has(k)) kennungen.set(k, new Set());
         kennungen.get(k)!.add(slot);
       }
-      inMeinenStunden.push({ z, stunde });
+      inMeinenStunden.push({ z, stunde, stunden });
     }
     zeilen.length = 0; // Rest der Schule sofort verwerfen
     start = new Date(stueckEnde.getTime() + 864e5);
@@ -325,11 +337,13 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   // Deshalb über id, key, name und externKey nachschlagen. Der Rest der Schule wird danach verworfen.
   melde('Schüler der eigenen Klassen');
   const schuelerAlle = alsListe(await sz.r('getStudents')) as any[];
-  const finde = schuelerIndex(schuelerAlle);
+  const finde = schuelerIndex(schuelerAlle, inMeinenStunden.map((x) => x.z.studentId));
 
   // 1. Klassenlisten: Schüler aus Zeilen, die ich selbst eingetragen habe (bzw. mit meiner Kennung)
   const liste = new Map<string, Set<number>>();
-  for (const { z, stunde } of inMeinenStunden) {
+  for (const { z, stunde, stunden } of inMeinenStunden) {
+    // Passt die Zeile zu mehreren eigenen Klassen gleichzeitig, ist unklar, wohin der Schüler gehört: nicht raten.
+    if (stunden.length > 1) continue;
     // eigene Einträge, bei Doppelsteckung auch die der Kollegen, die laut Stundenplan in dieser Stunde stehen
     const k = kennungenVon(z);
     if (!(ich && k.includes(ich)) && !k.some((x) => stunde.lehrer.has(x))) continue;
@@ -342,9 +356,11 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   const fehlzeiten: Paket['fehlzeiten'] = [];
   const verspaetungen: Paket['verspaetungen'] = [];
   const gesehen = new Set<string>();
-  for (const { z, stunde } of inMeinenStunden) {
+  for (const { z, stunden } of inMeinenStunden) {
     const s = finde(z.studentId);
-    if (!s || !(liste.get(stunde.key)?.has(s.id) || opt.bekannt?.get(stunde.key)?.has(s.id))) continue;
+    if (!s) continue;
+    const stunde = stunden.find((x) => liste.get(x.key)?.has(s.id) || opt.bekannt?.get(x.key)?.has(s.id));
+    if (!stunde) continue;
     const doppelt = `${s.id}-${z.date}-${stunde.start}`;
     if (gesehen.has(doppelt)) continue;
     gesehen.add(doppelt);
@@ -372,7 +388,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   melde('Prüfungen');
   let pruefungen: Paket['pruefungen'];
   const eigeneKurse = [...kurse.entries()].filter(([, k]) => k.anzahl >= 3)
-    .map(([key, k]) => ({ key, klasseId: k.klasseId, fachId: k.fachId, klasse: k.klasse, fach: k.fach, fachKurz: faecherKurz.get(k.fachId) }));
+    .map(([key, k]) => ({ key, klasseId: k.klasseId, klassen: k.klassen, fachId: k.fachId, klasse: k.klasse, fach: k.fach, fachKurz: faecherKurz.get(k.fachId) }));
   try {
     let roh: any[] = [];
     try {
@@ -390,7 +406,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   // Stammdaten-Bericht je Klasse (wie in WebUntis › Stammdaten › Bericht). Klappt evtl. nicht mit dieser Anmeldung.
   melde('Stammdaten-Bericht (Geburtsdatum)');
   const stammdaten: string[] = [];
-  for (const klasseId of new Set([...kurse.values()].map((k) => k.klasseId))) {
+  for (const klasseId of new Set([...kurse.values()].flatMap((k) => k.klassen ?? [k.klasseId]))) {
     try {
       const t = await sz.rest(`reports.do?name=Student&format=csv&klasseId=${klasseId}&studentsForDate=true&context=klasseId`);
       if (typeof t === 'string' && /birthDate/.test(t.slice(0, 500))) stammdaten.push(t);
@@ -406,11 +422,20 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   };
 }
 
-/** Sucht einen Schüler der Schülerliste zu einer Klassenbuch-Nummer: über id, key, name oder externKey. */
-export function schuelerIndex(liste: any[]): (nr: unknown) => any | undefined {
-  const m = new Map<string, any>();
-  for (const f of ['externKey', 'name', 'key', 'id']) for (const s of liste) if (s?.[f] !== undefined && s?.[f] !== null && s[f] !== '') m.set(String(s[f]), s);
-  return (nr) => m.get(String(nr));
+/**
+ * Sucht einen Schüler der Schülerliste zu einer Klassenbuch-Nummer: über id, key, name oder externKey.
+ * Mit `nummern` (alle Nummern aus dem Klassenbuch) wird zuerst das Feld genommen, zu dem die meisten Nummern passen.
+ * Sonst kann die Nummer eines Schülers zufällig gleich dem Kürzel oder der id eines anderen sein, und er landet in der
+ * falschen Klasse.
+ */
+export function schuelerIndex(liste: any[], nummern: unknown[] = []): (nr: unknown) => any | undefined {
+  const felder = ['externKey', 'name', 'key', 'id'];
+  const je = new Map(felder.map((f) => [f, new Map<string, any>()]));
+  for (const f of felder) for (const s of liste) if (s?.[f] !== undefined && s?.[f] !== null && s[f] !== '') je.get(f)!.set(String(s[f]), s);
+  const nr = [...new Set(nummern.map(String))];
+  const treffer = (f: string) => nr.filter((n) => je.get(f)!.has(n)).length;
+  const reihe = nr.length ? [...felder].sort((a, b) => treffer(b) - treffer(a) || felder.indexOf(b) - felder.indexOf(a)) : [...felder].reverse();
+  return (n) => { const k = String(n); for (const f of reihe) { const s = je.get(f)!.get(k); if (s) return s; } return undefined; };
 }
 
 /** Kennung, die in den eigenen Stunden am häufigsten vorkommt. Bevorzugt eine der Vorschläge, wenn sie in ≥ 30 % der Stunden steht. */
@@ -420,6 +445,18 @@ export function kennungWaehlen(kennungen: Map<string, Set<string>>, slots: numbe
   for (const v of vorschlaege) if (v && anteil(v) >= 0.3) return v;
   const beste = [...kennungen.keys()].sort((a, b) => anteil(b) - anteil(a))[0];
   return beste && anteil(beste) >= 0.5 ? beste : '';
+}
+
+/**
+ * Eigene Stunden zur Klassenbuch-Zeile (gleicher Tag, Beginn liegt in der Stunde). Gibt es mehrere, zählen zuerst die,
+ * in denen die eingetragene Lehrkraft laut Stundenplan steht. Dieselbe Klasse zählt nur einmal.
+ */
+export function stundenWaehlen<T extends { key: string; start: number; ende: number; te: Set<string> }>(amTag: T[], z: any): T[] {
+  const passend = amTag.filter((x) => x.start <= z.startTime && z.startTime < x.ende);
+  if (passend.length < 2) return passend;
+  const t = Array.isArray(z?.teacherIds) ? z.teacherIds.map(String) : [];
+  const mitLehrer = passend.filter((x) => t.some((y: string) => x.te.has(y)));
+  return [...new Map((mitLehrer.length ? mitLehrer : passend).map((x) => [x.key, x])).values()];
 }
 
 const zeitAusMinuten = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
@@ -451,6 +488,41 @@ export interface Ergebnis {
   verspaetungen: number;
   stammdaten: number;
   pruefungen?: AbgleichZahlen; // Prüfungen im Kalender (V17)
+  umgezogen?: number; // aus einer falschen Klasse genommen (Klasse laut Export passt nicht)
+}
+
+const klNorm = (x: string) => (x ?? '').toLowerCase().replace(/\s+/g, '');
+const klassenListe = (klasse: string) => klasse.split(',').map(klNorm).filter(Boolean);
+
+/** Alle Klassennamen der eigenen WebUntis-Klassen (für den Abgleich mit der Klasse aus dem Export). */
+export const eigeneKlassen = (d: Daten, dazu: string[] = []) => new Set([...d.kurse.filter((k) => k.untis).map((k) => k.klasse), ...dazu].flatMap(klassenListe));
+
+/**
+ * Passt ein Schüler zu einer Klasse? Nein nur, wenn seine Klasse sicher bekannt ist (Export), es eine eigene Klasse
+ * dieses Namens gibt und die Klasse nicht dazugehört. Schreibt der Export Klassen anders, wird nichts aussortiert.
+ */
+export function klassePasst(s: Schueler | undefined, kursKlasse: string, bekannt: Set<string>): boolean {
+  if (!s?.klasseSicher || !s.klasse || !bekannt.has(klNorm(s.klasse))) return true;
+  const kl = klassenListe(kursKlasse);
+  return !kl.length || kl.includes(klNorm(s.klasse));
+}
+
+/**
+ * Räumt alte Fehlzuordnungen auf: Schüler mit sicher bekannter Klasse (Export), die in einer WebUntis-Klasse einer
+ * anderen Klasse stehen, werden dort aus der Liste und dem Sitzplan genommen. Noten und Einträge bleiben gespeichert.
+ */
+export function falscheKlasseEntfernen(d: Daten): number {
+  let n = 0;
+  const bekannt = eigeneKlassen(d);
+  for (const k of d.kurse) {
+    if (!k.untis) continue;
+    const weg = k.schueler.filter((i) => !klassePasst(d.schueler.find((x) => x.id === i), k.klasse, bekannt));
+    if (!weg.length) continue;
+    k.schueler = k.schueler.filter((i) => !weg.includes(i));
+    for (const [platz, id] of Object.entries(k.sitzplan?.belegung ?? {})) if (weg.includes(id)) delete k.sitzplan.belegung[platz as any];
+    n += weg.length;
+  }
+  return n;
 }
 
 /**
@@ -494,10 +566,18 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
   // Klassen (Kurse)
   const kid = new Map<string, string>();
   let kurseNeu = 0;
+  const bekannt = eigeneKlassen(d, p.kurse.map((k) => k.klasse));
   for (const k of p.kurse) {
-    const key = kursKey(k.klasseId, k.fachId);
-    const ids = [...k.schueler].map((x) => sid.get(x)).filter((x): x is string => !!x);
-    let kurs = d.kurse.find((x) => x.untis && kursKey(x.untis.klasseId, x.untis.fachId) === key);
+    const key = untisKey(k);
+    // Schüler, deren Klasse sicher bekannt ist (Export), nur in Klassen aufnehmen, zu denen diese Klasse gehört
+    const ids = [...k.schueler].map((x) => sid.get(x)).filter((x): x is string => !!x)
+      .filter((i) => klassePasst(d.schueler.find((x) => x.id === i), k.klasse, bekannt));
+    let kurs = d.kurse.find((x) => x.untis && untisKey(x.untis) === key);
+    // Zusammengelegte Klassen hatten früher den Schlüssel der ersten Klasse: vorhandenen Kurs weiterverwenden
+    if (!kurs && k.klassen) {
+      kurs = d.kurse.find((x) => x.untis && !x.untis.klassen && x.untis.klasseId === k.klasseId && x.untis.fachId === k.fachId && x.klasse === k.klasse);
+      if (kurs) kurs.untis = { ...kurs.untis!, klassen: k.klassen };
+    }
     if (!kurs) {
       const id = `uk${key}`;
       const neu: Kurs = {
@@ -505,7 +585,7 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
         schueler: ids, leistungen: neueLeistungen(id, p.von, p.bis),
         gewichte: { klausuren: 0.5, sonstige: 0.5, mitarbeit: 0.6, sl: 0.4 },
         zellen: {}, endnoten: {}, stundenGehalten: k.gehalten, lernstoff: {}, uebergang: null,
-        sitzplan: ausVorlage('reihen'), untis: { klasseId: k.klasseId, fachId: k.fachId }
+        sitzplan: ausVorlage('reihen'), untis: { klasseId: k.klasseId, fachId: k.fachId, ...(k.klassen ? { klassen: k.klassen } : {}) }
       };
       verteilen(neu.sitzplan, [...ids].sort((a, b) => nach(d, a).localeCompare(nach(d, b), 'de')));
       d.kurse.push(neu);
@@ -572,9 +652,10 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
     ausfaelle: p.ausfaelle.map((a) => `${kid.get(a.key)}|${a.datum}|${a.beginn}`).filter((x) => !x.startsWith('undefined'))
   };
 
+  const umgezogen = falscheKlasseEntfernen(d); // nach dem Stammdaten-Bericht, der die Klassen sicher kennt
   const unsere = d.fehlzeiten.filter((f) => f.quelle === 'untis');
   return {
-    kurseNeu, kurse: kid.size, schuelerNeu, schueler: sid.size,
+    kurseNeu, umgezogen, kurse: kid.size, schuelerNeu, schueler: sid.size,
     fehlzeiten: unsere.length, offen: unsere.filter((f) => f.status === 'offen').length,
     verspaetungen: d.verspaetungen.filter((v) => v.quelle === 'untis').length, stammdaten, pruefungen
   };

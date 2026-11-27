@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PRUEFUNGEN, verbindungstest, bericht, anmelden, fehlerMeldung, type Pruefung, type Zugang } from '$lib/untis';
-  import { holen, uebernehmen, bekanntAus, type Ergebnis } from '$lib/untisimport';
+  import { holen, uebernehmen, bekanntAus, falscheKlasseEntfernen, type Ergebnis } from '$lib/untisimport';
   import { FELDER, stammdatenPruefen, stammdatenAnwenden, schulmailsEinlesen, mailStand, type Vorschau, type Feld } from '$lib/stammdaten';
   import { name } from '$lib/hilfen';
   import { adressVorschlag } from '$lib/nachschreiben';
@@ -109,9 +109,10 @@
       const r = stammdatenAnwenden(d, v, { aufnehmen });
       z += r.zugeordnet; g += r.geburt; m += r.mail; n += r.neu;
     });
+    const raus = falscheKlasseEntfernen(d); // Klasse laut Export passt nicht zur L.E.O.-Klasse
     speichern();
     texte = []; vorschauen = []; wahl = {};
-    zeige(`${z} zugeordnet, ${g} Geburtsdaten, ${m} Schulmails${n ? `, ${n} Schüler aufgenommen` : ''}`);
+    zeige(`${z} zugeordnet, ${g} Geburtsdaten, ${m} Schulmails${n ? `, ${n} Schüler aufgenommen` : ''}${raus ? `, ${raus} aus falscher Klasse genommen` : ''}`);
   }
   const fehltAnzahl = $derived(vorschauen.reduce((a, v, i) => a + v.neu.reduce((b, gr) => b + (wahl[`${i}|${gr.kursId}`]?.size ?? 0), 0), 0));
 
@@ -195,7 +196,7 @@
       {#if ergebnis}
         <div class="kacheln">
           <a class="kachel" href="/klassen"><b class="zahl anzahl">{ergebnis.kurse}</b><span class="klein leise">Klassen{ergebnis.kurseNeu ? `, ${ergebnis.kurseNeu} neu` : ''}</span></a>
-          <a class="kachel" href="/schueler"><b class="zahl anzahl">{ergebnis.schueler}</b><span class="klein leise">Schüler{ergebnis.schuelerNeu ? `, ${ergebnis.schuelerNeu} neu` : ''}</span></a>
+          <a class="kachel" href="/schueler"><b class="zahl anzahl">{ergebnis.schueler}</b><span class="klein leise">Schüler{ergebnis.schuelerNeu ? `, ${ergebnis.schuelerNeu} neu` : ''}{ergebnis.umgezogen ? `, ${ergebnis.umgezogen} aus falscher Klasse genommen` : ''}</span></a>
           <div class="kachel"><b class="zahl anzahl">{ergebnis.fehlzeiten}</b><span class="klein leise">Fehlzeiten, davon {ergebnis.offen} offen</span></div>
           <div class="kachel"><b class="zahl anzahl">{ergebnis.verspaetungen}</b><span class="klein leise">Verspätungen</span></div>
           <div class="kachel"><b class="zahl anzahl">{ergebnis.stammdaten}</b><span class="klein leise">mit Geburtsdatum aus dem Bericht</span></div>

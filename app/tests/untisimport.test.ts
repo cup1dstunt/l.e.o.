@@ -1,6 +1,6 @@
 // Prüft die Übernahme aus WebUntis ohne Netz, mit erfundenen Daten (V11).
 // Aufruf: npm test
-import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, schuelerIndex, type Paket } from '../src/lib/untisimport.ts';
+import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, schuelerIndex, holen, untisKey, falscheKlasseEntfernen, type Paket } from '../src/lib/untisimport.ts';
 import { beispielDaten } from '../src/lib/beispiel.ts';
 
 let ok = 0;
@@ -95,6 +95,92 @@ gleich('Schüler unbekannt', fi('S-99'), undefined);
   uebernehmen(dk, kurz, { beispielEntfernen: false, benutzer: 'x', schule: 'osz-lus' });
   gleich('alt bleibt, neu ersetzt', dk.fehlzeiten.filter((f) => f.quelle === 'untis').map((f) => [f.datum, f.status]).sort(), [['2026-09-10', 'E'], ['2026-11-11', 'UE']]);
   gleich('kurz behält vollen Zeitpunkt', dk.einstellungen.untis!.vollAbgerufen, vollZeit);
+}
+
+// Klassenzuordnung (Bug 27.11.): FOS-Schüler landeten in der KA-Klasse
+{
+  const tag = (n: number) => { const x = new Date(Date.now() - n * 864e5); return x.getFullYear() * 10000 + (x.getMonth() + 1) * 100 + x.getDate(); };
+  const [t1, t2, t3, t4] = [8, 7, 6, 5].map(tag);
+  const ich = { id: 77, name: 'Abc' };
+  const KA = { id: 1, name: 'KA25' }, FOS = { id: 2, name: 'FOS25' };
+  const EN = { id: 10, name: 'E', longname: 'Englisch' }, WI = { id: 11, name: 'WI', longname: 'Wirtschaft' };
+  const stunde = (date: number, kl: any[], su: any, startTime: number, endTime: number, code?: string) => ({ date, kl, su: [su], te: [ich], ro: [], startTime, endTime, ...(code ? { code } : {}) });
+  const plan = [
+    // ausgefallene KA-Stunde steht absichtlich vor der Vertretung in FOS zur selben Zeit
+    stunde(t4, [KA], EN, 800, 930, 'cancelled'), stunde(t4, [FOS], EN, 800, 930, 'irregular'),
+    ...[t1, t2, t3].map((t) => stunde(t, [KA], EN, 800, 930)),
+    ...[t1, t2, t3, t4].map((t) => stunde(t, [FOS], EN, 1000, 1130)),
+    ...[t1, t2, t3].map((t) => stunde(t, [FOS, KA], WI, 1200, 1330)),
+    ...[t1, t2, t3].map((t) => stunde(t, [KA], WI, 1400, 1530))
+  ];
+  const zeile = (studentId: string, date: number, startTime: number) => ({ studentId, date, startTime, teacherIds: ['Abc'], excuseStatus: 'nicht entsch.', absenceReason: 'UE', absentTime: 90 });
+  const buch = [
+    zeile('S1', t1, 800), // Anna (KA) in KA Englisch
+    zeile('S2', t1, 1000), // Gilian (FOS) in FOS Englisch
+    zeile('S2', t4, 800), // Gilian in der Vertretung, während KA Englisch ausfällt
+    zeile('S2', t2, 1200), // Gilian in der zusammengelegten Stunde
+    zeile('S3', t1, 1200), // Kai (KA) in der zusammengelegten Stunde
+    zeile('S3', t2, 1400) // Kai in KA Wirtschaft
+  ];
+  // Kürzel S2 ist zufällig auch die id-Schreibweise eines anderen Schülers? Hier: key-Feld, ids sind Zahlen
+  const schuelerListe = [
+    { id: 501, key: 'S1', name: 'Muster', foreName: 'Anna', longName: 'Muster', gender: 'female' },
+    { id: 502, key: 'S2', name: 'Neuwirt', foreName: 'Gilian', longName: 'Neuwirt', gender: 'male' },
+    { id: 503, key: 'S3', name: 'Kraus', foreName: 'Kai', longName: 'Kraus', gender: 'male' }
+  ];
+  const sz: any = {
+    schule: 'x', benutzer: 'abc', person: { typ: 2, id: 77 }, rechte: 0, abmelden: async () => {},
+    rest: async () => { throw new Error('nicht da'); },
+    r: async (m: string, p: any) => {
+      if (m === 'getCurrentSchoolyear') return { startDate: tag(40), endDate: tag(-60) };
+      if (m === 'getKlassen') return [KA, FOS];
+      if (m === 'getSubjects') return [EN, WI].map((x) => ({ ...x, longName: x.longname }));
+      if (m === 'getRooms' || m === 'getHolidays' || m === 'getExamTypes' || m === 'getExams') return [];
+      if (m === 'getTimetable') return plan;
+      if (m === 'getTimetableWithAbsences') return buch.filter((z) => z.date >= p.options.startDate && z.date <= p.options.endDate);
+      if (m === 'getStudents') return schuelerListe;
+      throw new Error(m);
+    }
+  };
+  const pk = await holen(sz, () => {});
+  const liste = (key: string) => [...(pk.kurse.find((k) => untisKey(k) === key)?.schueler ?? [])].sort();
+  gleich('KA Englisch ohne FOS-Schüler', liste('1-10'), [501]);
+  gleich('FOS Englisch mit Vertretung', liste('2-10'), [502]);
+  gleich('zusammengelegt eigene Klasse', liste('1+2-11'), [502, 503]);
+  gleich('KA Wirtschaft nur KA', liste('1-11'), [503]);
+  gleich('Name zusammengelegt', pk.kurse.find((k) => untisKey(k) === '1+2-11')?.klasse, 'FOS25, KA25');
+
+  // Alte Fehlzuordnung wird aufgeräumt, sobald die Klasse aus dem Export bekannt ist
+  const dd = beispielDaten(new Date('2026-11-18T10:00'));
+  uebernehmen(dd, pk, { beispielEntfernen: true, benutzer: 'x', schule: 'x' });
+  const kaEn = dd.kurse.find((k) => k.untis && untisKey(k.untis) === '1-10')!;
+  kaEn.schueler.push('u502'); // so sah es vorher aus
+  kaEn.sitzplan.belegung[39] = 'u502';
+  gleich('ohne Export nichts entfernt', falscheKlasseEntfernen(dd), 0);
+  const gil = dd.schueler.find((s) => s.id === 'u502')!;
+  gil.klasse = 'FOS25'; gil.klasseSicher = true;
+  gleich('mit Export entfernt', falscheKlasseEntfernen(dd), 1);
+  gleich('KA Englisch danach', kaEn.schueler, ['u501']);
+  gleich('Sitzplan frei', kaEn.sitzplan.belegung[39], undefined);
+  gleich('zusammengelegt behält ihn', dd.kurse.find((k) => k.untis && untisKey(k.untis) === '1+2-11')!.schueler.includes('u502'), true);
+  // Unbekannte Klassenschreibweise im Export: nichts aussortieren
+  gil.klasse = 'FOS 2025/1';
+  kaEn.schueler.push('u502');
+  gleich('fremde Schreibweise bleibt', falscheKlasseEntfernen(dd), 0);
+
+  // Früherer Schlüssel einer zusammengelegten Klasse: Kurs wird weiterverwendet, nicht verdoppelt
+  const da = beispielDaten(new Date('2026-11-18T10:00'));
+  const alt = { ...pk, kurse: pk.kurse.map((k) => (k.klassen ? { ...k, klassen: undefined, klasseId: k.klasseId } : k)) };
+  uebernehmen(da, alt as Paket, { beispielEntfernen: true, benutzer: 'x', schule: 'x' });
+  const vorher = da.kurse.length;
+  uebernehmen(da, pk, { beispielEntfernen: false, benutzer: 'x', schule: 'x' });
+  gleich('kein doppelter Kurs', da.kurse.length, vorher);
+}
+
+// Klassenbuch-Nummer passt zum key-Feld, ist aber zufällig auch die id eines anderen Schülers
+{
+  const f = schuelerIndex([{ id: 5, key: '7' }, { id: 7, key: '9' }, { id: 8, key: '11' }], ['7', '9', '11']);
+  gleich('Feld mit den meisten Treffern zuerst', f('7')?.id, 5);
 }
 
 console.log(`${ok} Übernahme-Prüfungen bestanden, ${fehler} fehlgeschlagen`);
