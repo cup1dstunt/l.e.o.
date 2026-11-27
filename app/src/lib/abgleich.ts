@@ -78,6 +78,8 @@ export function kursMischen(lokal: Kurs, fern: Kurs, fernNeuer: boolean, basis?:
   out.schueler = mischenListe(basis?.schueler, lokal.schueler, fern.schueler, (x) => x, fernNeuer);
   if (lokal.einschaetzungen || fern.einschaetzungen)
     out.einschaetzungen = mischenNachSchluessel(basis?.einschaetzungen, lokal.einschaetzungen, fern.einschaetzungen, fernNeuer);
+  if (lokal.merker || fern.merker) // Merker für die nächste Stunde (V18): je Eintrag, Abhaken auf einem Gerät gilt überall
+    out.merker = mischenListe(basis?.merker, lokal.merker ?? [], fern.merker ?? [], (x) => x.id, fernNeuer);
   if (lokal.selbst || fern.selbst) // Selbsteinschätzung je Monat (E116)
     out.selbst = mischenNachSchluessel(basis?.selbst, lokal.selbst, fern.selbst, fernNeuer);
   return out as Kurs;

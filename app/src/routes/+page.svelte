@@ -1,6 +1,6 @@
 <script lang="ts">
   import { istAn, type ModulId } from '$lib/module';
-  import { app } from '$lib/speicher.svelte';
+  import { app, speichern, zeige } from '$lib/speicher.svelte';
   import { stundenHeute, datumKurz, datumWt, name, minuten, heuteISO } from '$lib/hilfen';
   import { nachschreibLage, terminSicht } from '$lib/nachschreiben';
   import { sitzung } from '$lib/sitzung.svelte';
@@ -11,6 +11,7 @@
   import { materialListe } from '$lib/material';
   import { eintraege, artName } from '$lib/kalender';
   import { isoDatum } from '$lib/hilfen';
+  import { letzteStunde, seitText, faelligeMerker, ohneStand, standSetzen, vorschlaege } from '$lib/stand';
 
   const d = app.d!;
   let jetzt = $state(new Date());
@@ -74,6 +75,31 @@
     for (let i = 1; i <= 7; i++) { const t = new Date(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate() + i); if (t.getDay() === haupt.tag) return isoDatum(t); }
     return hISO;
   });
+  // Wo wir stehengeblieben sind (V18): Stand der letzten Stunde auf der Kachel, Nachtrag für vergessene Stunden
+  const standAn = $derived(istAn(d.einstellungen, 'stand'));
+  const nachtrag = $derived(standAn ? ohneStand(d.kurse, plan.heute, plan.min, hISO) : []);
+  let nachtragText = $state<Record<string, string>>({});
+  const felder: Record<string, HTMLInputElement> = {};
+  const themaHeute = (kursId: string) => {
+    const k = kurs(kursId);
+    if (k.lernstoff[hISO]?.text?.trim()) return k.lernstoff[hISO].text;
+    const b = planAn ? naechsterBlock(d, k, hISO) : undefined;
+    return b && b.datum === hISO ? b.reihe?.titel ?? '' : '';
+  };
+  function nachtragen(kursId: string, text = nachtragText[kursId] ?? '') {
+    if (!text.trim()) return;
+    const k = kurs(kursId);
+    standSetzen(k, hISO, text);
+    nachtragText[kursId] = '';
+    speichern();
+    zeige(`${k.klasse} ${k.fach}: Stand gespeichert`, () => { standSetzen(k, hISO, ''); speichern(); });
+  }
+  function nachtragVorschlag(kursId: string, v: { wert: string; offen: boolean }) {
+    if (!v.offen) return nachtragen(kursId, v.wert);
+    nachtragText[kursId] = v.wert;
+    const f = felder[kursId];
+    if (f) setTimeout(() => { f.focus(); f.setSelectionRange(f.value.length, f.value.length); });
+  }
   const demnaechst = $derived(eintraege(d, hISO, isoDatum(new Date(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate() + 14))).filter((e) => e.art !== 'ferien' || e.datum >= hISO).slice(0, 6));
 
   // Offene Punkte: offene Monatsnoten
@@ -137,8 +163,17 @@
         {:else}
           <p class="leise zahl">{haupt.beginn} bis {haupt.ende}</p>
         {/if}
-        {#if k.uebergang}
-          <div class="uebergang"><span class="klein leise">Wo ihr stehengeblieben seid ({datumKurz(k.uebergang.datum)})</span><p>{k.uebergang.text}</p></div>
+        {#if standAn}
+          {@const v = letzteStunde(k, hauptDatum)}
+          {@const mk = faelligeMerker(k, hauptDatum)}
+          {#if v?.stand || v?.hausaufgabe || mk.length}
+            <div class="uebergang">
+              <span class="klein leise">Wo ihr stehengeblieben seid{v?.stand ? ` (${datumKurz(v.standDatum)}, ${seitText(v.standDatum, hISO)})` : ''}</span>
+              {#if v?.stand}<p>{v.stand}</p>{/if}
+              {#if v?.hausaufgabe}<p class="klein"><span class="leise">Hausaufgabe:</span> {v.hausaufgabe}</p>{/if}
+              {#if mk.length}<p class="klein"><span class="leise">Nicht vergessen:</span> {mk.map((m) => m.text).join(' · ')}</p>{/if}
+            </div>
+          {/if}
         {/if}
         {#if planAn && geplantFuer(k.id, hauptDatum)}
           <p class="klein geplant"><span class="leise">Geplant:</span> {geplantFuer(k.id, hauptDatum)} · <a href="/planung/{k.id}">Planung</a></p>
@@ -156,6 +191,29 @@
         </div>
         {#if !plan.laeuft}<p class="klein leise">Zum Testen kannst du jede Stunde jederzeit öffnen.</p>{/if}
       </section>
+    {/if}
+
+    {#if nachtrag.length}
+    <section class="karte stand">
+      <h2>Wo seid ihr stehengeblieben?</h2>
+      <p class="klein leise">Diese Stunden sind vorbei und haben noch keinen Stand für das nächste Mal.</p>
+      <ul class="liste">
+        {#each nachtrag as n (n.kursId)}
+          {@const k = kurs(n.kursId)}
+          {@const vs = vorschlaege(themaHeute(n.kursId))}
+          <li class="nachtrag">
+            <div class="zeile wrap"><b>{k.klasse} {k.fach}</b><span class="klein leise zahl">{n.beginn} bis {n.ende}</span></div>
+            {#if vs.length}<div class="zeile wrap">
+              {#each vs as v}<button class="chip" onclick={() => nachtragVorschlag(n.kursId, v)} title={v.offen ? 'Text ergänzen' : `Speichert „${v.wert}“`}>{v.text}</button>{/each}
+            </div>{/if}
+            <div class="zeile">
+              <input class="eingabe raum" bind:this={felder[n.kursId]} bind:value={nachtragText[n.kursId]} onkeydown={(e) => e.key === 'Enter' && nachtragen(n.kursId)} placeholder={themaHeute(n.kursId) ? `z. B. ${themaHeute(n.kursId)} bis …` : 'z. B. Aufgabe 3 besprochen, weiter mit 4'} aria-label="Stand {k.klasse} {k.fach}" />
+              <button class="knopf" onclick={() => nachtragen(n.kursId)} disabled={!(nachtragText[n.kursId] ?? '').trim()}>Speichern</button>
+            </div>
+          </li>
+        {/each}
+      </ul>
+    </section>
     {/if}
 
     <section class="karte">
@@ -248,6 +306,12 @@
   .uebergang { background: var(--leo-flaeche-leise); border: 1px solid var(--leo-linie-fein); border-radius: var(--leo-r-m); padding: 10px 14px; }
   .uebergang p { margin: 4px 0 0; }
   .geplant { margin: 8px 0 0; }
+  .stand { min-width: 0; }
+  .stand h2 { margin-bottom: 4px; }
+  .stand p { margin: 0; }
+  .liste li.nachtrag { flex-direction: column; align-items: stretch; gap: 8px; }
+  .nachtrag .chip, .nachtrag b { white-space: nowrap; }
+  .nachtrag input { min-width: 0; }
   .knoepfe { display: flex; gap: 10px; flex-wrap: wrap; }
   .knoepfe .knopf { min-height: 48px; }
   .liste { list-style: none; padding: 0; margin: 10px 0 0; }

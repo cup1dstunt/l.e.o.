@@ -353,7 +353,7 @@ Quelle: Thread „Abgespeckten Prototyp für Unraid bauen“ und Feature-Brainst
 
 | # | Punkt | Herkunft | Prio | Aufwand | Status |
 |---|---|---|---|---|---|
-| PB1 | **Wo sind wir stehengeblieben:** Notiz am Kurs (Klasse + Fach), erscheint in der nächsten Stunde oben und auf der Startseite (konkretisiert PF10) | K | 1 | S | im Prototyp, Stand je Tag im Rückblick (E114) |
+| PB1 | **Wo sind wir stehengeblieben:** Notiz am Kurs (Klasse + Fach), erscheint in der nächsten Stunde oben und auf der Startseite (konkretisiert PF10) | K | 1 | S | im Prototyp, Stand je Tag im Rückblick (E114); eigenes Modul mit Merkern, Nachtrag und Verlauf als Entwurf (V18) |
 | PB2 | **Was-wäre-wenn:** welche Note in einer offenen Leistung nötig ist, um eine Gesamtnote zu erreichen (I36) | C, K bestätigt | 1 | S | im Prototyp (Rechenweg-Fenster) |
 | PB3 | **Warnampel:** unter der Grenze, auf der Kippe, zu wenige Noten; Fehlzeitengrenze in der Schülerkarte (I37, Q6) | C, K bestätigt | 1 | S | im Prototyp |
 | PB4 | **Nachschreiber-Liste** bei E an Klausuren (I44), mit Namen und Termin | C, K bestätigt | 1 | S | Zähler im Prototyp, Liste offen |
