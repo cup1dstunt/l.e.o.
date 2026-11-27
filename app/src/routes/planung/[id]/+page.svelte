@@ -224,7 +224,7 @@
             <li>
               <div class="wann"><b>{datumWt(b.datum)}</b>{#if reiheText(b)}<span class="klein reihe t{ton(b)}">{reiheText(b)}</span>{/if}</div>
               <span class:leise={!e?.text}>{e?.text || 'kein Thema eingetragen'}{e?.hausaufgabe ? ` · HA: ${e.hausaufgabe}` : ''}</span>
-              <span class="klein">{#if e?.stand}<span class="leise">Stand:</span> {e.stand}{/if}
+              <span class="klein">{#if e?.stand && istAn(d.einstellungen, 'stand')}<span class="leise">Stand:</span> {e.stand}{/if}
                 {#if ablageAn && gezeigtAm(d.material, kurs.id, b.datum).length}<br /><span class="leise">Gezeigt:</span> {gezeigtAm(d.material, kurs.id, b.datum).map((m) => m.titel).join(', ')}{/if}</span>
             </li>
           {/each}

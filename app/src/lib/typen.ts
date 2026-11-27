@@ -58,7 +58,8 @@ export interface Kurs {
   endnoten: Record<string, number>; // festgelegte Endnote je Schüler
   stundenGehalten: number; // Basis der Fehlzeitenquote
   lernstoff: Record<string, Lernstoff>; // je Datum
-  uebergang: { text: string; datum: string } | null; // Notiz für die nächste Stunde
+  uebergang: { text: string; datum: string } | null; // neuester Stand („Wo wir stehengeblieben sind“), aus lernstoff[datum].stand nachgeführt (lib/stand.ts)
+  merker?: Merker[]; // „Nicht vergessen“ für die nächste Stunde der Klasse, bis abgehakt (V18)
   sitzplan: Sitzplan;
   untis?: { klasseId: number; fachId: number; klassen?: number[] }; // Herkunft WebUntis: Klasse + Fach; `klassen` bei zusammengelegten Klassen
   zufall?: ZufallStand; // fairer Zufall über mehrere Stunden (P5, E109)
@@ -78,6 +79,13 @@ export interface Lernstoff {
   text: string; // Thema / Stoff
   hausaufgabe: string;
   stand?: string; // „Wo wir stehengeblieben sind“, beim Abschließen der Stunde gespeichert
+}
+
+/** Merker für die nächste Stunde einer Klasse (Modul „Wo wir stehengeblieben sind“, V18). */
+export interface Merker {
+  id: string;
+  text: string; // z. B. „Klausuren zurückgeben“, „Laptopwagen bestellen“
+  seit: string; // ISO-Datum, an dem er notiert wurde; erscheint ab der nächsten Stunde
 }
 
 /** Unterrichtsreihe der Semesterplanung: Titel und wie viele Blöcke sie braucht (E114). */
