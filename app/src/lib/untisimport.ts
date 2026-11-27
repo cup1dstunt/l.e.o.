@@ -2,7 +2,8 @@
 // Datenschutz: Das Lehrerkonto sieht die ganze Schule. Übernommen wird nur, was zu den EIGENEN Stunden gehört;
 // alles andere wird direkt nach dem Abruf im Arbeitsspeicher verworfen und nie gespeichert.
 // Ehrlich: Die Zuordnung über das Lehrerkürzel ist aus dem Verbindungstest abgeleitet, aber noch nicht mit echten Daten geprüft.
-import type { Daten, Fehlzeit, Kurs, Leistung, Schueler, Stunde, Verspaetung } from './typen.ts';
+import type { Daten, Fehlzeit, Kurs, Leistung, Schueler, Stunde, Termin, Verspaetung } from './typen.ts';
+import { quelleAbgleichen, type AbgleichZahlen } from './kalender.ts';
 import { alsListe, kennungenVon, type Sitzung } from './untis.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
 
@@ -116,6 +117,7 @@ export interface Paket {
   ausfaelle: { key: string; datum: string; beginn: string }[];
   termine?: { key: string; datum: string; beginn: string; ende: string }[]; // alle eigenen Stunden im Schuljahr (Semesterplanung)
   ferien?: { name: string; von: string; bis: string }[]; // Ferien und Feiertage (getHolidays)
+  pruefungen?: Pruefung[]; // Prüfungen der eigenen Klassen (V17); fehlt = Abruf nicht möglich, alter Stand bleibt
   stammdaten: string[]; // CSV-Texte, falls der Bericht automatisch abrufbar war
   klassenbuchAb?: string; // gesetzt beim kurzen Abgleich: Fehlzeiten und Verspätungen nur ab diesem Tag (E119)
 }
@@ -141,6 +143,70 @@ export function bekanntAus(d: Daten): Map<string, Set<number>> {
 }
 
 const kursKey = (klasseId: number, fachId: number) => `${klasseId}-${fachId}`;
+
+/** Prüfung aus WebUntis, schon auf eigene Klassen bezogen, ohne Schülerliste. */
+export interface Pruefung {
+  id: string;
+  keys: string[]; // eigene Klassen (Klasse + Fach), bei fremden Prüfungen die eigenen Klassen derselben Klasse
+  fremd: boolean; // andere Lehrkraft bzw. anderes Fach
+  titel: string;
+  datum: string;
+  beginn?: string;
+  ende?: string;
+}
+
+type KursRef = { key: string; klasseId: number; fachId: number; klasse: string; fach: string; fachKurz?: string };
+
+/**
+ * Prüfungen aus WebUntis (JSON-RPC `getExams` oder Web-Schnittstelle `api/exams`, beide Formen) den eigenen Klassen zuordnen.
+ * Eigen = Klasse und Fach passen zu einer eigenen Klasse. Fremd = andere Prüfung in einer eigenen Klasse (Hinweis gegen
+ * Klausurhäufung). Alles andere wird verworfen, Schülerlisten werden nie übernommen. Ungetestet mit echtem WebUntis.
+ */
+export function pruefungenZuordnen(roh: any[], kurse: KursRef[], klassenNamen: Map<number, string>, faecher: Map<number, string>): Pruefung[] {
+  const norm = (x: unknown) => String(x ?? '').trim().toLowerCase();
+  const out: Pruefung[] = [];
+  const gesehen = new Set<string>();
+  for (const p of roh) {
+    if (!p) continue;
+    const datumRoh = p.examDate ?? p.date;
+    if (!datumRoh) continue;
+    const datum = isoAusUntis(datumRoh);
+    // Klassen: Zahlen (ids), Texte (Namen) oder Objekte
+    const kl = ([] as any[]).concat(p.classes ?? p.klassen ?? p.studentClass ?? []);
+    const klIds = new Set(kl.map((x) => (typeof x === 'object' ? x?.id : typeof x === 'number' ? x : undefined)).filter((x) => x !== undefined));
+    const klNamen = new Set(kl.map((x) => norm(typeof x === 'object' ? x?.name : typeof x === 'string' ? x : klassenNamen.get(x))).filter(Boolean));
+    const su = p.subject;
+    const suId = typeof su === 'number' ? su : typeof su === 'object' ? su?.id : undefined;
+    const suName = norm(typeof su === 'string' ? su : typeof su === 'object' ? su?.name ?? su?.longName : suId !== undefined ? faecher.get(suId) : '');
+    const inKlasse = kurse.filter((k) => klIds.has(k.klasseId) || klNamen.has(norm(k.klasse)));
+    if (!inKlasse.length) continue;
+    const fachPasst = (k: KursRef) => (suId !== undefined && suId === k.fachId) || (!!suName && [norm(k.fach), norm(k.fachKurz)].includes(suName));
+    const eigene = inKlasse.filter(fachPasst);
+    const fremd = !eigene.length;
+    const art = String(p.examType ?? p.typeName ?? p.name ?? 'Prüfung').trim() || 'Prüfung';
+    const fachText = (typeof su === 'string' ? su : su?.longName || su?.name || (suId !== undefined ? faecher.get(suId) : '')) || '';
+    const titel = fremd ? `${art}${fachText ? ' ' + fachText : ''} (andere Lehrkraft)` : `${art}${p.name && p.name !== art ? ' · ' + p.name : ''}`;
+    const id = String(p.id ?? `${datum}-${[...klIds, ...klNamen].join('.')}-${suId ?? suName}`);
+    if (gesehen.has(id)) continue;
+    gesehen.add(id);
+    out.push({
+      id, keys: (fremd ? inKlasse : eigene).map((k) => k.key), fremd, titel: titel.slice(0, 120), datum,
+      beginn: p.startTime ? zeitAusUntis(p.startTime) : undefined, ende: p.endTime ? zeitAusUntis(p.endTime) : undefined
+    });
+  }
+  return out;
+}
+
+/** Prüfungen in Kalendertermine verwandeln (Quelle WebUntis). */
+export function pruefungenAlsTermine(p: Pruefung[], kid: Map<string, string>): Termin[] {
+  return p.map((x) => {
+    const kursIds = [...new Set(x.keys.map((k) => kid.get(k)).filter((k): k is string => !!k))];
+    const t: Termin = { id: 'up' + x.id.replace(/[^\w.-]/g, ''), uid: x.id, quelle: 'untis', art: 'pruefung', titel: x.titel, datum: x.datum, kursIds };
+    if (x.beginn) { t.beginn = x.beginn; t.ende = x.ende; }
+    if (x.fremd) t.fremd = true;
+    return t;
+  }).filter((t) => t.kursIds?.length);
+}
 
 /** Holt alles für die eigenen Stunden des laufenden Halbjahres. `melde` zeigt den Fortschritt. */
 export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenOpt = {}): Promise<Paket> {
@@ -168,6 +234,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   } catch { /* ohne Ferien weiter */ }
 
   melde('Eigener Stundenplan im Halbjahr');
+  const faecherKurz = name(faecherL);
   const sp = alsListe(await sz.r('getTimetable', {
     options: {
       element: { id: sz.person.id, type: sz.person.typ || 2 },
@@ -301,6 +368,25 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
     .map((s) => ({ untisId: s.id, vorname: s.foreName ?? '', nachname: s.longName || s.name || '', geschlecht: geschlechtAus(s.gender) }));
   schuelerAlle.length = 0; // Rest der Schule sofort verwerfen
 
+  // Prüfungen (V17): erst JSON-RPC je Prüfungsart, sonst die Web-Schnittstelle. Schülerlisten werden verworfen.
+  melde('Prüfungen');
+  let pruefungen: Paket['pruefungen'];
+  const eigeneKurse = [...kurse.entries()].filter(([, k]) => k.anzahl >= 3)
+    .map(([key, k]) => ({ key, klasseId: k.klasseId, fachId: k.fachId, klasse: k.klasse, fach: k.fach, fachKurz: faecherKurz.get(k.fachId) }));
+  try {
+    let roh: any[] = [];
+    try {
+      let arten: any[] = [];
+      try { arten = alsListe(await sz.r('getExamTypes')) as any[]; } catch { /* manche Server kennen das nicht */ }
+      for (const a of arten.length ? arten : [{ id: 0 }]) roh.push(...(alsListe(await sz.r('getExams', { examTypeId: a.id, startDate: von, endDate: bis })) as any[]));
+    } catch {
+      const j = await sz.rest(`api/exams?startDate=${von}&endDate=${bis}`);
+      roh = alsListe(j?.data?.exams ?? j?.exams ?? j) as any[];
+    }
+    pruefungen = pruefungenZuordnen(roh, eigeneKurse, klassen, faecher);
+    roh.length = 0; // Rest der Schule sofort verwerfen
+  } catch { /* ohne Prüfungen weiter, alter Stand bleibt */ }
+
   // Stammdaten-Bericht je Klasse (wie in WebUntis › Stammdaten › Bericht). Klappt evtl. nicht mit dieser Anmeldung.
   melde('Stammdaten-Bericht (Geburtsdatum)');
   const stammdaten: string[] = [];
@@ -315,7 +401,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
     kuerzel, von: isoAusUntis(von), bis: isoAusUntis(bis),
     // Einzelne Vertretungsstunden in fremden Klassen sind keine eigenen Klassen: mindestens 3 Stunden im Halbjahr
     kurse: [...kurse.values()].filter((k) => k.anzahl >= 3),
-    schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, termine, ferien, stammdaten,
+    schueler, stunden: [...muster.values()], fehlzeiten, verspaetungen, ausfaelle, termine, ferien, pruefungen, stammdaten,
     ...(abIso ? { klassenbuchAb: abIso } : {})
   };
 }
@@ -364,6 +450,7 @@ export interface Ergebnis {
   offen: number;
   verspaetungen: number;
   stammdaten: number;
+  pruefungen?: AbgleichZahlen; // Prüfungen im Kalender (V17)
 }
 
 /**
@@ -469,6 +556,10 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
     d.verspaetungen.push({ id: `uv${v.untisId}-${v.datum}-${v.ankunft}`, kursId, schuelerId, datum: v.datum, ankunft: v.ankunft, minuten: v.minuten, quelle: 'untis' } satisfies Verspaetung);
   }
 
+  // Prüfungen in den Kalender (V17). Ohne Abruf bleibt der alte Stand.
+  let pruefungen: AbgleichZahlen | undefined;
+  if (p.pruefungen) pruefungen = quelleAbgleichen(d, 'untis', pruefungenAlsTermine(p.pruefungen, kid));
+
   let stammdaten = 0;
   for (const t of p.stammdaten) stammdaten += stammdatenEinlesen(d, t).zugeordnet;
 
@@ -485,7 +576,7 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
   return {
     kurseNeu, kurse: kid.size, schuelerNeu, schueler: sid.size,
     fehlzeiten: unsere.length, offen: unsere.filter((f) => f.status === 'offen').length,
-    verspaetungen: d.verspaetungen.filter((v) => v.quelle === 'untis').length, stammdaten
+    verspaetungen: d.verspaetungen.filter((v) => v.quelle === 'untis').length, stammdaten, pruefungen
   };
 }
 

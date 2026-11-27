@@ -71,7 +71,7 @@ delete kurs.untisStunden;
 
 // Kalender
 const e = eintraege(d, '2026-10-01', '2026-11-30');
-gleich('Kalender: Ferien, Klausur, Termin', e.map((x) => x.art), ['ferien', 'klausur', 'ausflug']);
+gleich('Kalender: Ferien, Klausur, Ausfall laut WebUntis, Termin', e.map((x) => x.art), ['ferien', 'klausur', 'ausfall', 'ausflug']);
 gleich('mehrtägig an jedem Tag', amTag(e, '2026-10-25').map((x) => x.titel), ['Herbstferien']);
 
 // ICS hin und zurück

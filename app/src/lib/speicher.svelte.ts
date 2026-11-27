@@ -460,7 +460,7 @@ async function staendeUmschluesseln(alt: Datenschluessel | undefined, neu: Daten
   });
 }
 
-// ---------- Gemerkte Zugangsdaten (WebUntis-Schlüssel), verschlüsselt mit dem Datenschlüssel ----------
+// ---------- Gemerkte Zugangsdaten (WebUntis-Schlüssel, IServ-Abo-Link), verschlüsselt mit dem Datenschlüssel ----------
 const geheimAlt = (name: string) => `leo-${name}-geheim`; // ohne HTTPS (und bis 0.5) unverschlüsselt im localStorage
 export async function geheimHolen(name: string): Promise<string> {
   if (schluessel) {
@@ -481,9 +481,11 @@ export async function geheimSetzen(name: string, wert: string | null) {
 /** Bisher unverschlüsselt gemerkte Zugangsdaten verschlüsseln. */
 async function geheimUebernehmen() {
   if (!schluessel) return;
-  let w: string | null = null;
-  try { w = localStorage.getItem(geheimAlt('untis')); } catch { /* egal */ }
-  if (w) await geheimSetzen('untis', w);
+  for (const name of ['untis', 'iserv']) {
+    let w: string | null = null;
+    try { w = localStorage.getItem(geheimAlt(name)); } catch { /* egal */ }
+    if (w) await geheimSetzen(name, w);
+  }
 }
 async function geheimeUmschluesseln(alt: Datenschluessel, neu: Datenschluessel) {
   const liste = (await alle<GeheimText & { id: string }>('tresor')).filter((x) => x.id.startsWith('geheim-'));

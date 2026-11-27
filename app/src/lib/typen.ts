@@ -114,10 +114,18 @@ export interface Termin {
   kursIds?: string[]; // betroffene Klassen (Ausfall, Exkursion, Abgabe)
   unterrichtFrei?: boolean; // zählt in der Semesterplanung nicht als Block
   notiz?: string;
-  quelle?: 'ics'; // aus einer Kalenderdatei (z. B. IServ), beim nächsten Import ersetzt
-  uid?: string; // UID aus der Kalenderdatei
+  // Herkunft (K3, K10, V17): ics = Datei-Import, iserv = IServ-Kalender-Abo, untis = WebUntis-Prüfung.
+  // Fehlt = eigener Termin. Abgeglichene Termine werden beim nächsten Abgleich ersetzt (Quelle gewinnt bei Titel und Zeit).
+  quelle?: 'ics' | 'iserv' | 'untis';
+  uid?: string; // UID aus der Kalenderdatei bzw. Prüfungs-ID aus WebUntis
+  ort?: string;
+  // Was die Lehrkraft an einem abgeglichenen Termin selbst festlegt (Art, Klassen, unterrichtsfrei, ausgeblendet),
+  // bleibt beim nächsten Abgleich erhalten.
+  angepasst?: boolean;
+  ausgeblendet?: boolean;
+  fremd?: boolean; // WebUntis-Prüfung einer anderen Lehrkraft in einer eigenen Klasse (nur Hinweis, kein eigener Block)
 }
-export type TerminArt = 'konferenz' | 'aufsicht' | 'sprechtag' | 'abgabe' | 'ausflug' | 'ausfall' | 'frei' | 'sonstiges';
+export type TerminArt = 'konferenz' | 'aufsicht' | 'sprechtag' | 'abgabe' | 'ausflug' | 'ausfall' | 'frei' | 'sonstiges' | 'pruefung';
 
 /** Ferien und Feiertage (aus WebUntis); ohne Abgleich nimmt L.E.O. Beispielwerte (semester.ts). */
 export interface FreieZeit {
@@ -351,6 +359,16 @@ export interface Einstellungen {
   module?: Partial<Record<string, boolean>>; // eigene Modulauswahl (module.ts, docs/MODULE.md), fehlt = Standard des Moduls
   eingerichtet?: boolean; // false = Einrichtungsassistent beim ersten Start noch offen; fehlt = ältere Daten, gilt als eingerichtet
   herkunft?: 'papier' | 'idoceo' | 'upz' | 'excel' | 'neu'; // womit die Lehrkraft vorher gearbeitet hat (Einrichtung)
+  kalender?: KalenderAbgleich; // Abgleich mit IServ und WebUntis (K3, K10, V17)
+}
+
+/** Stand des Kalenderabgleichs. Der IServ-Abo-Link selbst liegt verschlüsselt im Tresor (geheim „iserv“), nie hier. */
+export interface KalenderAbgleich {
+  iservAuto?: boolean; // IServ-Abo automatisch abgleichen, fehlt = an
+  iservAbgerufen?: string; // ISO-Zeitpunkt des letzten erfolgreichen Abrufs
+  iservAnzahl?: number;
+  untisPruefungen?: boolean; // Prüfungen aus WebUntis im Kalender zeigen, fehlt = an
+  fremdePruefungen?: boolean; // auch Klausuren anderer Lehrkräfte in den eigenen Klassen zeigen, fehlt = an
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */

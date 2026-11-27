@@ -62,7 +62,7 @@ export const MODULE: Modul[] = [
     pfade: ['/nachschreiben'] },
   { id: 'stundenplan', name: 'Stundenplan', text: 'Dein Plan als Woche oder Tag, aus WebUntis.', bereich: 'organisation', standard: true,
     pfade: ['/stundenplan'] },
-  { id: 'kalender', name: 'Kalender', text: 'Monatsansicht mit Klausuren, Nachschreibeterminen, Ferien und eigenen Terminen.', bereich: 'organisation', standard: true,
+  { id: 'kalender', name: 'Kalender', text: 'Monatsansicht mit Klausuren, Nachschreibeterminen, Ferien und eigenen Terminen, abgeglichen mit WebUntis (Prüfungen, Ausfälle) und deinem IServ-Kalender.', bereich: 'organisation', standard: true,
     braucht: ['stundenplan'] },
   { id: 'planung', name: 'Semesterplanung', text: 'Unterrichtsreihen auf die freien Blöcke legen, „Wo wir stehengeblieben sind“.', bereich: 'organisation', standard: true,
     pfade: ['/planung/'], reiter: { text: 'Planung', pfad: '/planung/', aktiv: 'planung' } },
