@@ -49,7 +49,7 @@
         <button class="pille" aria-pressed={d.einstellungen.theme === w} onclick={() => { d.einstellungen.theme = w as 'system'; speichern(); }}>{t}</button>
       {/each}
     </div>
-    <label class="zeile schalter"><input type="checkbox" bind:checked={d.einstellungen.stundenendeHinweis} onchange={speichern} /> Hinweis „n Schüler ohne Mitarbeitseintrag“ (E55)</label>
+    <label class="zeile schalter"><input type="checkbox" bind:checked={d.einstellungen.stundenendeHinweis} onchange={speichern} /> Beim Abschließen der Stunde zeigen, wer noch keinen Smiley hat</label>
   </section>
 
   <section class="karte">
