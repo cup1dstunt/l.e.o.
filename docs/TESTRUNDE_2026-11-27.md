@@ -52,8 +52,8 @@ Selbsteinschätzung mit echten Links, Hochladen echter Dateien, Mailversand, EWH
 
 | # | Befund | Vorschlag |
 |---|---|---|
-| B3 | **Handy-Sitzplan bei 8 Spalten unlesbar**: Namen werden zu „K… Y.“ abgeschnitten (Reihen-Vorlage, 390 px). | Am Handy kleinere Schrift und nur Vorname, oder waagrecht scrollen mit fester Platzbreite. Gemeinsam planen. |
-| B4 | **Gleichnamige Schüler** (zwei „Bastian Iwanow“ in einer Klasse): Sitzplan und Live-Stunde zeigen zweimal „Bastian I.“, die Suche zwei gleiche Zeilen. | Bei gleichem Kurznamen automatisch unterscheiden (z. B. „Bastian I. ¹/²“ oder Geburtsjahr in der Suche). |
+| B3 | **Erledigt (Tischspalten mit Mindestbreite, Gänge schmal, Namen umbrechen; zur Not waagrecht wischen).** **Handy-Sitzplan bei 8 Spalten unlesbar**: Namen werden zu „K… Y.“ abgeschnitten (Reihen-Vorlage, 390 px). | Am Handy kleinere Schrift und nur Vorname, oder waagrecht scrollen mit fester Platzbreite. Gemeinsam planen. |
+| B4 | **Erledigt (eindeutige Kurznamen (mehr Buchstaben, sonst Geburtsjahr oder Nummer), Suche zeigt Geburtsjahr).** **Gleichnamige Schüler** (zwei „Bastian Iwanow“ in einer Klasse): Sitzplan und Live-Stunde zeigen zweimal „Bastian I.“, die Suche zwei gleiche Zeilen. | Bei gleichem Kurznamen automatisch unterscheiden (z. B. „Bastian I. ¹/²“ oder Geburtsjahr in der Suche). |
 | B5 | **Erledigt (E121).** **Begriff „Mitarbeit“** steht noch an mehreren Stellen, obwohl es „mündliche Leistungen“ heißt: Heute („Mitarbeit-Einträge“, Knopf „Mitarbeit/Anwesenheit“), Live-Stunde („Nur Mitarbeit“, „Mitarbeit heute“, „ohne Mitarbeitseintrag“), Notenbuch („Mitarbeit-Smileys“). | Frage an Konstantin: Sind die Smileys „Mitarbeit“ (ein Kriterium) und darf das so bleiben, oder überall „mündlich“? |
 
 ### Offen, Priorität mittel
@@ -61,8 +61,8 @@ Selbsteinschätzung mit echten Links, Hochladen echter Dateien, Mailversand, EWH
 | # | Befund | Vorschlag |
 |---|---|---|
 | B6 | **Erledigt (E121).** **Gesamtnote ohne Klausurnote**: Wer nur Smileys hat, bekommt eine Gesamtnote allein aus dem AT. Der Rechenweg schreibt trotzdem „Klausuren 50 % + AT 50 %“. Die Warnung „wenige Noten“ erscheint. | Rechenweg ehrlich: „Klausuren leer, zählt nicht → Gesamt = AT“. Frage: soll ohne Klausur überhaupt eine Gesamtnote erscheinen? |
-| B7 | Selbst angelegte zusammengelegte Klasse mit Schrägstrich („GH 25-1/25-2“) wird beim Stammdaten-Export nicht erkannt; nur Komma („GH 25-1, GH 25-2“, so wie WebUntis es liefert) klappt. | Beim Erkennen auch „/“ und „+“ als Trenner nehmen. |
-| B8 | Handy: Kurs-Reiter werden rechts abgeschnitten („Gru…“), ohne Hinweis, dass man wischen kann. | Weicher Rand rechts als Wisch-Hinweis. |
+| B7 | **Erledigt („/“, „+“ und „&“ als Trenner, „GH 25-1/25-2“ wird zu GH 25-1 und GH 25-2).** Selbst angelegte zusammengelegte Klasse mit Schrägstrich („GH 25-1/25-2“) wird beim Stammdaten-Export nicht erkannt; nur Komma („GH 25-1, GH 25-2“, so wie WebUntis es liefert) klappt. | Beim Erkennen auch „/“ und „+“ als Trenner nehmen. |
+| B8 | **Erledigt (Reiter laufen rechts weich aus, aktiver Reiter wird ins Bild geholt).** Handy: Kurs-Reiter werden rechts abgeschnitten („Gru…“), ohne Hinweis, dass man wischen kann. | Weicher Rand rechts als Wisch-Hinweis. |
 
 ### Offen, Priorität niedrig
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   // Beamer-Ansicht (P6, PF25, E78): nur Namenziehen als Rad, Gruppen und Timer. Keine Noten, keine Bewertungen.
   import { onMount, untrack } from 'svelte';
-  import { kurzname } from '$lib/hilfen';
+  import { kurznameIn } from '$lib/hilfen';
   import { app } from '$lib/speicher.svelte';
   import type { Kurs, Schueler } from '$lib/typen';
 
@@ -10,6 +10,7 @@
     ziehen: () => string | undefined; neuBilden: () => void; schliessen: () => void;
   } = $props();
   const d = app.d!;
+  const kurzname = $derived(kurznameIn(d.schueler.filter((x) => kurs.schueler.includes(x.id)))); // eindeutig bei gleichen Namen (B4)
   const kn = (id: string) => { const s = d.schueler.find((x) => x.id === id); return s ? kurzname(s) : '?'; };
 
   let reiter = $state<'zufall' | 'gruppen' | 'timer'>('zufall');

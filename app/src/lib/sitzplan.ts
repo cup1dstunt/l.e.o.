@@ -39,3 +39,15 @@ export function verteilen(plan: Sitzplan, schuelerIds: string[]) {
 export function lehrersicht(anzahl: number): number[] {
   return Array.from({ length: anzahl }, (_, i) => anzahl - 1 - i);
 }
+
+/** Spaltenbreiten fürs Raster (Testrunde B3): Gänge ohne Tisch schmal, Tischspalten mit Mindestbreite,
+ *  damit die Namen am Handy lesbar bleiben (lieber waagrecht wischen als „K… Y.“). */
+export function spaltenVorlage(plan: Pick<Sitzplan, 'spalten' | 'reihen' | 'tische'>, min = 48): string {
+  const spalten: string[] = [];
+  for (let sp = 0; sp < plan.spalten; sp++) {
+    let tisch = false;
+    for (let r = 0; r < plan.reihen; r++) if (plan.tische[r * plan.spalten + sp]) tisch = true;
+    spalten.push(tisch ? `minmax(${min}px, 1fr)` : 'minmax(8px, 0.35fr)');
+  }
+  return spalten.join(' ');
+}

@@ -181,7 +181,7 @@ export function pruefungenZuordnen(roh: any[], kurse: KursRef[], klassenNamen: M
     const su = p.subject;
     const suId = typeof su === 'number' ? su : typeof su === 'object' ? su?.id : undefined;
     const suName = norm(typeof su === 'string' ? su : typeof su === 'object' ? su?.name ?? su?.longName : suId !== undefined ? faecher.get(suId) : '');
-    const inKlasse = kurse.filter((k) => (k.klassen ?? [k.klasseId]).some((x) => klIds.has(x)) || k.klasse.split(',').some((x) => klNamen.has(norm(x))));
+    const inKlasse = kurse.filter((k) => (k.klassen ?? [k.klasseId]).some((x) => klIds.has(x)) || klassenTeile(k.klasse).some((x) => klNamen.has(norm(x))));
     if (!inKlasse.length) continue;
     const fachPasst = (k: KursRef) => (suId !== undefined && suId === k.fachId) || (!!suName && [norm(k.fach), norm(k.fachKurz)].includes(suName));
     const eigene = inKlasse.filter(fachPasst);
@@ -492,7 +492,19 @@ export interface Ergebnis {
 }
 
 const klNorm = (x: string) => (x ?? '').toLowerCase().replace(/\s+/g, '');
-const klassenListe = (klasse: string) => klasse.split(',').map(klNorm).filter(Boolean);
+/** Zusammengelegte Klassen zerlegen (Testrunde B7): Komma wie in WebUntis, auch „/“, „+“ und „&“.
+ *  Fehlt beim zweiten Teil der Bildungsgang („GH 25-1/25-2“), wird er vom vorigen Teil übernommen. */
+export function klassenTeile(klasse: string): string[] {
+  const teile: string[] = [];
+  for (const roh of (klasse ?? '').split(/[,/+&]/)) {
+    const t = roh.trim();
+    if (!t) continue;
+    const vorne = teile.length ? teile[teile.length - 1].replace(/\S+$/, '') : '';
+    teile.push(/^[\d-]+$/.test(t) && vorne.trim() ? `${vorne}${t}` : t);
+  }
+  return teile;
+}
+const klassenListe = (klasse: string) => klassenTeile(klasse).map(klNorm).filter(Boolean);
 
 /** Alle Klassennamen der eigenen WebUntis-Klassen (für den Abgleich mit der Klasse aus dem Export). */
 export const eigeneKlassen = (d: Daten, dazu: string[] = []) => new Set([...d.kurse.filter((k) => k.untis).map((k) => k.klasse), ...dazu].flatMap(klassenListe));

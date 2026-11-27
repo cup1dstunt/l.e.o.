@@ -2,6 +2,27 @@ import type { Daten, Kurs, Schueler, Stunde } from './typen.ts';
 
 export const name = (s: Schueler) => `${s.vorname} ${s.nachname}`;
 export const kurzname = (s: Schueler) => `${s.vorname} ${s.nachname[0]}.`;
+
+/** Kurznamen, die in einer Liste eindeutig sind (Testrunde B4): erst mehr Buchstaben vom Nachnamen,
+ *  bei ganz gleichem Namen das Geburtsjahr bzw. eine laufende Nummer. */
+export function kurznameIn(alle: Schueler[]): (s: Schueler) => string {
+  const fest = new Map<string, string>();
+  const gruppen = new Map<string, Schueler[]>();
+  for (const s of alle) { const k = kurzname(s); gruppen.set(k, [...(gruppen.get(k) ?? []), s]); }
+  for (const [k, liste] of gruppen) {
+    if (liste.length === 1) { fest.set(liste[0].id, k); continue; }
+    for (const s of liste) {
+      let n = 2;
+      while (n < s.nachname.length && liste.some((x) => x !== s && x.vorname === s.vorname && x.nachname.slice(0, n) === s.nachname.slice(0, n))) n++;
+      const gleich = liste.filter((x) => x.vorname === s.vorname && x.nachname === s.nachname);
+      if (gleich.length < 2) { fest.set(s.id, `${s.vorname} ${s.nachname.slice(0, n)}${n < s.nachname.length ? '.' : ''}`); continue; }
+      const jahre = gleich.map((x) => x.geburt?.slice(0, 4) ?? '');
+      const jahrHilft = jahre.every((j) => j) && new Set(jahre).size === jahre.length;
+      fest.set(s.id, `${kurzname(s)} ${jahrHilft ? `(${s.geburt.slice(2, 4)})` : `(${gleich.indexOf(s) + 1})`}`);
+    }
+  }
+  return (s: Schueler) => fest.get(s.id) ?? kurzname(s);
+}
 export const alter = (s: Schueler, heute = new Date()) => {
   if (!s.geburt) return null; // aus WebUntis ohne Export unbekannt
   const g = new Date(s.geburt);

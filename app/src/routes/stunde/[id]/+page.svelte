@@ -2,7 +2,7 @@
   import { istAn } from '$lib/module';
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId, materialOeffnen } from '$lib/speicher.svelte';
-  import { schuelerVon, kurzname, name, heuteISO, minuten, stundenHeute, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { schuelerVon, kurznameIn, name, heuteISO, minuten, stundenHeute, datumKurz, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -10,7 +10,7 @@
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import type { MitarbeitEintrag, Stufe, Schueler } from '$lib/typen';
   import { onMount } from 'svelte';
-  import { lehrersicht } from '$lib/sitzplan';
+  import { lehrersicht, spaltenVorlage } from '$lib/sitzplan';
   import Werkzeuge from '$lib/ui/Werkzeuge.svelte';
   import { blockAm, reiheText } from '$lib/semester';
   import MaterialListe from '$lib/ui/MaterialListe.svelte';
@@ -19,6 +19,7 @@
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
   const liste = $derived(kurs ? schuelerVon(d, kurs) : []);
+  const kurzname = $derived(kurznameIn(liste)); // eindeutig bei gleichen Namen (B4)
   const heute = heuteISO();
 
   // Zeitbalken: laufende Stunde laut Plan, sonst 90 Minuten ab Öffnen (zum Testen)
@@ -241,7 +242,7 @@
             {/if}
             <span class="klein leise">{sitzModus === 'anwesenheit' ? 'Antippen: fehlt · nochmal: kommt später' : 'Antippen: Smiley, Bausteine, Kommentar'}</span>
           </div>
-          <div class="sitze" style:grid-template-columns="repeat({sp.spalten}, minmax(0, 1fr))">
+          <div class="wisch"><div class="sitze" style:grid-template-columns={spaltenVorlage(sp, 46)}>
             {#each lehrersicht(sp.tische.length) as i (i)}
               {@const tisch = sp.tische[i]}
               {@const sid = sp.belegung[i]}
@@ -262,7 +263,7 @@
                 </button>
               {/if}
             {/each}
-          </div>
+          </div></div>
           <div class="tafel klein leise">Lehrertisch · Tafel</div>
           {@const ohnePlatz = liste.filter((x) => !Object.values(sp.belegung).includes(x.id))}
           {#if ohnePlatz.length}<p class="klein leise">Ohne Platz: {ohnePlatz.map(kurzname).join(', ')} · <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>{/if}
@@ -424,6 +425,7 @@
   .umschalter button { border: 0; background: var(--leo-karte); padding: 0 14px; min-height: 34px; color: var(--leo-leise); }
   .umschalter button[aria-pressed='true'] { background: var(--leo-akzent); color: var(--leo-auf-akzent); font-weight: 600; }
   .tafel { text-align: center; border-top: 3px solid var(--leo-linie); margin: 14px 20% 6px; padding-top: 4px; }
+  .wisch { overflow-x: auto; }
   .sitze { display: grid; gap: 6px; }
   .platz { min-height: 64px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); background: var(--leo-karte); padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; }
   .platz.frei { background: var(--leo-flaeche-leise); border-style: dashed; }
@@ -454,5 +456,5 @@
   .ende { justify-content: flex-end; margin-top: 18px; }
   .dialog p { margin: 14px 0 8px; }
   @media (max-width: 1000px) { .bereich { grid-template-columns: 1fr; } }
-  @media (max-width: 720px) { .seite { padding: 12px; } .raster { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .seite { padding: 12px; } .raster { grid-template-columns: 1fr; } .sitze { gap: 4px; } .platz { padding: 4px; min-height: 58px; } .pn { font-size: 11px; white-space: normal; overflow-wrap: break-word; hyphens: auto; line-height: 1.2; } }
 </style>
