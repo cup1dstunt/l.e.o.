@@ -2,11 +2,11 @@
   // Auswertung einer Klasse (Modul A, docs/MODUL_AUSWERTUNG.md): Leistungsbild, Notenspiegel, mündliche Leistungen,
   // Hinweise. Jede Kachel klappt ihre Herkunft auf (E89). Rechnet nur auf dem Gerät, Noten sieht nur die Lehrkraft (E29).
   import { page } from '$app/state';
-  import { app } from '$lib/speicher.svelte';
+  import { app, speichern } from '$lib/speicher.svelte';
   import { istAn } from '$lib/module';
   import { schuelerVon, kurzname, name, datumKurz, heuteISO, prozent } from '$lib/hilfen';
   import { zahl } from '$lib/rechnen';
-  import { gesamtStatistik, leistungsStatistik, muendlichVerlauf, anwesenheitKurz, hinweise, hinweiseJeSchueler, SPIEGEL_BEREICH, spiegelNote, type Spiegel, type HinweisArt } from '$lib/auswertung';
+  import { gesamtStatistik, leistungsStatistik, muendlichVerlauf, anwesenheitKurz, hinweise, hinweiseJeSchueler, SPIEGEL_BEREICH, spiegelNote, schwellenVon, schwelleSchritt, istStandard, SCHWELLEN_STANDARD, notenVerlauf, muendlichSchueler, hoeheVon, grenzeVon, type Spiegel, type HinweisArt, type Schwellen } from '$lib/auswertung';
   import { monatsNameLang } from '$lib/raster';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -23,8 +23,9 @@
   const gesamt = $derived(gesamtStatistik(kurs, ids));
   const leistungen = $derived(leistungsStatistik(kurs, ids));
   const monate = $derived(muendlichVerlauf(d, kurs, ids));
-  const anw = $derived(anwesenheitKurz(d, kurs, ids));
-  const hinw = $derived(hinweiseJeSchueler(hinweise(d, kurs, ids, heuteISO())));
+  const schw = $derived(schwellenVon(d.einstellungen));
+  const anw = $derived(anwesenheitKurz(d, kurs, ids, schw));
+  const hinw = $derived(hinweiseJeSchueler(hinweise(d, kurs, ids, heuteISO(), schw)));
   const ewhAn = $derived(istAn(d.einstellungen, 'ewh'));
 
   // Kopfkacheln: ein Klick zeigt die Namen dahinter
@@ -37,6 +38,43 @@
   let offen = $state<string | null>(null); // aufgeklappte Leistung
   const hoehe = (sp: Spiegel, i: number) => `${(sp.noten[i] / Math.max(1, ...sp.noten)) * 100}%`;
   const ART: Record<HinweisArt, string> = { unter: 'unter der Grenze', kippe: 'auf der Kippe', abfall: 'Leistungsabfall', verstummt: 'mündlich still', fehlzeiten: 'Fehlzeiten' };
+  // Schwellen der Hinweise: gelten für alle Klassen, Plus/Minus statt Eintippen
+  let schwellenOffen = $state(false);
+  function schwelle(k: keyof Schwellen, r: 1 | -1) {
+    d.einstellungen.auswertung = { ...schw, [k]: schwelleSchritt(schw, k, r) };
+    speichern();
+  }
+  function schwellenZurueck() {
+    delete d.einstellungen.auswertung;
+    speichern();
+  }
+  const SCHWELLE_TEXT: { k: keyof Schwellen; text: string; zeige: (w: number) => string }[] = [
+    { k: 'abfallNP', text: 'Leistungsabfall FOS', zeige: (w) => `${w} NP` },
+    { k: 'abfallNote', text: 'Leistungsabfall OSZ', zeige: (w) => `${zahl(w, 1)} ${w === 1 ? 'Note' : 'Noten'}` },
+    { k: 'stillTage', text: 'Mündlich still seit', zeige: (w) => `${w} Tagen` },
+    { k: 'fehlzeitenAb', text: 'Fehlzeiten ab', zeige: (w) => `${w} %` }
+  ];
+  const abfallText = $derived(fos ? `${schw.abfallNP} NP` : `${zahl(schw.abfallNote, 1)} ${schw.abfallNote === 1 ? 'Note' : 'Noten'}`);
+
+  // Verlauf (A2): Klassenschnitt je datierter Leistung, auf Wunsch ein Schüler dazu
+  let verlaufSid = $state(page.url.searchParams.get('s') ?? '');
+  const verlauf = $derived(notenVerlauf(kurs, ids, verlaufSid || undefined));
+  const verlaufMuendlich = $derived(verlaufSid ? muendlichSchueler(d, kurs, verlaufSid) : []);
+  const B = 640, H = 200, RL = 34, RR = 12, RO = 12, RU = 28;
+  const vx = (i: number, n: number) => RL + (n <= 1 ? (B - RL - RR) / 2 : (i * (B - RL - RR)) / (n - 1));
+  const vy = (w: number) => RO + (1 - hoeheVon(kurs.profil, w)) * (H - RO - RU);
+  const linie = (werte: (number | null | undefined)[]) => {
+    let p = '';
+    let neu = true;
+    werte.forEach((w, i) => {
+      if (w === null || w === undefined) { neu = true; return; }
+      p += `${neu ? 'M' : 'L'}${vx(i, werte.length).toFixed(1)},${vy(w).toFixed(1)} `;
+      neu = false;
+    });
+    return p.trim();
+  };
+  const achse = $derived(fos ? [15, 10, 5, 0] : [1, 2, 3, 4, 5, 6]);
+  const wertText = (w: number | null | undefined) => (w === null || w === undefined ? '–' : fos ? zahl(w, w % 1 ? 1 : 0) : zahl(w, w % 1 ? 2 : 0));
   const genauWerte = (sp: Spiegel) => Object.entries(sp.werte).map(([w, s]) => ({ w: Number(w), s })).sort((a, b) => (fos ? b.w - a.w : a.w - b.w));
 </script>
 
@@ -49,7 +87,8 @@
   {:else}
   <div class="seite">
     <section class="karte breit">
-      <div class="zeile"><h2 class="raum">Leistungsbild</h2><span class="klein leise">vorläufige Gesamtnoten, so wie das Notenbuch sie gerade rechnet</span></div>
+      <div class="zeile"><h2 class="raum">Leistungsbild</h2><span class="klein leise untertitel">vorläufige Gesamtnoten, so wie das Notenbuch sie gerade rechnet</span><button class="pille nicht-drucken" onclick={() => window.print()}>Drucken oder als PDF</button></div>
+      <p class="nur-drucken klein">{kurs.name} · {kurs.profil} · Stand {datumKurz(heuteISO())} · nur für die eigene Lehrkraft</p>
       <div class="kacheln">
         <div class="kz"><b class="zahl">{schnitt(gesamt.spiegel.schnitt)}</b><span class="klein leise">Ø Gesamt ({gesamt.spiegel.anzahl} mit Note)</span></div>
         <button class="kz" aria-expanded={kachel === 'unter'} onclick={() => umschalten('unter')}><b class="zahl" class:warn={gesamt.unterIds.length > 0}>{gesamt.unterIds.length}</b><span class="klein leise">unter der Grenze</span></button>
@@ -107,6 +146,54 @@
     </section>
 
     <section class="karte breit">
+      <div class="zeile">
+        <h2 class="raum">Verlauf der Noten</h2>
+        <label class="klein nicht-drucken">Schüler dazu
+          <select bind:value={verlaufSid}>
+            <option value="">nur die Klasse</option>
+            {#each liste as s (s.id)}<option value={s.id}>{name(s)}</option>{/each}
+          </select>
+        </label>
+      </div>
+      {#if verlauf.length}
+        <svg class="verlauf" viewBox="0 0 {B} {H}" role="img" aria-label="Verlauf der Noten: Klassenschnitt{verlaufSid && wer(verlaufSid) ? ' und ' + name(wer(verlaufSid)!) : ''}">
+          {#each achse as a}
+            <line class="gitter" x1={RL} x2={B - RR} y1={vy(a)} y2={vy(a)} />
+            <text class="ax" x={RL - 8} y={vy(a) + 4} text-anchor="end">{a}</text>
+          {/each}
+          <line class="grenze" x1={RL} x2={B - RR} y1={vy(grenzeVon(kurs.profil))} y2={vy(grenzeVon(kurs.profil))} />
+          <path class="lk" d={linie(verlauf.map((p) => p.klasse))} />
+          {#each verlauf as p, i}
+            {#if p.klasse !== null}<circle class="pk" cx={vx(i, verlauf.length)} cy={vy(p.klasse)} r="4"><title>{p.leistung.name}: Ø {wertText(p.klasse)}</title></circle>{/if}
+            <text class="ax" x={vx(i, verlauf.length)} y={H - 8} text-anchor="middle">{datumKurz(p.leistung.datum!)}</text>
+          {/each}
+          {#if verlaufSid}
+            <path class="ls" d={linie(verlauf.map((p) => p.schueler))} />
+            {#each verlauf as p, i}{#if p.schueler !== null && p.schueler !== undefined}<circle class="ps" cx={vx(i, verlauf.length)} cy={vy(p.schueler)} r="5"><title>{p.leistung.name}: {wertText(p.schueler)}</title></circle>{/if}{/each}
+          {/if}
+        </svg>
+        <p class="legende klein leise">
+          <span><i class="lk-m"></i>Ø Klasse</span>
+          {#if verlaufSid && wer(verlaufSid)}<span><i class="ls-m"></i>{name(wer(verlaufSid)!)}</span>{/if}
+          <span><i class="gr-m"></i>Grenze ({fos ? '5 NP' : 'Note 4'})</span>
+          <span>oben = besser</span>
+        </p>
+        <table class="zahl">
+          <thead><tr><th>Leistung</th><th>Datum</th><th class="r">Ø Klasse</th>{#if verlaufSid}<th class="r">{wer(verlaufSid) ? kurzname(wer(verlaufSid)!) : 'Schüler'}</th>{/if}</tr></thead>
+          <tbody>{#each verlauf as p (p.leistung.id)}<tr><td>{p.leistung.name} <span class="klein leise">{p.leistung.art}</span></td><td>{datumKurz(p.leistung.datum!)}</td><td class="r">{wertText(p.klasse)} <span class="klein leise">({p.anzahl})</span></td>{#if verlaufSid}<td class="r" class:warn={p.schueler !== null && p.schueler !== undefined && (fos ? p.schueler < 5 : p.schueler > 4)}>{wertText(p.schueler)}</td>{/if}</tr>{/each}</tbody>
+        </table>
+        {#if verlaufSid}
+          <div class="zeile mv">
+            <span class="klein leise">Mündlich je Monat:</span>
+            {#each verlaufMuendlich as m}<span class="ms klein"><Smiley stufe={Math.round(m.schnitt)} groesse={18} /> {monatsNameLang(m.monat)} ({m.eintraege})</span>{:else}<span class="klein leise">noch keine Einträge</span>{/each}
+            {#if wer(verlaufSid)}<a class="klein nicht-drucken" href="/schueler/{verlaufSid}?kurs={kurs.id}">zur Schülerkarte ›</a>{/if}
+          </div>
+        {/if}
+        <p class="klein leise">Nur Leistungen mit Datum. UE zählt wie im Notenbuch als schlechtester Wert.</p>
+      {:else}<p class="klein leise">Noch keine Leistungen mit Datum. Im Notenbuch beim Anlegen einer Leistung ein Datum setzen.</p>{/if}
+    </section>
+
+    <section class="karte breit">
       <div class="zeile"><h2 class="raum">Leistungen</h2>{#if ewhAn}<a class="pille" href="/ewh/{kurs.id}">Klausur aus EWH übernehmen</a>{/if}</div>
       {#if leistungen.length}
         <ul class="ll">
@@ -139,8 +226,23 @@
     </section>
 
     <section class="karte breit">
-      <h2>Genauer hinsehen</h2>
-      <p class="klein leise">Leise Hinweise, keine Bewertung: Leistungsabfall (letzte Note {fos ? '3 NP' : '1 Note'} unter dem eigenen Schnitt), seit 3 Wochen mündlich still, Fehlzeiten ab 20 %, Gesamtnote auf der Kippe.</p>
+      <div class="zeile"><h2 class="raum">Genauer hinsehen</h2><button class="pille nicht-drucken" aria-pressed={schwellenOffen} onclick={() => (schwellenOffen = !schwellenOffen)}>Schwellen anpassen</button></div>
+      <p class="klein leise">Leise Hinweise, keine Bewertung: Leistungsabfall (letzte Note {abfallText} unter dem eigenen Schnitt), seit {schw.stillTage} Tagen mündlich still, Fehlzeiten ab {schw.fehlzeitenAb} %, Gesamtnote unter der Grenze oder auf der Kippe.</p>
+      {#if schwellenOffen}
+        <div class="detail schwellen nicht-drucken">
+          {#each SCHWELLE_TEXT as x (x.k)}
+            <div class="sz">
+              <span>{x.text}</span>
+              <button class="taste" aria-label="{x.text} kleiner" onclick={() => schwelle(x.k, -1)}>−</button>
+              <b class="zahl">{x.zeige(schw[x.k])}</b>
+              <button class="taste" aria-label="{x.text} größer" onclick={() => schwelle(x.k, 1)}>+</button>
+              {#if schw[x.k] !== SCHWELLEN_STANDARD[x.k]}<span class="klein leise">Standard {x.zeige(SCHWELLEN_STANDARD[x.k])}</span>{/if}
+            </div>
+          {/each}
+          <p class="klein leise">Gilt für alle deine Klassen. Unter der Grenze und auf der Kippe folgen fest der Warnampel im Notenbuch, die 30-%-Regel bleibt fest.
+            {#if !istStandard(schw)}<button class="link" onclick={schwellenZurueck}>Zurück auf Standard</button>{/if}</p>
+        </div>
+      {/if}
       {#if hinw.length}
         <ul class="hl">
           {#each hinw as h (h.sid)}
@@ -200,7 +302,39 @@
   .hchip { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: var(--leo-r-pill); background: var(--leo-taste); color: var(--leo-tinte); }
   .hchip.unter, .hchip.abfall { background: var(--leo-warnung-hell); color: var(--leo-warnung); }
   .hchip.kippe, .hchip.fehlzeiten { background: var(--leo-stern-hell); color: #8a6200; }
+  .schwellen { display: grid; gap: 6px; }
+  .sz { display: grid; grid-template-columns: minmax(150px, 220px) auto 90px auto 1fr; gap: 8px; align-items: center; }
+  .sz b { text-align: center; }
+  .taste { min-width: var(--leo-ziel-touch); min-height: var(--leo-ziel-touch); border-radius: var(--leo-r-m); border: 1px solid var(--leo-linie); background: var(--leo-karte); color: var(--leo-tinte); font-size: 18px; font-weight: 700; }
+  .taste:hover { border-color: var(--leo-akzent); }
+  .link { border: 0; background: none; color: var(--leo-akzent); text-decoration: underline; padding: 0; font: inherit; }
+  .verlauf { width: 100%; height: auto; max-height: 260px; margin-top: 8px; display: block; }
+  .verlauf .gitter { stroke: var(--leo-linie-fein); stroke-width: 1; }
+  .verlauf .grenze { stroke: var(--leo-warnung); stroke-width: 1; stroke-dasharray: 4 4; opacity: .7; }
+  .verlauf .ax { font-size: 11px; fill: var(--leo-leise); }
+  .verlauf .lk { fill: none; stroke: var(--leo-akzent); stroke-width: 2.5; }
+  .verlauf .pk { fill: var(--leo-akzent); }
+  .verlauf .ls { fill: none; stroke: var(--leo-stern); stroke-width: 2.5; }
+  .verlauf .ps { fill: var(--leo-karte); stroke: var(--leo-stern); stroke-width: 2.5; }
+  .legende { display: flex; gap: 16px; flex-wrap: wrap; margin: 4px 0 0; }
+  .legende i { display: inline-block; width: 18px; height: 0; vertical-align: middle; margin-right: 6px; border-top: 3px solid var(--leo-akzent); }
+  .legende i.ls-m { border-top-color: var(--leo-stern); }
+  .legende i.gr-m { border-top: 2px dashed var(--leo-warnung); }
+  .mv { gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  select { min-height: 36px; margin-left: 6px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); background: var(--leo-karte); color: var(--leo-tinte); padding: 0 8px; }
+  .nur-drucken { display: none; }
+  @media print {
+    :global(nav), :global(.kopf .reiter), .nicht-drucken { display: none !important; }
+    :global(main) { margin: 0 !important; padding: 0 !important; }
+    .nur-drucken { display: block; }
+    .seite { grid-template-columns: 1fr 1fr; padding: 0; gap: 10px; }
+    .seite > section { break-inside: avoid; overflow: visible; box-shadow: none; }
+  }
   @media (max-width: 900px) {
+    .zeile { flex-wrap: wrap; }
+    .untertitel { order: 3; flex-basis: 100%; }
+    .sz { grid-template-columns: 1fr auto 80px auto; }
+    .sz > .klein { grid-column: 1 / -1; }
     .seite { grid-template-columns: minmax(0, 1fr); padding: 12px 16px 40px; }
     .lz { grid-template-columns: 1fr 80px; row-gap: 4px; }
     .lz .mini { display: none; }

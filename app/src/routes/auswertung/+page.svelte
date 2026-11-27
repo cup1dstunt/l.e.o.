@@ -3,18 +3,18 @@
   import { app } from '$lib/speicher.svelte';
   import { istAn } from '$lib/module';
   import { zahl } from '$lib/rechnen';
-  import { klassenVergleich } from '$lib/auswertung';
+  import { klassenVergleich, schwellenVon } from '$lib/auswertung';
   import Smiley from '$lib/ui/Smiley.svelte';
 
   const d = app.d!;
-  const zeilen = $derived(klassenVergleich(d));
+  const zeilen = $derived(klassenVergleich(d, schwellenVon(d.einstellungen)));
   const schnitt = (p: string, x: number | null) => (x === null ? '–' : p === 'FOS' ? zahl(x, 1) + ' NP' : zahl(x, 2));
 </script>
 
 <svelte:head><title>Auswertung · alle Klassen</title></svelte:head>
 
 <div class="seite">
-  <h1>Alle Klassen</h1>
+  <div class="zeile"><h1 class="raum">Alle Klassen</h1><button class="pille nicht-drucken" onclick={() => window.print()}>Drucken oder als PDF</button></div>
   <p class="leise">Vorläufige Gesamtnoten, Fehlzeiten und mündliche Leistungen deiner Klassen auf einen Blick. Eine Zeile öffnet die Auswertung der Klasse.</p>
   {#if !istAn(d.einstellungen, 'statistik')}
     <p class="karte">Das Modul Auswertung ist ausgeschaltet. Einschalten unter <a href="/mehr">Mehr › Module</a>.</p>
@@ -55,4 +55,8 @@
   .warn { color: var(--leo-warnung); font-weight: 600; }
   .gold { color: #8a6200; font-weight: 600; }
   @media (max-width: 720px) { .seite { padding: 16px; } td, th { padding: 6px 4px; } }
+  @media print {
+    :global(nav), .nicht-drucken { display: none !important; }
+    :global(main) { margin: 0 !important; padding: 0 !important; }
+  }
 </style>

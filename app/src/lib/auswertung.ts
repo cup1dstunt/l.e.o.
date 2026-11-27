@@ -2,7 +2,7 @@
 // Alles rechnet das Gerät aus den eigenen Daten. Nichts verlässt das Gerät, Noten sieht nur die Lehrkraft (E29).
 // Fehlzeiten und Verspätungen kommen hier nur als Kurzfassung vor, die Einzelheiten stehen im Reiter „Anwesenheit“.
 
-import type { Daten, Kurs, Leistung, Profil } from './typen.ts';
+import type { Daten, Einstellungen, Kurs, Leistung, Profil } from './typen.ts';
 import { rechne, zellWert, zellSchluessel, bestanden, npZuNote, warnungen, SKALA } from './rechnen.ts';
 import { fehlzeitenVon, verspaetungenVon } from './hilfen.ts';
 
@@ -122,14 +122,14 @@ export interface AnwesenheitKurz {
   minuten: number;
 }
 
-export function anwesenheitKurz(d: Daten, kurs: Kurs, ids: string[]): AnwesenheitKurz {
+export function anwesenheitKurz(d: Daten, kurs: Kurs, ids: string[], s: Schwellen = SCHWELLEN_STANDARD): AnwesenheitKurz {
   const r: AnwesenheitKurz = { hoch: [], mittel: [], schnitt: 0, verspaetungen: 0, minuten: 0 };
   let summe = 0;
   for (const sid of ids) {
     const fz = fehlzeitenVon(d, kurs.id, sid);
     summe += fz.quote;
     if (fz.quote > 0.3) r.hoch.push(sid);
-    else if (fz.quote >= 0.2) r.mittel.push(sid);
+    else if (fz.quote >= s.fehlzeitenAb / 100 - 1e-9) r.mittel.push(sid);
     const v = verspaetungenVon(d, kurs.id, sid);
     r.verspaetungen += v.length;
     r.minuten += v.reduce((a, x) => a + x.minuten, 0);
@@ -142,16 +142,52 @@ export type HinweisArt = 'abfall' | 'verstummt' | 'fehlzeiten' | 'kippe' | 'unte
 export interface Hinweis { sid: string; art: HinweisArt; text: string }
 
 const TAG = 86_400_000;
-export const VERSTUMMT_TAGE = 21;
+
+/** Schwellen der leisen Hinweise. Die Lehrkraft kann sie in der Auswertung ändern (einstellungen.auswertung). */
+export interface Schwellen {
+  abfallNP: number; // FOS: letzte Note so viele Notenpunkte unter dem eigenen Schnitt davor
+  abfallNote: number; // OSZ: so viele Notenstufen schlechter
+  stillTage: number; // so viele Tage ohne Eintrag bei den mündlichen Leistungen
+  fehlzeitenAb: number; // Fehlzeiten ab diesem Prozentwert
+}
+export const SCHWELLEN_STANDARD: Schwellen = { abfallNP: 3, abfallNote: 1, stillTage: 21, fehlzeitenAb: 20 };
+/** Erlaubte Bereiche und Schritte für die Plus/Minus-Knöpfe. */
+export const SCHWELLEN_BEREICH: Record<keyof Schwellen, { min: number; max: number; schritt: number }> = {
+  abfallNP: { min: 1, max: 8, schritt: 1 },
+  abfallNote: { min: 0.5, max: 3, schritt: 0.5 },
+  stillTage: { min: 7, max: 60, schritt: 7 },
+  fehlzeitenAb: { min: 5, max: 30, schritt: 5 }
+};
+
+/** Schwellen aus den Einstellungen, fehlende oder unsinnige Werte fallen auf den Standard zurück. */
+export function schwellenVon(e: Pick<Einstellungen, 'auswertung'> | undefined): Schwellen {
+  const raus = { ...SCHWELLEN_STANDARD };
+  const eigen = e?.auswertung ?? {};
+  for (const k of Object.keys(raus) as (keyof Schwellen)[]) {
+    const w = eigen[k];
+    const b = SCHWELLEN_BEREICH[k];
+    if (typeof w === 'number' && Number.isFinite(w)) raus[k] = Math.min(b.max, Math.max(b.min, w));
+  }
+  return raus;
+}
+
+/** Eine Schwelle um einen Schritt verändern (Plus/Minus). Gibt den neuen, begrenzten Wert zurück. */
+export function schwelleSchritt(s: Schwellen, k: keyof Schwellen, richtung: 1 | -1): number {
+  const b = SCHWELLEN_BEREICH[k];
+  return Math.min(b.max, Math.max(b.min, Math.round((s[k] + richtung * b.schritt) * 100) / 100));
+}
+
+export const istStandard = (s: Schwellen) => (Object.keys(SCHWELLEN_STANDARD) as (keyof Schwellen)[]).every((k) => s[k] === SCHWELLEN_STANDARD[k]);
 
 /** Wer braucht einen zweiten Blick? Leise Hinweise, keine Bewertung (PLANUNG M „Mustererkennung“).
+ *  Standard (einstellbar, Schwellen):
  *  - abfall: letzte Note deutlich schlechter als der eigene Schnitt davor (FOS 3 NP, OSZ 1 Note), mindestens 2 Noten davor
  *  - verstummt: früher mündliche Einträge, seit 21 Tagen keiner
  *  - fehlzeiten: ab 20 %
- *  - unter / kippe: wie die Warnampel im Notenbuch */
-export function hinweise(d: Daten, kurs: Kurs, ids: string[], heute: string): Hinweis[] {
+ *  - unter / kippe: wie die Warnampel im Notenbuch (fest) */
+export function hinweise(d: Daten, kurs: Kurs, ids: string[], heute: string, s: Schwellen = SCHWELLEN_STANDARD): Hinweis[] {
   const fos = kurs.profil === 'FOS';
-  const schwelle = fos ? 3 : 1;
+  const schwelle = fos ? s.abfallNP : s.abfallNote;
   const datiert = kurs.leistungen.filter((l) => l.gruppe !== 'mitarbeit' && l.datum).sort((a, b) => a.datum!.localeCompare(b.datum!));
   const raus: Hinweis[] = [];
   const zeigeNote = (x: number) => (fos ? `${Math.round(x)} NP` : x.toLocaleString('de-DE', { maximumFractionDigits: 1 }));
@@ -172,13 +208,46 @@ export function hinweise(d: Daten, kurs: Kurs, ids: string[], heute: string): Hi
     if (eigene.length) {
       const zuletzt = eigene.reduce((a, m) => (m.zeit > a ? m.zeit : a), '');
       const tage = Math.floor((Date.parse(heute + 'T12:00') - Date.parse(zuletzt.slice(0, 10) + 'T12:00')) / TAG);
-      if (tage >= VERSTUMMT_TAGE) raus.push({ sid, art: 'verstummt', text: `seit ${tage} Tagen kein Eintrag bei den mündlichen Leistungen` });
+      if (tage >= s.stillTage) raus.push({ sid, art: 'verstummt', text: `seit ${tage} Tagen kein Eintrag bei den mündlichen Leistungen` });
     }
     const fz = fehlzeitenVon(d, kurs.id, sid);
-    if (fz.quote >= 0.2) raus.push({ sid, art: 'fehlzeiten', text: `Fehlzeiten ${Math.round(fz.quote * 100)} %` });
+    if (fz.quote >= s.fehlzeitenAb / 100 - 1e-9) raus.push({ sid, art: 'fehlzeiten', text: `Fehlzeiten ${Math.round(fz.quote * 100)} %` });
   }
   return raus;
 }
+
+// ---------- Verlauf (A2): Noten der Klasse und eines Schülers über die Zeit ----------
+
+export interface VerlaufPunkt {
+  leistung: Leistung;
+  klasse: number | null; // Schnitt der Klasse (UE zählt wie im Notenbuch)
+  anzahl: number;
+  schueler?: number | null; // Wert des gewählten Schülers
+}
+
+/** Alle datierten Leistungen (ohne Monatsnoten der mündlichen Leistungen) nach Datum, mit Klassenschnitt
+ *  und, wenn `sid` gesetzt ist, dem Wert dieses Schülers. Leistungen ohne Datum stehen nicht im Verlauf. */
+export function notenVerlauf(kurs: Kurs, ids: string[], sid?: string): VerlaufPunkt[] {
+  return kurs.leistungen
+    .filter((l) => l.gruppe !== 'mitarbeit' && l.datum)
+    .sort((a, b) => a.datum!.localeCompare(b.datum!) || a.name.localeCompare(b.name))
+    .map((l) => {
+      const werte = ids.map((x) => zellWert(kurs.profil, kurs.zellen[zellSchluessel(l.id, x)])).filter((w): w is number => w !== null);
+      const p: VerlaufPunkt = { leistung: l, klasse: werte.length ? werte.reduce((a, b) => a + b, 0) / werte.length : null, anzahl: werte.length };
+      if (sid) p.schueler = zellWert(kurs.profil, kurs.zellen[zellSchluessel(l.id, sid)]);
+      return p;
+    });
+}
+
+/** Mündliche Leistungen eines Schülers je Monat (Ø Smiley, Anzahl), passend zu muendlichVerlauf der Klasse. */
+export function muendlichSchueler(d: Pick<Daten, 'mitarbeit'>, kurs: Kurs, sid: string): { monat: string; schnitt: number; eintraege: number }[] {
+  return muendlichVerlauf(d, kurs, [sid]).map((m) => ({ monat: m.monat, schnitt: m.schnitt ?? 0, eintraege: m.eintraege }));
+}
+
+/** Maßstab der Verlaufsgrafik: y-Wert 0 (schlecht, unten) bis 1 (gut, oben). FOS 0–15 NP, OSZ Note 6–1. */
+export const hoeheVon = (profil: Profil, w: number) => (profil === 'FOS' ? w / 15 : (6 - w) / 5);
+/** Bestehensgrenze in der Verlaufsgrafik (FOS 5 NP, OSZ Note 4). */
+export const grenzeVon = (profil: Profil) => (profil === 'FOS' ? 5 : 4);
 
 /** Hinweise je Schüler gebündelt, Schüler mit den meisten Hinweisen zuerst. */
 export function hinweiseJeSchueler(h: Hinweis[]) {
@@ -200,11 +269,11 @@ export interface KlassenZeile {
 }
 
 /** Alle eigenen Klassen nebeneinander (Seite „Auswertung“). */
-export function klassenVergleich(d: Daten): KlassenZeile[] {
+export function klassenVergleich(d: Daten, s: Schwellen = SCHWELLEN_STANDARD): KlassenZeile[] {
   return d.kurse.map((kurs) => {
     const ids = kurs.schueler;
     const g = gesamtStatistik(kurs, ids);
-    const a = anwesenheitKurz(d, kurs, ids);
+    const a = anwesenheitKurz(d, kurs, ids, s);
     const m = muendlichVerlauf(d, kurs, ids);
     return {
       kurs,

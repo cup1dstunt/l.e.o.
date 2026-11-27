@@ -362,6 +362,7 @@ export interface Einstellungen {
   eingerichtet?: boolean; // false = Einrichtungsassistent beim ersten Start noch offen; fehlt = ältere Daten, gilt als eingerichtet
   herkunft?: 'papier' | 'idoceo' | 'upz' | 'excel' | 'neu'; // womit die Lehrkraft vorher gearbeitet hat (Einrichtung)
   kalender?: KalenderAbgleich; // Abgleich mit IServ und WebUntis (K3, K10, V17)
+  auswertung?: Partial<{ abfallNP: number; abfallNote: number; stillTage: number; fehlzeitenAb: number }>; // eigene Hinweisschwellen (auswertung.ts), fehlt = Standard
 }
 
 /** Stand des Kalenderabgleichs. Der IServ-Abo-Link selbst liegt verschlüsselt im Tresor (geheim „iserv“), nie hier. */
