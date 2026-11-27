@@ -14,16 +14,25 @@ Die Semesterplanung rechnet mit denselben Daten, damit die Blockzählung stimmt.
 | Quelle | Was | Wie | Wann |
 |---|---|---|---|
 | WebUntis | Ferien und Feiertage (`getHolidays`), Ausfälle eigener Stunden, Prüfungen der eigenen Klassen (`getExamTypes` + `getExams`, sonst Web-Schnittstelle `api/exams`) | beim WebUntis-Abgleich (Mehr › WebUntis), kein zweiter Abruf | von Hand und alle 30 Minuten (E108) |
-| IServ | alle Termine eines abonnierten Kalenders (z. B. Schulkalender, Konferenzen) | Abo-/Export-Link (ICS) einfügen, nginx reicht `/iserv/` an `ISERV_SERVER` durch (CORS) | beim Öffnen, beim Zurückkehren, alle 30 Minuten; Knopf „Jetzt abgleichen“ |
+| IServ | feste Kalender des Schulprofils (OSZ: OSZ-Info, persönlicher Kalender, Ferien & Feiertage Berlin, Aufgaben) und ein weiterer Kalender per Link (E120) | CalDAV mit IServ-Anmeldung über `/iserv-caldav/`, sonst Feed-Link über `/iserv/`; nginx reicht an `ISERV_SERVER` durch (CORS) | beim Öffnen, beim Zurückkehren, alle 30 Minuten; Knopf „Jetzt abgleichen“ |
 | Datei | jede .ics-Datei | Import wie bisher (E115) | von Hand |
 
 Nur lesen. L.E.O. schreibt nichts nach WebUntis oder IServ. Export als .ics enthält weiterhin nur eigene Termine, Klausuren, Tests und Nachschreiben.
 
-### 2.1 Warum Abo-Link und nicht CalDAV
+### 2.1 Kalender am OSZ (E120)
 
-- Der Abo-Link enthält einen geheimen Schlüssel, aber kein Passwort. L.E.O. muss das IServ-Passwort (= Schul-Anmeldung) nie kennen.
-- CalDAV bräuchte Benutzer und Passwort und mehr Aufrufe (PROPFIND/REPORT). Nur nachziehen, falls IServ an der Schule keinen Abo-Link anbietet.
-- **Offen:** Ob und wo IServ an der Schule den Link anbietet (Kalender › Abonnieren/Exportieren). Adresse des Schul-IServ für `ISERV_SERVER` (FRAGEN_SCHULE).
+| Kalender | Weg | Standard | Wirkung |
+|---|---|---|---|
+| OSZ-Info (alle Schultermine, Konferenzen) | nur CalDAV `/caldav/lusadmin/osz-info`, kein Feed-Link | an | Termine im Kalender |
+| Persönlicher Kalender | CalDAV `/caldav/<iserv-benutzer>/home`, sonst Feed „Freigabe für alle Termine“ | an | Termine im Kalender |
+| Ferien & Feiertage Berlin (Plugin) | Plugin-Feed-Link | an | ganztägige Termine werden Ferien, falls WebUntis keine liefert |
+| Aufgaben (Plugin) | Plugin-Feed-Link | aus | Termine als Abgabe |
+
+- Der IServ-Benutzername ist ein eigenes Feld (nicht der WebUntis-Name).
+- Das Passwort liegt auf Wunsch verschlüsselt im Tresor des Geräts (Entscheidung Konstantin, 27.11.). Ohne HTTPS (Aufruf über `http://IP`) wird es nie gespeichert, nur bis zum Neuladen gehalten.
+- CalDAV: `REPORT` mit Zeitfenster; kann der Server das nicht, holt L.E.O. den ganzen Kalender mit `?export`.
+- Schulprofil in `app/src/lib/schule.ts`. Für eine andere Schule ein neues Profil anlegen.
+- **Ungetestet:** echtes IServ (REPORT, Zwei-Faktor-Anmeldung, App-Passwörter), nginx im Container.
 
 ### 2.2 Datenschutz
 
@@ -61,7 +70,7 @@ Nur lesen. L.E.O. schreibt nichts nach WebUntis oder IServ. Export als .ics enth
 
 - `Termin.quelle` erweitert um `'iserv' | 'untis'`, neu `ort`, `angepasst`, `ausgeblendet`, `fremd`; neue Art `pruefung`.
 - `einstellungen.kalender`: `iservAuto`, `iservAbgerufen`, `iservAnzahl`, `untisPruefungen`, `fremdePruefungen` (alle optional, fehlt = an).
-- Tresor: Geheimnis `iserv` (Abo-Link). Container: Umgebungsvariable `ISERV_SERVER` (leer = aus).
+- Tresor: `iserv` (weiterer Link), `iserv-passwort`, `iserv-feed-<kalender>`. Container: `ISERV_SERVER`, voreingestellt `osz-lus.de` (leer = aus).
 
 ## 7 Grenzen und Ungetestetes
 

@@ -3,7 +3,9 @@
 import { ausIcs, wiederholungen, quelleAbgleichen, abgleichText, eintraege, alsIcs } from '../src/lib/kalender.ts';
 import { semesterPlan } from '../src/lib/semester.ts';
 import { pruefungenZuordnen, pruefungenAlsTermine } from '../src/lib/untisimport.ts';
-import { linkPruefen, serverPasst, antwortPruefen, durchreicherPfad } from '../src/lib/iserv.ts';
+import { linkPruefen, serverPasst, antwortPruefen, durchreicherPfad, reportAnfrage, ausMultistatus, basicAuth, caldavPruefen, alsFerien } from '../src/lib/iserv.ts';
+import { schulprofil, caldavPfad } from '../src/lib/schule.ts';
+import { freieZeiten } from '../src/lib/semester.ts';
 
 let ok = 0;
 let fehler = 0;
@@ -131,6 +133,56 @@ gleich('Server passt', serverPasst('iserv.schule.de', 'ISERV.schule.de\n'), '');
 gleich('Server fehlt', serverPasst('iserv.schule.de', '').includes('ISERV_SERVER=iserv.schule.de'), true);
 gleich('Anmeldeseite erkannt', antwortPruefen(200, '<!DOCTYPE html><html>Login').length > 0, true);
 gleich('Kalender ok', antwortPruefen(200, 'BEGIN:VCALENDAR\r\n'), '');
+
+// ---------- IServ fürs OSZ (E120): Schulprofil, CalDAV, Ferien-Plugin ----------
+const osz = schulprofil();
+gleich('Profil OSZ', [osz.iserv, osz.kalender.map((k) => k.id)], ['osz-lus.de', ['osz-info', 'persoenlich', 'ferien', 'aufgaben']]);
+gleich('OSZ-Info fester Pfad', caldavPfad(osz.kalender[0], 'Max.Muster'), '/caldav/lusadmin/osz-info');
+gleich('persönlich mit Benutzer', caldavPfad(osz.kalender[1], ' Max.Muster '), '/caldav/max.muster/home');
+gleich('persönlich ohne Benutzer', caldavPfad(osz.kalender[1], ''), '');
+gleich('Ferien ohne CalDAV', caldavPfad(osz.kalender[2], 'x'), '');
+gleich('unbekanntes Profil = OSZ', schulprofil('gibtsnicht').id, 'osz-lus');
+const rep = reportAnfrage('2026-09-01', '2027-12-31');
+gleich('REPORT mit Zeitraum', rep.includes('<c:time-range start="20260901T000000Z" end="20271231T000000Z"/>') && rep.includes('calendar-query'), true);
+const ms = `<?xml version="1.0"?><d:multistatus xmlns:d="DAV:" xmlns:cal="urn:ietf:params:xml:ns:caldav"><d:response><d:href>/caldav/lusadmin/osz-info/a.ics</d:href><d:propstat><d:prop>
+<cal:calendar-data>BEGIN:VCALENDAR&#13;
+BEGIN:VEVENT&#13;
+UID:gk1&#13;
+DTSTART;TZID=Europe/Berlin:20261209T143000&#13;
+DTEND;TZID=Europe/Berlin:20261209T160000&#13;
+SUMMARY:Gesamtkonferenz &amp; Wahl&#13;
+END:VEVENT&#13;
+END:VCALENDAR&#13;
+</cal:calendar-data></d:prop></d:propstat></d:response><d:response><d:propstat><d:prop><C:calendar-data xmlns:C="urn:ietf:params:xml:ns:caldav"><![CDATA[BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:ak2
+DTSTART;VALUE=DATE:20261214
+SUMMARY:Abteilungskonferenz <FOS>
+END:VEVENT
+END:VCALENDAR]]></C:calendar-data></d:prop></d:propstat></d:response></d:multistatus>`;
+const ausMs = ausIcs(ausMultistatus(ms), '2026-09-01', '2027-12-31', 'iserv');
+gleich('CalDAV-Antwort gelesen', ausMs.map((x) => `${x.datum} ${x.beginn ?? ''} ${x.titel}`), ['2026-12-09 14:30 Gesamtkonferenz & Wahl', '2026-12-14  Abteilungskonferenz <FOS>']);
+gleich('Basic mit Umlaut', basicAuth('jürgen', 'pässwort'), 'Basic ' + Buffer.from('jürgen:pässwort', 'utf8').toString('base64'));
+gleich('CalDAV 401', caldavPruefen(401, '').includes('Passwort'), true);
+gleich('CalDAV ohne REPORT', caldavPruefen(405, ''), 'export');
+gleich('CalDAV ok', caldavPruefen(207, '<d:multistatus>'), '');
+gleich('CalDAV 207 ohne multistatus', caldavPruefen(207, '<html>').length > 0, true);
+const fer = alsFerien([{ titel: 'Weihnachtsferien', datum: '2026-12-21', bis: '2027-01-02' }, { titel: 'Konferenz', datum: '2026-12-01', beginn: '14:00' }, { titel: 'Weihnachtsferien', datum: '2026-12-21', bis: '2027-01-02' }, { titel: 'Frauentag', datum: '2027-03-08' }]);
+gleich('Ferien-Plugin', fer, [{ name: 'Weihnachtsferien', von: '2026-12-21', bis: '2027-01-02' }, { name: 'Frauentag', von: '2027-03-08', bis: '2027-03-08' }]);
+// Ferienquelle: WebUntis vor IServ vor Beispiel
+const dF: any = { einstellungen: { kalender: { iservFerien: fer } } };
+gleich('Ferien aus IServ', [freieZeiten(dF).quelle, freieZeiten(dF).liste.length], ['iserv', 2]);
+dF.einstellungen.ferien = [{ name: 'Herbstferien', von: '2026-10-19', bis: '2026-10-31' }];
+gleich('WebUntis geht vor', freieZeiten(dF).quelle, 'untis');
+gleich('sonst Beispiel', freieZeiten({ einstellungen: {} } as any).quelle, 'beispiel');
+// Je Kalender getrennt abgleichen: OSZ-Info leer lässt den persönlichen Kalender stehen
+const dK: any = { termine: [] };
+quelleAbgleichen(dK, 'iserv', [{ id: 'a', uid: 'a', titel: 'Privat', datum: '2026-12-01', art: 'sonstiges' }], 'persoenlich');
+quelleAbgleichen(dK, 'iserv', ausMs, 'osz-info');
+gleich('zwei Kalender', dK.termine.map((t: any) => t.kalender), ['persoenlich', 'osz-info', 'osz-info']);
+const zO = quelleAbgleichen(dK, 'iserv', [], 'osz-info');
+gleich('OSZ-Info leer, persönlich bleibt', [zO.entfallen, dK.termine.map((t: any) => t.kalender)], [2, ['persoenlich']]);
+gleich('weiterer Link getrennt', quelleAbgleichen(dK, 'iserv', []).entfallen, 0);
 
 console.log(`Kalenderabgleich: ${ok} ok, ${fehler} Fehler`);
 if (fehler) process.exit(1);

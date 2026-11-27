@@ -124,6 +124,7 @@ export interface Termin {
   angepasst?: boolean;
   ausgeblendet?: boolean;
   fremd?: boolean; // WebUntis-Prüfung einer anderen Lehrkraft in einer eigenen Klasse (nur Hinweis, kein eigener Block)
+  kalender?: string; // bei IServ: welcher Kalender (z. B. „osz-info“, „persoenlich“; fehlt = weiterer Kalender per Link), E120
 }
 export type TerminArt = 'konferenz' | 'aufsicht' | 'sprechtag' | 'abgabe' | 'ausflug' | 'ausfall' | 'frei' | 'sonstiges' | 'pruefung';
 
@@ -369,6 +370,12 @@ export interface KalenderAbgleich {
   iservAnzahl?: number;
   untisPruefungen?: boolean; // Prüfungen aus WebUntis im Kalender zeigen, fehlt = an
   fremdePruefungen?: boolean; // auch Klausuren anderer Lehrkräfte in den eigenen Klassen zeigen, fehlt = an
+  // IServ-Kalender der Schule (E120, schule.ts). Passwort und Feed-Links liegen nur im Tresor des Geräts.
+  schule?: string; // Schulprofil, fehlt = osz-lus
+  iservBenutzer?: string; // IServ-Benutzername für CalDAV (kann vom WebUntis-Namen abweichen)
+  iservAn?: Record<string, boolean>; // je Kalender des Profils an/aus, fehlt = Standard des Profils
+  iservStand?: Record<string, { abgerufen?: string; anzahl?: number; fehler?: string }>; // je Kalender
+  iservFerien?: FreieZeit[]; // Ferien und Feiertage aus dem IServ-Plugin (Ersatz, wenn WebUntis keine liefert)
 }
 
 /** Eigene Tischaufstellung, z. B. „Raum 204“; nur Tische, keine Schüler. */

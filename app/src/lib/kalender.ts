@@ -76,9 +76,10 @@ export function eintraege(d: Daten, von: string, bis: string): Eintrag[] {
     if (n.datum < von || n.datum > bis) continue;
     out.push({ id: n.id, datum: n.datum, beginn: n.beginn, titel: `Nachschreiben (${n.faelle.length})`, art: 'nachschreiben', klasse: n.raum ? `Raum ${n.raum}` : undefined, href: '/nachschreiben' });
   }
-  for (const f of freieZeiten(d).liste) {
+  const fz = freieZeiten(d);
+  for (const f of fz.liste) {
     if (!ueberlappt({ datum: f.von, bis: f.bis }, von, bis)) continue;
-    out.push({ id: `f${f.von}`, datum: f.von, bis: f.bis !== f.von ? f.bis : undefined, titel: f.name, art: 'ferien', frei: true, quelle: d.einstellungen.ferien?.length ? 'untis' : undefined });
+    out.push({ id: `f${f.von}`, datum: f.von, bis: f.bis !== f.von ? f.bis : undefined, titel: f.name, art: 'ferien', frei: true, quelle: fz.quelle === 'beispiel' ? undefined : fz.quelle });
   }
   // Ausfälle laut WebUntis: je Klasse und Tag ein Eintrag (Schlüssel `${kursId}|${datum}|${beginn}`)
   const ausfall = new Map<string, { kursId: string; datum: string; beginn: string }>();
@@ -258,13 +259,16 @@ export interface AbgleichZahlen { neu: number; geaendert: number; entfallen: num
  * Titel, Zeit und Notiz kommen aus der Quelle; Art, Klassen, „unterrichtsfrei“ und „ausgeblendet“ bleiben,
  * wenn die Lehrkraft sie angepasst hat. Eigene Termine und andere Quellen bleiben unberührt.
  */
-export function quelleAbgleichen(d: Daten, quelle: 'iserv' | 'untis', neu: Termin[]): AbgleichZahlen {
-  const alt = new Map((d.termine ?? []).filter((t) => t.quelle === quelle).map((t) => [t.uid ?? t.id, t]));
+export function quelleAbgleichen(d: Daten, quelle: 'iserv' | 'untis', neu: Termin[], kalender?: string): AbgleichZahlen {
+  // Bei IServ getrennt je Kalender: ein Kalender, der gerade nicht erreichbar ist, löscht die anderen nicht
+  const gehoert = (t: Termin) => t.quelle === quelle && (t.kalender ?? '') === (kalender ?? '');
+  const alt = new Map((d.termine ?? []).filter(gehoert).map((t) => [t.uid ?? t.id, t]));
   const z: AbgleichZahlen = { neu: 0, geaendert: 0, entfallen: 0, gesamt: neu.length };
   const ergebnis: Termin[] = [];
   for (const n of neu) {
     const a = alt.get(n.uid ?? n.id);
     const t: Termin = { ...n, quelle };
+    if (kalender) t.kalender = kalender;
     if (a?.angepasst) for (const k of EIGENES) { if (a[k] !== undefined) (t as any)[k] = a[k]; else delete (t as any)[k]; }
     if (!a) z.neu++;
     else if (a.titel !== t.titel || a.datum !== t.datum || a.bis !== t.bis || a.beginn !== t.beginn || a.ende !== t.ende) z.geaendert++;
@@ -272,7 +276,7 @@ export function quelleAbgleichen(d: Daten, quelle: 'iserv' | 'untis', neu: Termi
     ergebnis.push(t);
   }
   z.entfallen = alt.size;
-  d.termine = [...(d.termine ?? []).filter((t) => t.quelle !== quelle), ...ergebnis];
+  d.termine = [...(d.termine ?? []).filter((t) => !gehoert(t)), ...ergebnis];
   return z;
 }
 

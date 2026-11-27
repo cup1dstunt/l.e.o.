@@ -121,11 +121,11 @@ Jede Kachel klappt auf und zeigt, wofür L.E.O. die Daten braucht, und welche Fe
 - **So kommt der Browser an WebUntis:** Der nginx im Container reicht `/WebUntis/` an `osz-lus.webuntis.com` durch (ohne Zwischenspeicher und ohne Zugriffsprotokoll). Für eine andere Schule im Compose unter `environment:` `UNTIS_SERVER=<schule>.webuntis.com` setzen.
 - **Ungetestet:** Ich konnte weder WebUntis erreichen noch das nginx-Image starten. Wenn der Test „Durchreicher antwortet mit 502“ meldet, liegt es am Container (DNS oder Zertifikat), bei „Benutzer oder Schlüssel falsch“ an der Anmeldung. Die Uhr des Geräts muss stimmen, sonst passt der Einmalcode des Schlüssels nicht.
 
-## IServ-Kalender abonnieren (V17, Entwurf)
+## IServ-Kalender (V17, E120)
 
-- Im Compose unter `environment:` `ISERV_SERVER=<adresse des Schul-IServ ohne https://>` eintragen (z. B. `osz-lus.de`, bitte prüfen) und neu starten. Leer = aus.
-- Dann in L.E.O. unter Stundenplan › Monat › Kachel „IServ“ den Abo-/Export-Link eines IServ-Kalenders einfügen. Der Link bleibt verschlüsselt auf dem Gerät.
-- nginx reicht `/iserv/` nur per GET an diesen einen Server durch, ohne Cookies und ohne Zugriffsprotokoll. Plan: [MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md).
+- `ISERV_SERVER` ist im Image auf `osz-lus.de` voreingestellt, im Compose ist nichts nötig. Nur für eine andere Schule setzen, leer = aus.
+- In L.E.O. unter Stundenplan › Monat › Kachel „IServ“ mit IServ-Benutzername und Passwort anmelden (holt OSZ-Info und den persönlichen Kalender). Für Ferien & Feiertage den Feed-Link des Plugins einfügen. Passwort und Links bleiben verschlüsselt auf dem Gerät.
+- nginx reicht `/iserv/` nur per GET und `/iserv-caldav/` per GET/REPORT/PROPFIND an diesen einen Server durch, ohne Cookies und ohne Zugriffsprotokoll. Plan: [MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md).
 
 ## Sicherung und Abgleich zwischen Geräten (F3, F4, E102, E103)
 

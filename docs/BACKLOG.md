@@ -151,7 +151,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | K7 | Notizen privat oder für Klassenleitung freigeben | C | 2 | S |
 | K8 | Sprechstunden über die eigene Termin-App (`easyappointments-lnu`) | C | 3 | M |
 | K9 | Schuljahreswechsel-Assistent (archivieren, neue Kurse, Vorlagen übernehmen) | C | 2 | M |
-| K10 | Entwurf 26.11. (V17). Kalenderabgleich: WebUntis-Prüfungen und Ausfälle, IServ-Abo, Wiederholungen, eigene Festlegungen bleiben ([MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md)). Später: CalDAV, falls IServ keinen Abo-Link hat; ICS-Abo-Link aus L.E.O. heraus (K4) | K | 2 | M |
+| K10 | Entwurf 26.11. (V17). Kalenderabgleich: WebUntis-Prüfungen und Ausfälle, IServ-Abo, Wiederholungen, eigene Festlegungen bleiben. 27.11. Entwurf: OSZ-Kalender per CalDAV, Ferien-Plugin (E120) ([MODUL_KALENDER_ABGLEICH.md](MODUL_KALENDER_ABGLEICH.md)). Später: CalDAV, falls IServ keinen Abo-Link hat; ICS-Abo-Link aus L.E.O. heraus (K4) | K | 2 | M |
 
 ## Auswertung & Konferenz
 
