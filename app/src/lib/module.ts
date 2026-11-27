@@ -73,8 +73,8 @@ export const MODULE: Modul[] = [
     pfade: ['/auswertung'], reiter: { text: 'Auswertung', pfad: '/auswertung/', aktiv: 'auswertung' } },
   { id: 'ewh', name: 'EWH-Übernahme', text: 'Klausurnoten aus EWH Korrektur übernehmen.', bereich: 'organisation', standard: false,
     pfade: ['/ewh/'] },
-  // In Vorbereitung (eigene Threads): nur der Platz im Register, damit die Auswahl schon jetzt stimmt
-  { id: 'import', name: 'Import', text: 'Klassen und Noten aus Excel, UPZ oder iDoceo übernehmen.', bereich: 'organisation', standard: false, bald: true }
+  { id: 'import', name: 'Import', text: 'Klassen und Noten aus der UPZ, einer eigenen Excel-Tabelle oder einem iDoceo-Export übernehmen, mit Vorschau und ohne Überschreiben.', bereich: 'organisation', standard: true,
+    pfade: ['/import'] }
 ];
 
 const nachId = new Map(MODULE.map((m) => [m.id, m]));
@@ -159,22 +159,25 @@ export const STARTWEGE: Startweg[] = [
       'Was du nicht brauchst, bleibt aus. Unter Mehr › Module kommt es mit einem Tipp dazu.'
     ] },
   { id: 'idoceo', name: 'iDoceo', text: 'Notenbuch, Smileys, Anwesenheit auf dem iPad.',
-    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'ablage', 'statistik'],
+    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'ablage', 'statistik', 'import'],
     tipps: [
+      'Noten aus iDoceo holst du über Klassen › Aus Datei übernehmen (iDoceo-Export als Excel). Smileys und Anmerkungen bleiben in iDoceo.',
       'Das Notenbuch ist aufgebaut wie die iDoceo-Vorlagen: Klausuren und Sonstige je 50 %, Sonstige aus mündlich und Tests.',
       'Smileys gibt es weiter, Kommentare kommen aus Textbausteinen statt aus der Tastatur.',
       'Schüler und Fehlzeiten holst du aus WebUntis, nichts wird mehr von Hand angelegt.'
     ] },
   { id: 'upz', name: 'UPZ (Excel der Schule)', text: 'Die Notenorganisation mit Notenschlüssel OSZ oder FOS.',
-    module: ['stunde', 'muendlich', 'anwesenheit', 'nachschreiben', 'stundenplan'],
+    module: ['stunde', 'muendlich', 'anwesenheit', 'nachschreiben', 'stundenplan', 'import'],
     tipps: [
+      'Deine UPZ-Datei liest L.E.O. unter Klassen › Aus Datei übernehmen: Namen, Klassenarbeiten, sonstige Leistungen mit Gewichten und die mündliche Mitarbeit.',
       'L.E.O. nutzt dieselben Notenschlüssel wie die UPZ (OSZ und FOS) und rundet nur die Endnote.',
       'Die Endnote überträgst du wie bisher in die Excel der Schule. Sie steht im Notenbuch klar markiert.',
       'Fehlzeiten über 30 % zeigt die Anwesenheitsübersicht von selbst.'
     ] },
   { id: 'excel', name: 'Eigene Excel-Tabelle', text: 'Selbst gebaute Liste mit eigenen Formeln.',
-    module: ['stunde', 'stand', 'muendlich', 'anwesenheit', 'nachschreiben', 'stundenplan', 'planung'],
+    module: ['stunde', 'stand', 'muendlich', 'anwesenheit', 'nachschreiben', 'stundenplan', 'planung', 'import'],
     tipps: [
+      'Deine Tabelle holst du unter Klassen › Aus Datei übernehmen (.xlsx oder .csv). Du siehst vorher genau, was in welche Spalte kommt.',
       'Gewichte stellst du je Klasse ein, auch für einzelne Noten. Der Rechenweg zeigt jede Zwischensumme wie deine Formeln.',
       'Mit „Was wäre wenn“ probierst du Noten aus, ohne etwas zu ändern.',
       'Die Endnote überträgst du in die Excel der Schule, ein Export ist nicht nötig.'
