@@ -25,7 +25,7 @@
   // Frühwarnliste (I37): unter der Grenze oder auf der Kippe, über alle Kurse
   const frueh = $derived(
     d.kurse.flatMap((k) => k.schueler.map((sid) => {
-      const w = warnungen(k, rechne(k, sid)).filter((x) => x.art !== 'wenig');
+      const w = warnungen(k, rechne(k, sid)).filter((x) => x.art !== 'wenig' && x.art !== 'ohneKlausur');
       const s = d.schueler.find((x) => x.id === sid)!;
       return w.length ? { s, k, w } : null;
     })).filter((x) => x !== null)
@@ -149,7 +149,7 @@
         <div class="knoepfe">
           {#if an('stunde')}
             <a class="knopf haupt" href="/stunde/{k.id}">Stunde öffnen</a>
-            <a class="knopf" href="/stunde/{k.id}?mitarbeit=1">{an('muendlich') ? 'Mitarbeit/Anwesenheit' : 'Anwesenheit'}</a>
+            <a class="knopf" href="/stunde/{k.id}?mitarbeit=1">{an('muendlich') ? 'Mündlich/Anwesenheit' : 'Anwesenheit'}</a>
           {/if}
           <a class="knopf" class:haupt={!an('stunde')} href="/kurs/{k.id}?neu=1">+ Leistung</a>
           <a class="knopf leise" href="/kurs/{k.id}">Noten</a>
@@ -161,7 +161,7 @@
     <section class="karte">
       <h2>Heute erfasst</h2>
       <div class="zahlen">
-        {#if an('muendlich')}<div><b class="zahl">{heuteMitarbeit}</b><span class="klein leise">Mitarbeit-Einträge</span></div>{/if}
+        {#if an('muendlich')}<div><b class="zahl">{heuteMitarbeit}</b><span class="klein leise">mündliche Bewertungen</span></div>{/if}
         <div><b class="zahl">{heuteFehlt}</b><span class="klein leise">fehlen</span></div>
         <div><b class="zahl">{heuteZuSpaet}</b><span class="klein leise">verspätet</span></div>
       </div>

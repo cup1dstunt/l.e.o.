@@ -187,7 +187,7 @@
       uebergangNeu = '';
     }
     speichern();
-    zeige(muendlichAn && ohneEintrag && d.einstellungen.stundenendeHinweis ? `Stunde gespeichert · ${ohneEintrag} ohne Mitarbeitseintrag` : 'Stunde gespeichert');
+    zeige(muendlichAn && ohneEintrag && d.einstellungen.stundenendeHinweis ? `Stunde gespeichert · ${ohneEintrag} ohne mündliche Bewertung` : 'Stunde gespeichert');
   }
   let nurMitarbeit = $state(page.url.searchParams.has('mitarbeit') && istAn(app.d?.einstellungen, 'muendlich'));
   let nurOhne = $state(false);
@@ -207,7 +207,7 @@
       {/if}
       {#if muendlichAn}
       <button class="pille" aria-pressed={nurOhne} onclick={() => (nurOhne = !nurOhne)}>Noch nicht bewertet <b>{ohneEintrag}</b></button>
-      <button class="pille" aria-pressed={nurMitarbeit} onclick={() => (nurMitarbeit = !nurMitarbeit)}>Nur Mitarbeit</button>
+      <button class="pille" aria-pressed={nurMitarbeit} onclick={() => (nurMitarbeit = !nurMitarbeit)}>Nur mündlich</button>
       {/if}
       <button class="knopf haupt" onclick={abschliessen}>Stunde abschließen</button>
     {/snippet}
@@ -283,7 +283,7 @@
               {#if f}
                 <div class="klein leise fehltext">fehlt · nochmal auf „fehlt“ tippen, wenn jemand später kommt</div>
               {:else if muendlichAn}
-                <div class="smileys" role="group" aria-label="Mitarbeit {name(s)}">
+                <div class="smileys" role="group" aria-label="Mündlich {name(s)}">
                   {#each STUFEN as st}
                     <button class="sm" class:an={e?.stufe === st.stufe} aria-pressed={e?.stufe === st.stufe} aria-label={st.name}
                       use:druck={{ kurz: () => bewerten(s, st.stufe), lang: () => oeffnen(s, st.stufe) }}>
@@ -300,7 +300,7 @@
         </div>
         <p class="klein leise hilfe">
           {#if muendlichAn}Tipp auf ein Smiley speichert sofort. Doppelklick oder langes Drücken öffnet Textbausteine und Kommentar.{/if} „da“ antippen = fehlt, nochmal = Verspätung mit Uhrzeit.
-          {#if muendlichAn && d.einstellungen.stundenendeHinweis && ohneEintrag}<br /><b>{ohneEintrag} Anwesende noch ohne Mitarbeitseintrag.</b>{/if}
+          {#if muendlichAn && d.einstellungen.stundenendeHinweis && ohneEintrag}<br /><b>{ohneEintrag} Anwesende noch ohne mündliche Bewertung.</b>{/if}
         </p>
         {/if}
       </section>
@@ -362,7 +362,7 @@
     {@const f = fehlt(s.id)}
     {@const v = zuSpaet(s.id)}
     <div class="hintergrund" role="presentation" onclick={(ev) => ev.target === ev.currentTarget && (fenster = null)}>
-      <div class="schweben dialog" role="dialog" aria-modal="true" aria-label="Mitarbeit {name(s)}">
+      <div class="schweben dialog" role="dialog" aria-modal="true" aria-label="Mündlich {name(s)}">
         <div class="zeile"><h2 class="raum">{name(s)}</h2><a class="klein" href="/schueler/{s.id}?kurs={kurs.id}">Schülerkarte</a></div>
         <div class="anwzeile">
           <button class="pille" aria-pressed={!f && !v} onclick={() => daSetzen(s)}>anwesend</button>
@@ -370,7 +370,7 @@
           <button class="pille" aria-pressed={!!v} onclick={() => { fenster = null; verspaetung = { s, zeit: v?.ankunft ?? hhmm() }; }}>{v ? `verspätet ${v.minuten} min` : 'verspätet …'}</button>
         </div>
         {#if !f}
-          <p class="klein leise">Mitarbeit heute</p>
+          <p class="klein leise">Mündlich heute</p>
           <div class="grosse">
             {#each STUFEN as st}
               <button class="sm gross" class:an={fensterEintrag?.stufe === st.stufe} aria-pressed={fensterEintrag?.stufe === st.stufe} aria-label={st.name} onclick={() => fensterStufe(st.stufe)}>

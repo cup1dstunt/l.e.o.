@@ -396,7 +396,7 @@
           <div class="zeile ende"><button class="knopf haupt" onclick={() => (dlg = null)}>Fertig</button></div>
         {:else if dlg === 'monat'}
           <h2>Monatsnote vorschlagen</h2>
-          <p class="klein leise">Monatsnote der mündlichen Leistungen aus den Mitarbeit-Smileys des Monats: Smiley 1 bis 5 = Note 1 bis 5{fos ? ', umgerechnet in Notenpunkte (Note 1 = 14, 2 = 11, 3 = 8, 4 = 5, 5 = 2)' : ''}. Gibt es für den Monat eine Raster-Einschätzung, gilt deren Ergebnis. Du kannst jeden Vorschlag ändern.</p>
+          <p class="klein leise">Monatsnote der mündlichen Leistungen aus den Smileys des Monats: Smiley 1 bis 5 = Note 1 bis 5{fos ? ', umgerechnet in Notenpunkte (Note 1 = 14, 2 = 11, 3 = 8, 4 = 5, 5 = 2)' : ''}. Gibt es für den Monat eine Raster-Einschätzung, gilt deren Ergebnis. Du kannst jeden Vorschlag ändern.</p>
           <div class="zeile">
             <label class="feld raum"><span>Monat</span><input type="month" bind:value={monat} /></label>
             <button class="knopf haupt" onclick={() => monatUebernehmen()}>Alle übernehmen</button>
@@ -520,7 +520,7 @@
   .vorlagen { gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .stern-i { color: var(--leo-stern); }
   .w-unter { color: var(--leo-warnung); font-weight: 600; }
-  .w-kippe { color: #8a6200; font-weight: 600; }
+  .w-kippe, .w-ohneKlausur { color: #8a6200; font-weight: 600; }
   .w-wenig { color: var(--leo-leise); font-style: italic; }
 
   .mtab { width: 100%; margin-top: 12px; }

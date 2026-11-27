@@ -159,7 +159,10 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
     { wert: sonstige, gewicht: g.sonstige }
   ]);
   const gesamt = r(gesRoh);
-  weg.push(`Gesamt = Klausuren 50 % + AT 50 %: ${fmt(gesRoh, gesamt)}`);
+  // Ohne Klausurnote ist die Gesamtnote nur eine Live-Note aus dem AT (E121): rechnen, aber ehrlich benennen und warnen
+  weg.push(ka === null && sonstige !== null
+    ? `Gesamt vorläufig = nur AT, weil noch keine Klausurnote: ${fmt(gesRoh, gesamt)}`
+    : `Gesamt = Klausuren 50 % + AT 50 %: ${fmt(gesRoh, gesamt)}`);
 
   // Zum Vergleich: dieselbe Rechnung ohne Zwischenrundung
   const sonstEx = mittel([
@@ -195,7 +198,7 @@ export function rechne(kurs: Kurs, schuelerId: string): Ergebnis {
     { id: 'mitarbeit', titel: 'Mündliche Leistungen', roh: maRoh, wert: ma, posten: pm, formel: formel(pm, maRoh, ma, fos) },
     { id: 'sl', titel: 'Tests und Sonstiges', roh: slRoh, wert: sl, posten: ps, formel: formel(ps, slRoh, sl, fos) },
     { id: 'at', titel: 'AT (Sonstige Leistungen)', roh: sonstRoh, wert: sonstige, posten: pa, formel: formel(pa, sonstRoh, sonstige, fos) },
-    { id: 'gesamt', titel: 'Gesamtnote', roh: gesRoh, wert: gesamt, posten: pg, formel: formel(pg, gesRoh, gesamt, fos) }
+    { id: 'gesamt', titel: ka === null && sonstige !== null ? 'Gesamtnote (vorläufig, noch keine Klausurnote)' : 'Gesamtnote', roh: gesRoh, wert: gesamt, posten: pg, formel: formel(pg, gesRoh, gesamt, fos) }
   ];
 
   let fehlend = 0;
@@ -234,7 +237,7 @@ export function noetigeNote(kurs: Kurs, schuelerId: string, leistungId: string, 
   return 'unmoeglich';
 }
 
-export interface Warnung { art: 'unter' | 'kippe' | 'wenig' ; text: string }
+export interface Warnung { art: 'unter' | 'kippe' | 'wenig' | 'ohneKlausur'; text: string }
 
 /** Warnampel (I37, Q6): unter der Grenze, auf der Kippe (bis 1 Punkt bzw. 0,5 Noten darüber), zu wenige Noten. */
 export function warnungen(kurs: Kurs, e: Ergebnis): Warnung[] {
@@ -244,6 +247,7 @@ export function warnungen(kurs: Kurs, e: Ergebnis): Warnung[] {
     if (!bestanden(kurs.profil, kurs.profil === 'FOS' ? (e.gesamt ?? x) : x)) w.push({ art: 'unter', text: 'unter der Grenze' });
     else if (kurs.profil === 'FOS' ? x < 6 : x > 3.5) w.push({ art: 'kippe', text: 'auf der Kippe' });
   }
+  if (e.gesamt !== null && e.klausuren === null) w.push({ art: 'ohneKlausur', text: 'noch keine Klausurnote, Note nur vorläufig' });
   const anzahl = kurs.leistungen.filter((l) => l.gruppe !== 'mitarbeit').length;
   if (anzahl && e.fehlend > anzahl / 2) w.push({ art: 'wenig', text: 'wenige Noten' });
   return w;

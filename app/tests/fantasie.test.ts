@@ -60,7 +60,7 @@ for (const k of d.kurse) {
 for (const k of d.kurse.filter((x) => x.schueler.length)) {
   const e = rechne(k, k.schueler.at(-1)!);
   // nur Smileys, keine Klausur: Gesamtnote kommt allein aus dem AT, dann muss „wenige Noten“ warnen
-  pruefe(`ohne Klausur ${k.name}: Warnung`, e.gesamt === null || warnungen(k, e).some((w) => w.art === 'wenig'), `gesamt ${e.gesamt}, Warnungen ${JSON.stringify(warnungen(k, e))}`);
+  pruefe(`ohne Klausur ${k.name}: Warnung`, e.gesamt === null || warnungen(k, e).some((w) => w.art === 'ohneKlausur') && e.weg.some((x) => x.includes('nur AT')), `gesamt ${e.gesamt}, Warnungen ${JSON.stringify(warnungen(k, e))}`);
 }
 // Beide Klausuren verpasst (E + offen)
 {
