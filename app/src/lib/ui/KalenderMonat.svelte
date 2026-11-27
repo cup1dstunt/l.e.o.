@@ -200,7 +200,7 @@
 <KalenderQuellen />
 
 <p class="klein leise">
-  Von selbst im Kalender: Klausuren und Tests mit Datum, Nachschreibetermine, Ferien und Feiertage{d.einstellungen.ferien?.length ? ' (WebUntis)' : ' (Beispiel Berlin, bitte prüfen)'}, mit WebUntis auch Ausfälle und Prüfungen.
+  Von selbst im Kalender: Klausuren und Tests mit Datum, Nachschreibetermine, Ferien und Feiertage{d.einstellungen.ferien?.length ? ' (WebUntis)' : d.einstellungen.kalender?.iservFerien?.length ? ' (IServ)' : ' (Beispiel Berlin, bitte prüfen)'}, mit WebUntis auch Ausfälle und Prüfungen, mit IServ die Schultermine.
   Der Export enthält nur eigene Termine, Klausuren, Tests und Nachschreiben, keine Schülernamen und nichts aus IServ oder WebUntis.
   {#if importiert}{importiert} aus Dateien importierte Termine · <button class="link" onclick={importierteEntfernen}>alle importierten entfernen</button>{/if}
   {#if ausgeblendet}{importiert ? ' · ' : ''}{ausgeblendet} ausgeblendet · <button class="link" onclick={alleZeigen}>wieder zeigen</button>{/if}

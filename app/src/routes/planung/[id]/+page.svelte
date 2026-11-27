@@ -109,7 +109,7 @@
       </div>
       <p class="klein leise info">
         {datumKurz(hj.von)} bis {datumKurz(hj.bis)} · {plan.einheiten} Unterrichtsstunden in {plan.unterricht} Blöcken, davon {plan.klausuren} mit Klausur.
-        Quelle: {quelle}; {quelleFrei.beispiel ? 'Ferien und Feiertage als Beispiel Berlin 2026/27 (bitte prüfen, kommt mit dem WebUntis-Abgleich)' : 'Ferien und Feiertage aus WebUntis'}.
+        Quelle: {quelle}; {quelleFrei.beispiel ? 'Ferien und Feiertage als Beispiel Berlin 2026/27 (bitte prüfen, kommt mit dem WebUntis- oder IServ-Abgleich)' : quelleFrei.quelle === 'iserv' ? 'Ferien und Feiertage aus IServ' : 'Ferien und Feiertage aus WebUntis'}.
         Ausfälle: WebUntis und unterrichtsfreie Termine aus dem Kalender.
       </p>
     </section>

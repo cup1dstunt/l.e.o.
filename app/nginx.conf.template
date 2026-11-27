@@ -101,6 +101,38 @@ server {
     add_header Cache-Control "no-store" always;
   }
 
+  # CalDAV zu IServ (E120): für Kalender ohne Feed-Link (z. B. OSZ-Info). Nur lesen (GET, REPORT, PROPFIND), nur /caldav/
+  # an ISERV_SERVER. Die Anmeldung (Authorization) wird durchgereicht, aber nie protokolliert oder gespeichert.
+  # WWW-Authenticate wird entfernt, damit der Browser kein eigenes Anmeldefenster zeigt.
+  location /iserv-caldav/ {
+    access_log off;
+    set $iserv_host "${ISERV_SERVER}";
+    if ($iserv_host = "") { return 404; }
+    if ($request_method !~ ^(GET|REPORT|PROPFIND)$) { return 405; }
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=300s ipv6=off;
+    resolver_timeout 5s;
+    rewrite ^/iserv-caldav/(.*)$ /caldav/$1 break;
+    proxy_pass https://$iserv_host;
+    proxy_ssl_server_name on;
+    proxy_ssl_name $iserv_host;
+    proxy_ssl_verify on;
+    proxy_ssl_verify_depth 3;
+    proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+    proxy_set_header Host $iserv_host;
+    proxy_set_header Cookie "";
+    proxy_set_header Referer "";
+    proxy_set_header X-Forwarded-For "";
+    proxy_set_header X-Real-IP "";
+    proxy_hide_header Set-Cookie;
+    proxy_hide_header WWW-Authenticate;
+    proxy_buffering on;
+    proxy_cache off;
+    proxy_read_timeout 30s;
+    proxy_max_temp_file_size 0;
+    client_max_body_size 8k;
+    add_header Cache-Control "no-store" always;
+  }
+
   add_header X-Content-Type-Options nosniff always;
   add_header Referrer-Policy no-referrer always;
   gzip on;

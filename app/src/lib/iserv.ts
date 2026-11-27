@@ -47,3 +47,58 @@ export function fenster(heute = new Date()): { von: string; bis: string } {
     bis: isoDatum(new Date(heute.getFullYear(), heute.getMonth() + 15, 0))
   };
 }
+
+// ---------- CalDAV (E120): Kalender, für die IServ keinen Link ohne Anmeldung anbietet (z. B. OSZ-Info) ----------
+
+const utcStempel = (iso: string) => iso.replace(/-/g, '') + 'T000000Z';
+
+/** REPORT calendar-query: alle Termine im Zeitraum, Wiederholungen löst L.E.O. selbst auf. */
+export function reportAnfrage(von: string, bis: string): string {
+  return '<?xml version="1.0" encoding="utf-8"?>\n'
+    + '<c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">'
+    + '<d:prop><c:calendar-data/></d:prop>'
+    + '<c:filter><c:comp-filter name="VCALENDAR"><c:comp-filter name="VEVENT">'
+    + `<c:time-range start="${utcStempel(von)}" end="${utcStempel(bis)}"/>`
+    + '</c:comp-filter></c:comp-filter></c:filter></c:calendar-query>';
+}
+
+const xmlText = (s: string) => s
+  .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+  .replace(/&#13;|&#x0?[dD];/g, '\r').replace(/&#10;|&#x0?[aA];/g, '\n')
+  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+
+/** Kalenderdaten aus einer CalDAV-Antwort (multistatus) als ein ICS-Text; jedes Präfix für den Namensraum. */
+export function ausMultistatus(xml: string): string {
+  const teile: string[] = [];
+  const re = /<([\w-]+:)?calendar-data\b[^>]*>([\s\S]*?)<\/([\w-]+:)?calendar-data>/g;
+  for (let m = re.exec(xml); m; m = re.exec(xml)) teile.push(xmlText(m[2]).trim());
+  return teile.join('\r\n');
+}
+
+/** Anmeldung für CalDAV (HTTP Basic, UTF-8). Geht nur über den eigenen Container an IServ. */
+export function basicAuth(benutzer: string, passwort: string): string {
+  const roh = new TextEncoder().encode(`${benutzer.trim()}:${passwort}`);
+  let s = '';
+  for (const b of roh) s += String.fromCharCode(b);
+  return 'Basic ' + btoa(s);
+}
+
+/** CalDAV-Antwort verständlich machen. Leer = in Ordnung. 'export' = Server kann REPORT nicht, Rückfall GET ?export. */
+export function caldavPruefen(status: number, text: string): string {
+  if (status === 401) return 'IServ lehnt die Anmeldung ab. Benutzername oder Passwort prüfen (ist die Zwei-Faktor-Anmeldung aktiv, geht CalDAV evtl. nur mit einem App-Passwort).';
+  if (status === 403) return 'Kein Zugriff auf diesen Kalender mit deinem IServ-Konto.';
+  if (status === 404) return 'IServ kennt diesen Kalender nicht (404).';
+  if (status === 405 || status === 501) return 'export';
+  if (status >= 500) return `Der Container erreicht IServ nicht (${status}).`;
+  if (status !== 207 && status !== 200) return `Unerwartete Antwort von IServ (${status}).`;
+  if (status === 207 && !/multistatus/i.test(text.slice(0, 4000))) return 'Die Antwort von IServ ist kein Kalender.';
+  return '';
+}
+
+/** Ferien-Plugin: ganztägige Termine werden zu Ferien und Feiertagen (ohne Uhrzeit, Name aus dem Titel). */
+export function alsFerien(t: { titel: string; datum: string; bis?: string; beginn?: string }[]): { name: string; von: string; bis: string }[] {
+  const out = t.filter((x) => !x.beginn).map((x) => ({ name: x.titel.trim() || 'frei', von: x.datum, bis: x.bis || x.datum }));
+  const gesehen = new Set<string>();
+  return out.filter((f) => { const k = `${f.von}|${f.bis}|${f.name}`; if (gesehen.has(k)) return false; gesehen.add(k); return true; })
+    .sort((a, b) => a.von.localeCompare(b.von));
+}

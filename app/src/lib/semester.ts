@@ -17,9 +17,13 @@ export const BEISPIEL_FREI: FreieZeit[] = [
   { name: 'Pfingstmontag', von: '2027-05-17', bis: '2027-05-17' }
 ];
 
-export function freieZeiten(d: Daten): { liste: FreieZeit[]; beispiel: boolean } {
+/** Ferien und Feiertage: aus WebUntis, sonst aus dem IServ-Ferien-Plugin (E120), sonst Beispielwerte. */
+export function freieZeiten(d: Daten): { liste: FreieZeit[]; beispiel: boolean; quelle: 'untis' | 'iserv' | 'beispiel' } {
   const f = d.einstellungen.ferien;
-  return f?.length ? { liste: f, beispiel: false } : { liste: BEISPIEL_FREI, beispiel: true };
+  if (f?.length) return { liste: f, beispiel: false, quelle: 'untis' };
+  const i = d.einstellungen.kalender?.iservFerien;
+  if (i?.length) return { liste: i, beispiel: false, quelle: 'iserv' };
+  return { liste: BEISPIEL_FREI, beispiel: true, quelle: 'beispiel' };
 }
 
 const tagDanach = (iso: string, n = 1) => { const t = new Date(iso + 'T12:00'); t.setDate(t.getDate() + n); return isoDatum(t); };
