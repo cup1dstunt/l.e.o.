@@ -3,7 +3,7 @@
   // Hat jemand im Monat zu wenige Smileys, bietet L.E.O. das Kriterienraster an; dessen Ergebnis wird die Monatsnote.
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { name } from '$lib/hilfen';
+  import { name, verspaetungenImMonat, verspaetungText } from '$lib/hilfen';
   import { zellSchluessel, monatsVorschlag, zahl } from '$lib/rechnen';
   import { bausteineVon } from '$lib/bausteine';
   import {
@@ -34,7 +34,7 @@
         const ein = kurs.einschaetzungen?.[einschaetzungSchluessel(monat, s.id)];
         const steht = spalte ? kurs.zellen[zellSchluessel(spalte.id, s.id)]?.wert : undefined;
         const vSmiley = monatsVorschlag(kurs.profil, sm.map((e) => e.stufe));
-        return { s, n: sm.length, schnitt: vSmiley?.note ?? null, ein, steht, wenig: sm.length < mindest };
+        return { s, n: sm.length, schnitt: vSmiley?.note ?? null, ein, steht, wenig: sm.length < mindest, spaet: verspaetungenImMonat(d, kurs.id, s.id, monat) };
       })
   );
   const zuWenig = $derived(zeilen.filter((z) => z.wenig && !z.ein).length);
@@ -180,6 +180,7 @@
                 <span class="raum"><b>{name(z.s)}</b>
                   <span class="klein leise block">{z.n} Smiley{z.n === 1 ? '' : 's'}{z.schnitt !== null ? ` · Ø ${zahl(z.schnitt)}` : ''}</span></span>
                 {#if runde?.antworten[z.s.id]}<span class="marke selbstm" title="Selbsteinschätzung liegt vor">selbst</span>{/if}
+                {#if z.spaet.anzahl}<span class="marke spaetm" title={verspaetungText(z.spaet)}>{z.spaet.anzahl}× spät</span>{/if}
                 {#if z.ein}<span class="marke raster">Raster</span>{:else if z.wenig}<span class="marke wenig">zu wenig</span>{/if}
                 <b class="zahl note">{anzeige(z.steht)}</b>
               </button>
@@ -227,6 +228,7 @@
           <p class="klein leise">{erg.offen ? `${erg.offen} Kriterien noch offen, sie zählen nicht mit.` : 'Alle Kriterien eingeschätzt.'}</p>
           <button class="knopf leise klein" aria-expanded={wegOffen} onclick={() => (wegOffen = !wegOffen)}>{wegOffen ? '▾' : '▸'} Rechenweg</button>
           {#if wegOffen}<ol class="weg klein zahl">{#each erg.weg as w}<li>{w}</li>{/each}</ol>{/if}
+          <p class="klein" class:hinweis-spaet={akt.spaet.anzahl} class:leise={!akt.spaet.anzahl}>{akt.spaet.anzahl ? `Verspätungen im Monat: ${verspaetungText(akt.spaet)}` : 'Keine Verspätung im Monat.'}</p>
           <button class="knopf haupt" disabled={erg.note === null} onclick={uebernehmen}>Als Monatsnote übernehmen</button>
           {#if akt.steht !== undefined}<p class="klein leise">Steht schon: {anzeige(akt.steht)}{akt.schnitt !== null ? ` · aus Smileys wäre es ${anzeige(monatsVorschlag(kurs.profil, smileysImMonat(d, kurs.id, akt.s.id, monat).map((e) => e.stufe))?.wert)}` : ''}</p>{/if}
           {#if akt.ein}<button class="knopf leise" onclick={verwerfen}>Einschätzung verwerfen</button>{/if}
@@ -292,6 +294,8 @@
   .mini { min-height: 26px; padding: 0 10px; font-size: var(--leo-text-xs); margin-left: 8px; }
   .gchip { margin-left: 6px; border: 1px solid var(--leo-linie); background: var(--leo-flaeche-leise); color: var(--leo-akzent); border-radius: var(--leo-r-pill); font: inherit; font-size: var(--leo-text-xs); font-weight: 600; padding: 1px 7px; cursor: pointer; }
   .spaet { color: var(--leo-warnung); font-weight: 600; }
+  .marke.spaetm { background: var(--leo-stern-hell); color: #8a6200; font-weight: 600; }
+  .hinweis-spaet { background: var(--leo-stern-hell); color: #8a6200; border-radius: var(--leo-r-m); padding: 6px 10px; margin: 4px 0; font-weight: 600; }
   .marke.selbstm { border: 1px solid var(--leo-akzent); color: var(--leo-akzent); font-weight: 600; }
   .stufe { position: relative; }
   .stufe.selbst { box-shadow: inset 0 0 0 2px var(--leo-stern); }

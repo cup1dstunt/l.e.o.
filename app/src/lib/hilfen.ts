@@ -23,6 +23,19 @@ export function kurznameIn(alle: Schueler[]): (s: Schueler) => string {
   }
   return (s: Schueler) => fest.get(s.id) ?? kurzname(s);
 }
+/** Volle Namen (Vor- und Nachname), bei ganz gleichem Namen mit Geburtsjahr bzw. laufender Nummer. Für die Stunde (28.11.). */
+export function namenIn(alle: Schueler[]): (s: Schueler) => string {
+  const fest = new Map<string, string>();
+  const gruppen = new Map<string, Schueler[]>();
+  for (const s of alle) { const k = name(s); gruppen.set(k, [...(gruppen.get(k) ?? []), s]); }
+  for (const [k, gleich] of gruppen) {
+    if (gleich.length < 2) continue;
+    const jahre = gleich.map((x) => x.geburt?.slice(0, 4) ?? '');
+    const jahrHilft = jahre.every((j) => j) && new Set(jahre).size === jahre.length;
+    gleich.forEach((s, i) => fest.set(s.id, `${k} ${jahrHilft ? `(${s.geburt.slice(2, 4)})` : `(${i + 1})`}`));
+  }
+  return (s: Schueler) => fest.get(s.id) ?? name(s);
+}
 export const alter = (s: Schueler, heute = new Date()) => {
   if (!s.geburt) return null; // aus WebUntis ohne Export unbekannt
   const g = new Date(s.geburt);
@@ -101,6 +114,16 @@ export function verspaetungenVon(d: Daten, kursId: string | undefined, schuelerI
   return alle.filter((v) => v.quelle === 'untis' || !ausUntis.has(v.datum)).sort((a, b) => b.datum.localeCompare(a.datum));
 }
 
+/** Verspätungen eines Schülers in einer Klasse und einem Monat (JJJJ-MM), für Stunde und Monatsnote (E125). */
+export function verspaetungenImMonat(d: Daten, kursId: string, schuelerId: string, monat: string) {
+  const liste = verspaetungenVon(d, kursId, schuelerId).filter((v) => v.datum.startsWith(monat)).reverse();
+  return { anzahl: liste.length, minuten: liste.reduce((a, v) => a + v.minuten, 0), tage: liste.map((v) => `${v.datum.slice(8, 10)}.${v.datum.slice(5, 7)}.`) };
+}
+/** „3× zu spät, 45 Min. (04.11., 11.11., 18.11.)“ oder leer. */
+export function verspaetungText(x: { anzahl: number; minuten: number; tage: string[] }, mitTagen = true) {
+  if (!x.anzahl) return '';
+  return `${x.anzahl}× zu spät, ${x.minuten} Min.${mitTagen ? ` (${x.tage.join(', ')})` : ''}`;
+}
 export const prozent = (x: number) => (x * 100).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' %';
 
 export const WOCHENTAGE = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];

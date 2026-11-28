@@ -4,7 +4,7 @@
   import { BAUSTEINE, STUFEN, bausteineVon } from '$lib/bausteine';
   import { VORLAGEN, alleRaster, rasterKopie, MAX_KRITERIEN } from '$lib/raster';
   import { projektRasterAlle } from '$lib/projekt';
-  import type { Raster, Stufe } from '$lib/typen';
+  import type { Raster, RasterKriterium, Stufe } from '$lib/typen';
 
   const d = app.d!;
 
@@ -64,6 +64,13 @@
     speichern();
     zeige(`„${r.name}“ gelöscht`, () => { l.splice(i, 0, r); speichern(); });
   }
+  /** Ich-Sätze für den Schülerbogen (E125). Alle leer = Bogen zeigt die Lehrkrafttexte. */
+  function ichText(k: RasterKriterium, i: number, wert: string) {
+    const s: [string, string, string, string] = k.selbst ? [...k.selbst] : ['', '', '', ''];
+    s[i] = wert;
+    if (s.some((t) => t.trim())) k.selbst = s; else delete k.selbst;
+    speichern();
+  }
   const anzahl = (r: Raster) => r.bereiche.reduce((a, b) => a + b.kriterien.filter((k) => !k.optional).length, 0);
   function kriteriumHinzu(r: Raster, bi: number) {
     r.bereiche[bi].kriterien.push({ id: neueId(), name: 'Neues Kriterium', stufen: ['', '', '', ''] });
@@ -117,6 +124,16 @@
                         <label class="feld"><span>Stufe {st}</span><textarea rows="2" bind:value={k.stufen[i]} oninput={speichern}></textarea></label>
                       {/each}
                     </div>
+                    {#if r.art !== 'projekt'}
+                      <details class="ich">
+                        <summary class="klein leise">Ich-Form für die Selbsteinschätzung{k.selbst?.some(Boolean) ? '' : ' (leer: Schüler sehen die Texte oben)'}</summary>
+                        <div class="stufen">
+                          {#each [4, 3, 2, 1] as st, i}
+                            <label class="feld"><span>Stufe {st}, Ich-Form</span><textarea rows="2" value={k.selbst?.[i] ?? ''} oninput={(e) => ichText(k, i, (e.currentTarget as HTMLTextAreaElement).value)}></textarea></label>
+                          {/each}
+                        </div>
+                      </details>
+                    {/if}
                   </div>
                 {/each}
                 <button class="knopf leise" disabled={anzahl(r) >= MAX_KRITERIEN} onclick={() => kriteriumHinzu(r, bi)}>+ Kriterium</button>
@@ -163,7 +180,7 @@
 
   <section class="karte">
     <h2>Kriterienraster</h2>
-    <p class="klein leise">Jedes Fach hat eigene Kriterien. Das Gewicht hier ist der Standard; je Klasse änderst du es im Reiter „Mündlich“ mit Klick auf „Vorschlag“. Vorlagen kopierst du und passt sie an; welches Raster eine Klasse nutzt, wählst du im Reiter „Mündlich“ der Klasse. Stufentexte in Ich-Form, damit sie später auch für die Selbsteinschätzung passen.</p>
+    <p class="klein leise">Jedes Fach hat eigene Kriterien. Das Gewicht hier ist der Standard; je Klasse änderst du es im Reiter „Mündlich“ mit Klick auf „Vorschlag“. Vorlagen kopierst du und passt sie an; welches Raster eine Klasse nutzt, wählst du im Reiter „Mündlich“ der Klasse. Die Stufentexte beschreiben den Schüler aus Sicht der Lehrkraft. Für die Selbsteinschätzung hat jedes Kriterium eigene Sätze in Ich-Form (aufklappen unter den Stufen).</p>
     {#each alleRaster(d) as r (r.id)}{@render rasterBlock(r)}{/each}
     <p class="klein leise">Eingebaut: {VORLAGEN.map((r) => r.name).join(', ')}. Word- oder PDF-Raster hochladen kommt später.</p>
   </section>
@@ -191,6 +208,8 @@
   .gew input { width: 80px; }
   .krit { background: var(--leo-flaeche-leise); border-radius: var(--leo-r-m); padding: 8px; display: flex; flex-direction: column; gap: 6px; }
   .stufen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .ich summary { cursor: pointer; padding: 4px 0; }
+  .ich .stufen { margin-top: 6px; }
   h3 { font-size: var(--leo-text-s); color: var(--leo-leise); margin: 10px 0 4px; }
   ul { margin: 0; padding-left: 18px; line-height: 1.5; }
   .opt { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; color: var(--leo-leise); }

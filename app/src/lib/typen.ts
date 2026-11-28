@@ -221,7 +221,8 @@ export interface RasterBereich {
 export interface RasterKriterium {
   id: string;
   name: string;
-  stufen: [string, string, string, string]; // Stufe 4, 3, 2, 1 (Beschreibung, Ich-Form für die spätere Selbsteinschätzung)
+  stufen: [string, string, string, string]; // Stufe 4, 3, 2, 1: Beschreibung für die Lehrkraft (dritte Person, E125)
+  selbst?: [string, string, string, string]; // dieselben Stufen in Ich-Form für die Selbsteinschätzung; fehlt = stufen
   optional?: true; // nur wenn die Klasse es einschaltet (z. B. Hausaufgaben, E112)
   gewicht?: number; // Standardgewicht (E113), fehlt = 1
 }

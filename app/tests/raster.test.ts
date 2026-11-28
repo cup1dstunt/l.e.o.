@@ -1,6 +1,7 @@
 // Prüft das Kriterienraster der mündlichen Leistungen (FB7, E110). Aufruf: npm test
-import { VORLAGEN, rasterErgebnis, belege, monatsSpalte, rasterFuer, rasterKopie, mindestSmileys, rasterDerEinschaetzung, MAX_KRITERIEN, kriteriumGewicht } from '../src/lib/raster.ts';
+import { VORLAGEN, rasterTexteUmstellen, rasterErgebnis, belege, monatsSpalte, rasterFuer, rasterKopie, mindestSmileys, rasterDerEinschaetzung, MAX_KRITERIEN, kriteriumGewicht } from '../src/lib/raster.ts';
 import { BAUSTEINE } from '../src/lib/bausteine.ts';
+import { verspaetungenImMonat, verspaetungText } from '../src/lib/hilfen.ts';
 import { kursMischen } from '../src/lib/abgleich.ts';
 import type { Kurs, Raster } from '../src/lib/typen.ts';
 
@@ -62,13 +63,13 @@ for (const v of VORLAGEN) {
 {
   const d = {
     mitarbeit: [
-      { id: '1', kursId: 'k', schuelerId: 's', zeit: '2026-11-03T09:00:00Z', stufe: 2 as const, bausteine: ['bringt eigene Ideen ein', 'wirkt abgelenkt'] },
-      { id: '2', kursId: 'k', schuelerId: 's', zeit: '2026-11-10T09:00:00Z', stufe: 2 as const, bausteine: ['bringt eigene Ideen ein'] },
-      { id: '3', kursId: 'k', schuelerId: 's', zeit: '2026-10-10T09:00:00Z', stufe: 2 as const, bausteine: ['Beiträge meistens treffend'] }
+      { id: '1', kursId: 'k', schuelerId: 's', zeit: '2026-11-03T09:00:00Z', stufe: 2 as const, bausteine: ['begründet schlüssig und eigenständig', 'wirkt abgelenkt'] },
+      { id: '2', kursId: 'k', schuelerId: 's', zeit: '2026-11-10T09:00:00Z', stufe: 2 as const, bausteine: ['begründet schlüssig und eigenständig'] },
+      { id: '3', kursId: 'k', schuelerId: 's', zeit: '2026-10-10T09:00:00Z', stufe: 2 as const, bausteine: ['Beiträge meist treffend'] }
     ],
     verspaetungen: [{ id: 'v', kursId: 'k', schuelerId: 's', datum: '2026-11-04', ankunft: '08:10', minuten: 10 }]
   };
-  gleich('Belege Qualität', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[0]), ['2× „bringt eigene Ideen ein“']);
+  gleich('Belege Qualität', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[0]), ['2× „begründet schlüssig und eigenständig“']);
   gleich('Belege Pünktlichkeit', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[1].kriterien[0]), ['1× zu spät, 10 Min. (04.11.)']);
   gleich('keine Belege', belege(d, BAUSTEINE, 'k', 's', '2026-11', r.bereiche[0].kriterien[1]), []);
 }
@@ -114,6 +115,34 @@ const kurs = (): Kurs => ({
   const a = { ...kurs(), einschaetzungen: { '2026-11:s': { rasterId: 't', stufen: { a1: 4 as const }, zeit: '1' } } };
   const b = { ...kurs(), einschaetzungen: { '2026-10:s': { rasterId: 't', stufen: { a1: 2 as const }, zeit: '2' } } };
   gleich('gemischt', Object.keys(kursMischen(a, b, true, basis).einschaetzungen ?? {}).sort(), ['2026-10:s', '2026-11:s']);
+}
+
+
+// Alte Kopien mit Ich-Sätzen als Lehrkrafttext werden umgestellt, eigene Texte bleiben (E125)
+{
+  const alt: Raster = { id: 'a', name: 'Alt', fach: '', bereiche: [{ name: 'B', gewicht: 1, kriterien: [
+    { id: 'beteiligung', name: 'Beteiligung', stufen: ['Ich melde mich oft von selbst.', 'Ich beteilige mich regelmäßig.', 'Ich sage meist nur etwas, wenn ich gefragt werde.', 'Ich beteilige mich kaum.'] },
+    { id: 'x', name: 'Eigen', stufen: ['Ich bin toll.', 'b', 'c', 'd'] }
+  ] }] };
+  gleich('Umstellen: Anzahl', rasterTexteUmstellen([alt]), 1);
+  gleich('Umstellen: Lehrkrafttext', alt.bereiche[0].kriterien[0].stufen[0], 'meldet sich oft von selbst');
+  gleich('Umstellen: Ich-Form bleibt für Schüler', alt.bereiche[0].kriterien[0].selbst?.[0], 'Ich melde mich oft von selbst.');
+  gleich('Umstellen: eigener Text bleibt', alt.bereiche[0].kriterien[1].stufen[0], 'Ich bin toll.');
+  gleich('Umstellen: zweimal ändert nichts', rasterTexteUmstellen([alt]), 0);
+  gleich('Bausteine: je Stufe 5 bis 6', [1, 2, 3, 4, 5].map((s) => BAUSTEINE.filter((b) => b.stufe === s).length).every((n) => n >= 5 && n <= 6), true);
+  gleich('Bausteine: alle mit Kriterium', BAUSTEINE.every((b) => !!b.kriterium), true);
+}
+
+// Verspätungen im Monat für Stunde und Monatsnote (E125)
+{
+  const d = { verspaetungen: [
+    { id: '1', kursId: 'k', schuelerId: 's', datum: '2026-11-18', ankunft: '08:20', minuten: 20 },
+    { id: '2', kursId: 'k', schuelerId: 's', datum: '2026-11-04', ankunft: '08:10', minuten: 10 },
+    { id: '3', kursId: 'k', schuelerId: 's', datum: '2026-10-28', ankunft: '08:05', minuten: 5 },
+    { id: '4', kursId: 'x', schuelerId: 's', datum: '2026-11-05', ankunft: '08:05', minuten: 5 }
+  ] } as unknown as Parameters<typeof verspaetungenImMonat>[0];
+  gleich('Verspätungen im Monat', verspaetungText(verspaetungenImMonat(d, 'k', 's', '2026-11')), '2× zu spät, 30 Min. (04.11., 18.11.)');
+  gleich('keine Verspätung', verspaetungText(verspaetungenImMonat(d, 'k', 's', '2026-12')), '');
 }
 
 console.log(`raster: ${ok} ok, ${fehler} Fehler`);
