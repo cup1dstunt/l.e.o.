@@ -6,6 +6,7 @@ import type { Daten, Fehlzeit, Kurs, Leistung, Schueler, Stunde, Termin, Verspae
 import { quelleAbgleichen, type AbgleichZahlen } from './kalender.ts';
 import { alsListe, kennungenVon, type Sitzung } from './untis.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
+import { BEISPIEL_KURSE, istBeispielSchueler } from './beispiel.ts';
 
 // ---------- kleine, getestete Bausteine ----------
 
@@ -356,10 +357,17 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   const fehlzeiten: Paket['fehlzeiten'] = [];
   const verspaetungen: Paket['verspaetungen'] = [];
   const gesehen = new Set<string>();
+  // Zeile gehört zu meiner Stunde, wenn sie meine Kennung oder die einer Lehrkraft dieser Stunde trägt (oder gar keine).
+  // Sonst ist es eine andere Stunde zur selben Zeit (z. B. ganztägig fehlender Schüler einer anderen Klasse): Diese darf
+  // einen früher falsch zugeordneten Schüler nicht über `bekannt` immer wieder in der Klasse halten.
+  const meineZeile = (z: any, x: EigeneStunde) => {
+    const k = kennungenVon(z);
+    return !k.length || (!!ich && k.includes(ich)) || k.some((y) => x.lehrer.has(y) || x.te.has(y));
+  };
   for (const { z, stunden } of inMeinenStunden) {
     const s = finde(z.studentId);
     if (!s) continue;
-    const stunde = stunden.find((x) => liste.get(x.key)?.has(s.id) || opt.bekannt?.get(x.key)?.has(s.id));
+    const stunde = stunden.find((x) => liste.get(x.key)?.has(s.id) || (opt.bekannt?.get(x.key)?.has(s.id) && meineZeile(z, x)));
     if (!stunde) continue;
     const doppelt = `${s.id}-${z.date}-${stunde.start}`;
     if (gesehen.has(doppelt)) continue;
@@ -543,15 +551,17 @@ export function falscheKlasseEntfernen(d: Daten): number {
  */
 export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolean; benutzer: string; schule: string }): Ergebnis {
   if (opt.beispielEntfernen) {
-    const weg = new Set(d.kurse.filter((k) => !k.untis).map((k) => k.id));
-    const wegS = new Set(d.schueler.filter((s) => s.untisId === undefined && s.herkunft !== 'datei').map((s) => s.id));
+    // Nur die mitgelieferten Beispielklassen. Eigene, importierte (V20) und Testklassen ohne WebUntis bleiben mit allen Smileys.
+    const weg = new Set(d.kurse.filter((k) => !k.untis && BEISPIEL_KURSE.includes(k.id)).map((k) => k.id));
+    const bleiben = new Set(d.kurse.filter((k) => !weg.has(k.id)).flatMap((k) => k.schueler));
+    const wegS = new Set(d.schueler.filter((s) => istBeispielSchueler(s) && !bleiben.has(s.id)).map((s) => s.id));
     d.kurse = d.kurse.filter((k) => !weg.has(k.id));
     d.schueler = d.schueler.filter((s) => !wegS.has(s.id));
     d.mitarbeit = d.mitarbeit.filter((e) => !weg.has(e.kursId));
     d.fehlzeiten = d.fehlzeiten.filter((e) => !weg.has(e.kursId));
     d.verspaetungen = d.verspaetungen.filter((e) => !weg.has(e.kursId));
     d.notizen = d.notizen.filter((n) => !wegS.has(n.schuelerId));
-    d.stundenplan = d.stundenplan.filter((s) => s.quelle === 'untis');
+    d.stundenplan = d.stundenplan.filter((s) => s.quelle === 'untis' || !weg.has(s.kursId));
   }
 
   // Schüler
@@ -591,7 +601,11 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
       if (kurs) kurs.untis = { ...kurs.untis!, klassen: k.klassen };
     }
     if (!kurs) {
-      const id = `uk${key}`;
+      // Die Kennung muss frei sein: Hat eine alte Klasse über den Rückgriff oben einen neuen Schlüssel bekommen, trägt sie
+      // noch `uk<alter Schlüssel>`. Eine zweite Klasse mit derselben Kennung überschrieb beim Speichern die erste
+      // samt Noten, und neue Noten blieben nicht stehen (28.11.2026).
+      let id = `uk${key}`;
+      for (let n = 2; d.kurse.some((x) => x.id === id); n++) id = `uk${key}~${n}`;
       const neu: Kurs = {
         id, name: k.name, fach: k.fach, klasse: k.klasse, raum: k.raum, profil: profilAus(k.klasse),
         schueler: ids, leistungen: neueLeistungen(id, p.von, p.bis),
