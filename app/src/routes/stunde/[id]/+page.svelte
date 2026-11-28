@@ -273,8 +273,8 @@
       {#if slot.balken}<div class="fuellung" class:voll={anteil >= 1} style:width="{anteil * 100}%"></div>{/if}
       <div class="zeile wrap inhalt">
         <span class="marke" class:test={slot.art === 'test'}>{MARKE[slot.art]}</span>
-        <b class="zahl">{nachgetragen ? terminText(slot) : `${slot.beginn}–${slot.ende}`}</b>
-        {#if slot.balken}<span class="zahl">{zeitText}</span>{/if}
+        {#if slot.balken}<b class="zahl rest">{zeitText}</b>{/if}
+        <span class="zahl" class:klein={slot.balken} class:leise={slot.balken}>{nachgetragen ? terminText(slot) : `${slot.beginn}–${slot.ende}`}</span>
         {#if slot.ausfall}<span class="klein leise">fällt laut WebUntis aus</span>
         {:else if nachgetragen}<span class="klein leise">wird für diesen Tag gespeichert</span>
         {:else if slot.art === 'test'}<span class="klein leise">erfundene Namen</span>{/if}
@@ -500,10 +500,11 @@
 
 <style>
   .seite { padding: 18px 32px 40px; display: flex; flex-direction: column; gap: 16px; }
-  .balken { position: relative; overflow: hidden; padding: 14px 20px; }
+  .balken { position: relative; overflow: hidden; padding: 8px 20px; }
   .balken .inhalt { position: relative; }
-  .fuellung { position: absolute; inset: 0 auto 0 0; background: var(--leo-akzent-hell); border-right: 2px solid var(--leo-akzent); transition: width 20s linear; }
+  .fuellung { position: absolute; inset: 0 auto 0 0; background: var(--leo-akzent-hell); border-right: 1px solid var(--leo-akzent); transition: width 20s linear; }
   .fuellung.voll { border-right: 0; }
+  .rest { font-size: var(--leo-text-xl); font-weight: 700; }
   .balken.test .fuellung { background: var(--leo-stern-hell); border-right-color: var(--leo-stern); }
   .bereich { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
   .bereich.breit { grid-template-columns: 1fr; }
