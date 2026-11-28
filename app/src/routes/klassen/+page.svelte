@@ -11,7 +11,7 @@
   const standAn = $derived(istAn(d.einstellungen, 'stand'));
   const ablageAn = $derived(istAn(d.einstellungen, 'ablage'));
   let offen = $state<string | null>(null);
-  // Testklassen (E125) lassen sich mit zweimal Tippen entfernen, echte Klassen nicht
+  // Testklassen (E126) lassen sich mit zweimal Tippen entfernen, echte Klassen nicht
   let entfernen = $state<string | null>(null);
   async function testWeg(id: string) {
     if (entfernen !== id) { entfernen = id; return; }

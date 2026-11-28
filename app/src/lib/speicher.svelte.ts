@@ -363,7 +363,7 @@ export async function zuruecksetzen() {
   speichern();
 }
 
-/** Testklasse entfernen (E125), vorher einen Stand ablegen. */
+/** Testklasse entfernen (E126), vorher einen Stand ablegen. */
 export async function testklasseWeg(id: string) {
   await fertigSpeichern();
   await standAnlegen('vorher').catch(() => {});

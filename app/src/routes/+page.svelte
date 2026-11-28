@@ -25,13 +25,13 @@
   const kurs = (id: string) => d.kurse.find((k) => k.id === id)!;
   const haupt = $derived(plan.laeuft ?? plan.naechste);
 
-  // Teststunde (E125): Testklasse mit erfundenen Namen, Zeitbalken ab jetzt
+  // Teststunde (E126): Testklasse mit erfundenen Namen, Zeitbalken ab jetzt
   function teststunde() {
     const id = testklasse(d);
     speichern();
     goto(`/stunde/${id}?test=${Date.now()}`);
   }
-  // Frühwarnliste (I37): unter der Grenze oder auf der Kippe, über alle Kurse; Testklassen nur, solange es keine echten gibt (E125)
+  // Frühwarnliste (I37): unter der Grenze oder auf der Kippe, über alle Kurse; Testklassen nur, solange es keine echten gibt (E126)
   const frueh = $derived(
     (d.kurse.some((k) => !istTestKurs(k)) ? d.kurse.filter((k) => !istTestKurs(k)) : d.kurse).flatMap((k) => k.schueler.map((sid) => {
       const w = warnungen(k, rechne(k, sid)).filter((x) => x.art !== 'wenig' && x.art !== 'ohneKlausur');

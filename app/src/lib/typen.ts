@@ -61,7 +61,7 @@ export interface Kurs {
   uebergang: { text: string; datum: string } | null; // neuester Stand („Wo wir stehengeblieben sind“), aus lernstoff[datum].stand nachgeführt (lib/stand.ts)
   merker?: Merker[]; // „Nicht vergessen“ für die nächste Stunde der Klasse, bis abgehakt (V18)
   sitzplan: Sitzplan;
-  test?: boolean; // Testklasse für die Teststunde (E125), erfundene Namen, kein Stundenplan
+  test?: boolean; // Testklasse für die Teststunde (E126), erfundene Namen, kein Stundenplan
   untis?: { klasseId: number; fachId: number; klassen?: number[] }; // Herkunft WebUntis: Klasse + Fach; `klassen` bei zusammengelegten Klassen
   zufall?: ZufallStand; // fairer Zufall über mehrere Stunden (P5, E109)
   gruppenRegeln?: GruppenRegeln; // „nicht zusammen“ / „gern zusammen“ (P7)

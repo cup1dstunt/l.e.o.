@@ -6,7 +6,6 @@
   import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
-  import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import type { MitarbeitEintrag, Stufe, Schueler } from '$lib/typen';
   import { onMount } from 'svelte';
@@ -24,7 +23,7 @@
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
   const liste = $derived(kurs ? schuelerVon(d, kurs) : []);
   const kurzname = $derived(kurznameIn(liste)); // eindeutig bei gleichen Namen (B4)
-  // Welche Stunde ist das? (E125) Echte Klassen nur zu ihren festen Zeiten, die Teststunde läuft ab Start.
+  // Welche Stunde ist das? (E126) Echte Klassen nur zu ihren festen Zeiten, die Teststunde läuft ab Start.
   let jetzt = $state(new Date());
   onMount(() => {
     const t = setInterval(() => (jetzt = new Date()), 20_000);
@@ -38,6 +37,9 @@
   const heute = $derived(slot.datum);
   const nachgetragen = $derived(slot.art === 'nachtrag' || slot.art === 'vorab');
   const istTest = $derived(istTestKurs(kurs));
+  const MARKE = { live: 'Läuft', bald: 'Gleich', vorbei: 'Vorbei', nachtrag: 'Nachtrag', vorab: 'Vorab', test: 'Teststunde', keine: '' } as const;
+  const anteil = $derived(Math.max(0, Math.min(1, (minJetzt - minuten(slot.beginn)) / Math.max(1, minuten(slot.ende) - minuten(slot.beginn)))));
+  const zeitText = $derived(minJetzt < minuten(slot.beginn) ? `beginnt in ${minuten(slot.beginn) - minJetzt} min` : minJetzt < minuten(slot.ende) ? `noch ${minuten(slot.ende) - minJetzt} min` : 'vorbei');
   function teststunde() {
     const id = testklasse(d);
     speichern();
@@ -262,19 +264,24 @@
           <button class="knopf leise" onclick={teststunde}>Teststunde starten</button>
         </div>
         {#if !slot.letzte && !slot.naechste}<p class="klein leise">Für diese Klasse steht nichts im Stundenplan. Unter <a href="/mehr/webuntis">Mehr › WebUntis</a> abgleichen.</p>{/if}
-        <p class="klein leise">Die Teststunde läuft in einer Testklasse mit erfundenen Namen, der Zeitbalken beginnt beim Start. Deine echten Klassen bleiben unberührt.</p>
+        <p class="klein leise">Die Teststunde läuft in einer Testklasse mit erfundenen Namen, die Zeit läuft ab dem Start. Deine echten Klassen bleiben unberührt.</p>
       </section>
     {:else}
-    <div class="balken karte" class:test={slot.art === 'test'} class:nachtrag={nachgetragen}>
-      {#if slot.art === 'test'}
-        <div class="zeile wrap"><span class="marke test">Teststunde</span><span class="klein leise">{kurs.name} · erfundene Namen · {slot.beginn} bis {slot.ende}</span><span class="raum"></span><button class="pille" onclick={teststunde}>Neu starten</button></div>
-      {:else if nachgetragen}
-        <div class="zeile wrap"><span class="marke">{slot.art === 'nachtrag' ? 'Nachtrag' : 'Vorab'}</span><b>{terminText(slot)}</b><span class="klein leise">Alles hier wird für diesen Tag gespeichert.</span></div>
-      {/if}
-      {#if slot.balken}<Zeitbalken beginn={slot.beginn} ende={slot.ende} jetzt={minJetzt} />{/if}
-      {#if slot.ausfall}<span class="klein leise">Diese Stunde fällt laut WebUntis aus.</span>
-      {:else if slot.art === 'bald' || slot.art === 'vorbei'}<span class="klein leise">Stunde {terminText(slot)} laut Stundenplan.</span>{/if}
-      {#if istTest && slot.art !== 'test'}<span class="klein leise">Testklasse · <button class="link" onclick={teststunde}>als Teststunde ab jetzt starten</button></span>{/if}
+    <!-- Die Kachel füllt sich mit der Zeit (statt eigenem Balken), die Uhrzeit steht nur einmal da -->
+    <div class="balken karte" class:test={slot.art === 'test'} class:nachtrag={nachgetragen}
+      role={slot.balken ? 'progressbar' : undefined} aria-valuemin="0" aria-valuemax="100" aria-valuenow={slot.balken ? Math.round(anteil * 100) : undefined}>
+      {#if slot.balken}<div class="fuellung" class:voll={anteil >= 1} style:width="{anteil * 100}%"></div>{/if}
+      <div class="zeile wrap inhalt">
+        <span class="marke" class:test={slot.art === 'test'}>{MARKE[slot.art]}</span>
+        <b class="zahl">{nachgetragen ? terminText(slot) : `${slot.beginn}–${slot.ende}`}</b>
+        {#if slot.balken}<span class="zahl">{zeitText}</span>{/if}
+        {#if slot.ausfall}<span class="klein leise">fällt laut WebUntis aus</span>
+        {:else if nachgetragen}<span class="klein leise">wird für diesen Tag gespeichert</span>
+        {:else if slot.art === 'test'}<span class="klein leise">erfundene Namen</span>{/if}
+        <span class="raum"></span>
+        {#if slot.art === 'test'}<button class="pille" onclick={teststunde}>Neu starten</button>
+        {:else if istTest}<button class="pille" onclick={teststunde}>Als Teststunde starten</button>{/if}
+      </div>
     </div>
     {#if standAn && (vorher || merkerJetzt.length)}
       <div class="stehen">
@@ -493,7 +500,11 @@
 
 <style>
   .seite { padding: 18px 32px 40px; display: flex; flex-direction: column; gap: 16px; }
-  .balken { padding: 14px 20px; }
+  .balken { position: relative; overflow: hidden; padding: 14px 20px; }
+  .balken .inhalt { position: relative; }
+  .fuellung { position: absolute; inset: 0 auto 0 0; background: var(--leo-akzent-hell); border-right: 2px solid var(--leo-akzent); transition: width 20s linear; }
+  .fuellung.voll { border-right: 0; }
+  .balken.test .fuellung { background: var(--leo-stern-hell); border-right-color: var(--leo-stern); }
   .bereich { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
   .bereich.breit { grid-template-columns: 1fr; }
   .schueler { padding: 16px; }

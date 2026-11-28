@@ -1,4 +1,4 @@
-// Prüft echte Stunden zu festen Zeiten und die Teststunde (E125).
+// Prüft echte Stunden zu festen Zeiten und die Teststunde (E126).
 // Aufruf: npm test
 import { stundeBestimmen, erfassbar, zeitstempel, stundenZahl, terminText, testklasse, testklasseEntfernen, istTestKurs, echterPlan } from '../src/lib/stundenzeit.ts';
 import { stundenHeute } from '../src/lib/hilfen.ts';

@@ -1,4 +1,4 @@
-// Echte Stunden zu festen Zeiten, Teststunde daneben (E125).
+// Echte Stunden zu festen Zeiten, Teststunde daneben (E126).
 // Echte Klassen folgen nur noch dem Stundenplan: Eine Stunde gehört zu einem Datum und einer Anfangszeit,
 // alles, was man darin erfasst, bekommt dieses Datum. Den Zeitbalken „ab Öffnen“ gibt es nur noch in der Teststunde,
 // und die läuft immer in einer Testklasse mit erfundenen Namen, damit echte Daten sauber bleiben.

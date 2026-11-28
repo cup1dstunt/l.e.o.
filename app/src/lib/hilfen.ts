@@ -52,10 +52,10 @@ export function istAusfall(d: Daten, s: Stunde, datum: string) {
   return (d.einstellungen.untis?.ausfaelle ?? []).includes(`${s.kursId}|${datum}|${s.beginn}`);
 }
 
-/** Testklasse (E125): selbst angelegt (`test`) oder eine der mitgelieferten Beispielklassen ohne WebUntis. */
+/** Testklasse (E126): selbst angelegt (`test`) oder eine der mitgelieferten Beispielklassen ohne WebUntis. */
 export const istTestKurs = (k: Pick<Kurs, 'id' | 'untis' | 'test'>) => !!k.test || (!k.untis && BEISPIEL_KURSE.includes(k.id));
 
-/** Stundenplan für Heute und die Wochenansicht (E125): Sobald echte Stunden da sind, fallen die der Testklassen heraus. */
+/** Stundenplan für Heute und die Wochenansicht (E126): Sobald echte Stunden da sind, fallen die der Testklassen heraus. */
 export function echterPlan(d: Daten): Stunde[] {
   const test = new Set((d.kurse ?? []).filter(istTestKurs).map((k) => k.id));
   const echt = d.stundenplan.filter((s) => !test.has(s.kursId));
