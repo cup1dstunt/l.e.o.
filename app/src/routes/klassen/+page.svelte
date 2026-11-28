@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { app } from '$lib/speicher.svelte';
+  import { app, zeige, testklasseWeg } from '$lib/speicher.svelte';
+  import { istTestKurs } from '$lib/stundenzeit';
   import { istAn } from '$lib/module';
   import { datumWt, heuteISO, isoDatum, minuten } from '$lib/hilfen';
   import { letzterStand, seitText, verlauf, faelligeMerker } from '$lib/stand';
@@ -10,6 +11,14 @@
   const standAn = $derived(istAn(d.einstellungen, 'stand'));
   const ablageAn = $derived(istAn(d.einstellungen, 'ablage'));
   let offen = $state<string | null>(null);
+  // Testklassen (E125) lassen sich mit zweimal Tippen entfernen, echte Klassen nicht
+  let entfernen = $state<string | null>(null);
+  async function testWeg(id: string) {
+    if (entfernen !== id) { entfernen = id; return; }
+    entfernen = null;
+    await testklasseWeg(id);
+    zeige('Testklasse entfernt. Ein Stand von vorher liegt unter Mehr › Sicherung.');
+  }
   // Nächste Stunde: ist der heutige Block schon vorbei, ab morgen suchen
   const jetzt = new Date();
   const morgen = isoDatum(new Date(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate() + 1));
@@ -27,7 +36,7 @@
   <div class="raster">
     {#each d.kurse as k (k.id)}
       <div class="karte">
-        <h2>{k.name}</h2>
+        <h2>{k.name}{#if istTestKurs(k)} <span class="testmarke">Test</span>{/if}</h2>
         <p class="leise">{k.schueler.length} Schüler · Raum {k.raum} · Profil {k.profil}</p>
         {#if standAn}
           {@const v = letzterStand(k)}
@@ -59,6 +68,7 @@
           <a class="knopf haupt" href="/kurs/{k.id}">Notenbuch</a>
           {#if istAn(d.einstellungen, 'stunde')}<a class="knopf" href="/stunde/{k.id}">Stunde</a>{/if}
           {#if istAn(d.einstellungen, 'planung')}<a class="knopf leise" href="/planung/{k.id}">Planung</a>{/if}
+          {#if istTestKurs(k)}<button class="knopf leise" onclick={() => testWeg(k.id)}>{entfernen === k.id ? 'Wirklich entfernen' : 'Testklasse entfernen'}</button>{/if}
         </div>
       </div>
     {/each}
@@ -67,6 +77,7 @@
 
 <style>
   .leer { margin-top: 18px; }
+  .testmarke { font-size: var(--leo-text-s); font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--leo-stern-hell); color: var(--leo-stern); vertical-align: middle; }
   .seite { padding: 24px 32px; }
   .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 18px; align-items: start; }
   .karte { display: flex; flex-direction: column; gap: 10px; }
