@@ -1,4 +1,5 @@
 import type { Daten, Kurs, Schueler, Stunde } from './typen.ts';
+import { BEISPIEL_KURSE } from './beispiel.ts';
 
 export const name = (s: Schueler) => `${s.vorname} ${s.nachname}`;
 export const kurzname = (s: Schueler) => `${s.vorname} ${s.nachname[0]}.`;
@@ -51,6 +52,16 @@ export function istAusfall(d: Daten, s: Stunde, datum: string) {
   return (d.einstellungen.untis?.ausfaelle ?? []).includes(`${s.kursId}|${datum}|${s.beginn}`);
 }
 
+/** Testklasse (E126): selbst angelegt (`test`) oder eine der mitgelieferten Beispielklassen ohne WebUntis. */
+export const istTestKurs = (k: Pick<Kurs, 'id' | 'untis' | 'test'>) => !!k.test || (!k.untis && BEISPIEL_KURSE.includes(k.id));
+
+/** Stundenplan für Heute und die Wochenansicht (E126): Sobald echte Stunden da sind, fallen die der Testklassen heraus. */
+export function echterPlan(d: Daten): Stunde[] {
+  const test = new Set((d.kurse ?? []).filter(istTestKurs).map((k) => k.id));
+  const echt = d.stundenplan.filter((s) => !test.has(s.kursId));
+  return echt.length ? echt : d.stundenplan;
+}
+
 export type StundeHeute = Stunde & { ausfall: boolean; tagText?: string };
 
 /** Stunden des heutigen Tages, dazu die laufende und die nächste. Ausgefallene Stunden laufen nie und kommen nie als Nächstes (WU1). */
@@ -59,7 +70,7 @@ export function stundenHeute(d: Daten, jetzt = new Date()) {
   const min = jetzt.getHours() * 60 + jetzt.getMinutes();
   const datum = isoDatum(jetzt);
   const tagesplan = (tag: number, iso: string): StundeHeute[] =>
-    d.stundenplan.filter((s) => s.tag === tag).sort((a, b) => minuten(a.beginn) - minuten(b.beginn))
+    echterPlan(d).filter((s) => s.tag === tag).sort((a, b) => minuten(a.beginn) - minuten(b.beginn))
       .map((s) => ({ ...s, ausfall: istAusfall(d, s, iso) }));
   const heute = tagesplan(t, datum);
   const laeuft = heute.find((s) => !s.ausfall && minuten(s.beginn) <= min && min < minuten(s.ende));

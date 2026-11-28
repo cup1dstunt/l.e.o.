@@ -2,6 +2,7 @@
 // F1 je Objektart, F2 verschlüsselt (über HTTPS oder localhost), F3 Sicherung und Tagesstände,
 // F4 Abgleich mit dem Dienst auf dem Unraid, der nur verschlüsselte Datensätze sieht (docs/FUNDAMENT.md).
 import { beispielDaten } from './beispiel.ts';
+import { testklasseEntfernen } from './stundenzeit.ts';
 import { hashen, neuesSalz } from './sicherheit.ts';
 import * as tresorFn from './tresor.ts';
 import type { Tresor, Datenschluessel, GeheimSatz, GeheimText } from './tresor.ts';
@@ -360,6 +361,13 @@ export async function zuruecksetzen() {
   app.d.einstellungen.eingerichtet = alt?.eingerichtet ?? true;
   if (tresor) delete app.d.einstellungen.passwort;
   speichern();
+}
+
+/** Testklasse entfernen (E126), vorher einen Stand ablegen. */
+export async function testklasseWeg(id: string) {
+  await fertigSpeichern();
+  await standAnlegen('vorher').catch(() => {});
+  if (testklasseEntfernen(app.d!, id)) speichern();
 }
 
 /** Einrichtung (docs/MODULE.md): ohne Beispieldaten anfangen. Einstellungen bleiben, alle Klassen und Einträge gehen. */

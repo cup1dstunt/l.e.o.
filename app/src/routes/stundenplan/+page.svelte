@@ -1,7 +1,8 @@
 <script lang="ts">
   import { istAn } from '$lib/module';
   import { app } from '$lib/speicher.svelte';
-  import { minuten, WOCHENTAGE } from '$lib/hilfen';
+  import { minuten, WOCHENTAGE, echterPlan } from '$lib/hilfen';
+  import { stundenAdresse } from '$lib/stundenzeit';
   import type { Stunde } from '$lib/typen';
   import { page } from '$app/state';
   import { eintraege as kalEintraege, amTag } from '$lib/kalender';
@@ -41,13 +42,13 @@
 
   let tag = $state(Math.min(5, Math.max(1, new Date().getDay() || 1)));
 
-  const zeiten = $derived([...new Set(d.stundenplan.map((s) => s.beginn))].sort((a, b) => minuten(a) - minuten(b)));
+  const zeiten = $derived([...new Set(echterPlan(d).map((s) => s.beginn))].sort((a, b) => minuten(a) - minuten(b)));
   const kurs = (id: string) => d.kurse.find((k) => k.id === id);
   const ausfaelle = $derived(new Set(d.einstellungen.untis?.ausfaelle ?? []));
 
   type Eintrag = Stunde & { datum: string; zustand: '' | 'jetzt' | 'vorbei' | 'ausfall' };
   function eintraege(t: { nr: number; datum: string }): Eintrag[] {
-    return d.stundenplan
+    return echterPlan(d)
       .filter((s) => s.tag === t.nr && kurs(s.kursId))
       .sort((a, b) => minuten(a.beginn) - minuten(b.beginn))
       .map((s) => {
@@ -103,7 +104,7 @@
             {@const s = eintraege(t).find((x) => x.beginn === z)}
             {#if s}
               {@const k = kurs(s.kursId)!}
-              <a class="st {s.zustand}" href={s.zustand === 'ausfall' ? undefined : `/stunde/${k.id}`}>
+              <a class="st {s.zustand}" href={s.zustand === 'ausfall' ? undefined : stundenAdresse(k.id, s)}>
                 <b>{k.klasse}</b><span>{k.fach}</span>
                 <span class="klein leise">{s.beginn}–{s.ende}{k.raum ? ` · ${k.raum}` : ''}</span>
                 {#if s.zustand === 'ausfall'}<span class="klein hinweis">Ausfall</span>{/if}
@@ -130,7 +131,7 @@
         {@const k = kurs(s.kursId)!}
         {@const vor = tagListe[i - 1]}
         {#if vor && minuten(s.beginn) - minuten(vor.ende) > 30}<div class="frei klein leise">Frei {vor.ende}–{s.beginn}</div>{/if}
-        <a class="st stk {s.zustand}" href={s.zustand === 'ausfall' ? undefined : `/stunde/${k.id}`}>
+        <a class="st stk {s.zustand}" href={s.zustand === 'ausfall' ? undefined : stundenAdresse(k.id, s)}>
           <span class="uhr zahl">{s.beginn}<br /><span class="klein leise">{s.ende}</span></span>
           <span class="mitte">
             <b>{k.klasse}</b> {k.fach}<br />

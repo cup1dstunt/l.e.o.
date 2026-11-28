@@ -11,6 +11,8 @@
   import { materialListe } from '$lib/material';
   import { eintraege, artName } from '$lib/kalender';
   import { isoDatum } from '$lib/hilfen';
+  import { stundenAdresse, testklasse, istTestKurs } from '$lib/stundenzeit';
+  import { goto } from '$app/navigation';
   import { letzteStunde, seitText, faelligeMerker, ohneStand, standSetzen, vorschlaege } from '$lib/stand';
 
   const d = app.d!;
@@ -23,9 +25,15 @@
   const kurs = (id: string) => d.kurse.find((k) => k.id === id)!;
   const haupt = $derived(plan.laeuft ?? plan.naechste);
 
-  // Frühwarnliste (I37): unter der Grenze oder auf der Kippe, über alle Kurse
+  // Teststunde (E126): Testklasse mit erfundenen Namen, Zeitbalken ab jetzt
+  function teststunde() {
+    const id = testklasse(d);
+    speichern();
+    goto(`/stunde/${id}?test=${Date.now()}`);
+  }
+  // Frühwarnliste (I37): unter der Grenze oder auf der Kippe, über alle Kurse; Testklassen nur, solange es keine echten gibt (E126)
   const frueh = $derived(
-    d.kurse.flatMap((k) => k.schueler.map((sid) => {
+    (d.kurse.some((k) => !istTestKurs(k)) ? d.kurse.filter((k) => !istTestKurs(k)) : d.kurse).flatMap((k) => k.schueler.map((sid) => {
       const w = warnungen(k, rechne(k, sid)).filter((x) => x.art !== 'wenig' && x.art !== 'ohneKlausur');
       const s = d.schueler.find((x) => x.id === sid)!;
       return w.length ? { s, k, w } : null;
@@ -119,6 +127,7 @@
   <h1>Heute</h1>
   <span class="leise">{jetzt.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })} · {plan.heute.length} {plan.heute.length === 1 ? 'Stunde' : 'Stunden'}</span>
   <span class="raum"></span>
+  {#if an('stunde')}<button class="pille" onclick={teststunde} title="Live-Stunde mit erfundenen Namen ausprobieren, echte Klassen bleiben unberührt">Teststunde</button>{/if}
   <button class="pille" onclick={() => (sitzung.suche = true)}>Suchen <b>Strg K</b></button>
   <button class="pille" onclick={() => (sitzung.entsperrt = false)}>Sperren</button>
 </header>
@@ -136,7 +145,7 @@
       {#each plan.heute as s}
         {@const k = kurs(s.kursId)}
         {@const vorbei = minuten(s.ende) <= plan.min}
-        <a href={s.ausfall ? undefined : an('stunde') ? `/stunde/${k.id}` : `/kurs/${k.id}`} class="stunde" class:jetzt={s === plan.laeuft} class:vorbei={vorbei && !s.ausfall} class:ausfall={s.ausfall} title={s.ausfall ? 'Ausfall laut WebUntis' : undefined}>
+        <a href={s.ausfall ? undefined : an('stunde') ? stundenAdresse(k.id, { datum: hISO, beginn: s.beginn }) : `/kurs/${k.id}`} class="stunde" class:jetzt={s === plan.laeuft} class:vorbei={vorbei && !s.ausfall} class:ausfall={s.ausfall} title={s.ausfall ? 'Ausfall laut WebUntis' : undefined}>
           <span class="zahl klein">{s.beginn}{s.ausfall ? ' · Ausfall' : s === plan.laeuft ? ' · läuft' : vorbei ? ' · ✓' : ''}</span>
           <b>{k.klasse} {k.fach}</b>
           {#if s === plan.laeuft}<span class="mini-balken"><span style:width="{Math.min(100, ((plan.min - minuten(s.beginn)) / (minuten(s.ende) - minuten(s.beginn))) * 100)}%"></span></span>{/if}
@@ -179,17 +188,17 @@
           <p class="klein geplant"><span class="leise">Geplant:</span> {geplantFuer(k.id, hauptDatum)} · <a href="/planung/{k.id}">Planung</a></p>
         {/if}
         {#if ablageAn && materialFuerStunde(k.id, hauptDatum)}
-          <p class="klein geplant"><span class="leise">Material:</span> <a href="/stunde/{k.id}">{materialFuerStunde(k.id, hauptDatum)} bereit</a></p>
+          <p class="klein geplant"><span class="leise">Material:</span> <a href={stundenAdresse(k.id, { datum: hauptDatum, beginn: haupt.beginn })}>{materialFuerStunde(k.id, hauptDatum)} bereit</a></p>
         {/if}
         <div class="knoepfe">
           {#if an('stunde')}
-            <a class="knopf haupt" href="/stunde/{k.id}">Stunde öffnen</a>
-            <a class="knopf" href="/stunde/{k.id}?mitarbeit=1">{an('muendlich') ? 'Mündlich/Anwesenheit' : 'Anwesenheit'}</a>
+            <a class="knopf haupt" href={stundenAdresse(k.id, { datum: hauptDatum, beginn: haupt.beginn })}>Stunde öffnen</a>
+            <a class="knopf" href="{stundenAdresse(k.id, { datum: hauptDatum, beginn: haupt.beginn })}&mitarbeit=1">{an('muendlich') ? 'Mündlich/Anwesenheit' : 'Anwesenheit'}</a>
           {/if}
           <a class="knopf" class:haupt={!an('stunde')} href="/kurs/{k.id}?neu=1">+ Leistung</a>
           <a class="knopf leise" href="/kurs/{k.id}">Noten</a>
         </div>
-        {#if !plan.laeuft}<p class="klein leise">Zum Testen kannst du jede Stunde jederzeit öffnen.</p>{/if}
+        {#if !plan.laeuft && an('stunde')}<p class="klein leise">Stunden laufen zu ihren festen Zeiten. Ausprobieren geht jederzeit mit der <button class="link" onclick={teststunde}>Teststunde</button>.</p>{/if}
       </section>
     {/if}
 
@@ -322,4 +331,5 @@
   .gold { color: #8a6200; font-weight: 600; }
   .mini2 { margin-left: auto; }
   @media (max-width: 900px) { .raster { grid-template-columns: 1fr; } .laeuft { grid-row: auto; } .seite { padding: 16px; } .kopf { padding: 12px 16px; } }
+  .link { background: none; border: 0; padding: 0; font: inherit; color: var(--leo-akzent); text-decoration: underline; cursor: pointer; }
 </style>

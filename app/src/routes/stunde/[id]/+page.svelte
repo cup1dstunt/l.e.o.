@@ -2,14 +2,15 @@
   import { istAn } from '$lib/module';
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId, materialOeffnen } from '$lib/speicher.svelte';
-  import { schuelerVon, kurznameIn, name, heuteISO, minuten, stundenHeute, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { schuelerVon, kurznameIn, name, minuten, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
-  import Zeitbalken from '$lib/ui/Zeitbalken.svelte';
   import KursKopf from '$lib/ui/KursKopf.svelte';
   import type { MitarbeitEintrag, Stufe, Schueler } from '$lib/typen';
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { stundeBestimmen, erfassbar, zeitstempel, stundenZahl, terminText, stundenAdresse, istTestKurs, testklasse } from '$lib/stundenzeit';
   import { lehrersicht, spaltenVorlage } from '$lib/sitzplan';
   import Werkzeuge from '$lib/ui/Werkzeuge.svelte';
   import { blockAm, reiheText } from '$lib/semester';
@@ -22,24 +23,28 @@
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
   const liste = $derived(kurs ? schuelerVon(d, kurs) : []);
   const kurzname = $derived(kurznameIn(liste)); // eindeutig bei gleichen Namen (B4)
-  const heute = heuteISO();
-
-  // Zeitbalken: laufende Stunde laut Plan, sonst 90 Minuten ab Öffnen (zum Testen)
+  // Welche Stunde ist das? (E126) Echte Klassen nur zu ihren festen Zeiten, die Teststunde läuft ab Start.
   let jetzt = $state(new Date());
-  const geoeffnet = new Date();
   onMount(() => {
     const t = setInterval(() => (jetzt = new Date()), 20_000);
     return () => clearInterval(t);
   });
   const minJetzt = $derived(jetzt.getHours() * 60 + jetzt.getMinutes());
-  const slot = $derived.by(() => {
-    const p = stundenHeute(d, jetzt);
-    if (p.laeuft?.kursId === kurs.id) return { beginn: p.laeuft.beginn, ende: p.laeuft.ende, plan: true, ausfall: false };
-    const ausfall = p.ausfallJetzt?.kursId === kurs.id;
-    const b = geoeffnet.getHours() * 60 + geoeffnet.getMinutes();
-    const f = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
-    return { beginn: f(b), ende: f(b + 90), plan: false, ausfall };
-  });
+  const slot = $derived(kurs ? stundeBestimmen(d, kurs, jetzt, {
+    datum: page.url.searchParams.get('datum'), beginn: page.url.searchParams.get('beginn'), test: page.url.searchParams.get('test')
+  }) : undefined)!;
+  // Alles, was hier erfasst wird, bekommt das Datum der Stunde (auch beim Nachtragen am Wochenende)
+  const heute = $derived(slot.datum);
+  const nachgetragen = $derived(slot.art === 'nachtrag' || slot.art === 'vorab');
+  const istTest = $derived(istTestKurs(kurs));
+  const MARKE = { live: 'Läuft', bald: 'Gleich', vorbei: 'Vorbei', nachtrag: 'Nachtrag', vorab: 'Vorab', test: 'Teststunde', keine: '' } as const;
+  const anteil = $derived(Math.max(0, Math.min(1, (minJetzt - minuten(slot.beginn)) / Math.max(1, minuten(slot.ende) - minuten(slot.beginn)))));
+  const zeitText = $derived(minJetzt < minuten(slot.beginn) ? `beginnt in ${minuten(slot.beginn) - minJetzt} min` : minJetzt < minuten(slot.ende) ? `noch ${minuten(slot.ende) - minJetzt} min` : 'vorbei');
+  function teststunde() {
+    const id = testklasse(d);
+    speichern();
+    goto(`/stunde/${id}?test=${Date.now()}`);
+  }
 
   // Einträge dieser Stunde = heute in diesem Kurs
   const heuteEintraege = $derived(d.mitarbeit.filter((e) => e.kursId === kurs.id && e.zeit.slice(0, 10) === heute));
@@ -56,7 +61,7 @@
       speichern();
       zeige(`${kurzname(s)}: ${STUFEN[stufe - 1].name}`, () => { alt.stufe = vorher; speichern(); });
     } else {
-      const e: MitarbeitEintrag = { id: neueId(), kursId: kurs.id, schuelerId: s.id, zeit: new Date().toISOString(), stufe, bausteine: [] };
+      const e: MitarbeitEintrag = { id: neueId(), kursId: kurs.id, schuelerId: s.id, zeit: zeitstempel(slot), stufe, bausteine: [] };
       d.mitarbeit.push(e);
       speichern();
       zeige(`${kurzname(s)}: ${STUFEN[stufe - 1].name} gespeichert`, () => {
@@ -72,7 +77,7 @@
   function fehltSetzen(s: Schueler) {
     const v = zuSpaet(s.id);
     if (v) d.verspaetungen.splice(d.verspaetungen.indexOf(v), 1);
-    if (!fehlt(s.id)) d.fehlzeiten.push({ id: neueId(), kursId: kurs.id, schuelerId: s.id, datum: heute, stunden: 2, status: 'offen' });
+    if (!fehlt(s.id)) d.fehlzeiten.push({ id: neueId(), kursId: kurs.id, schuelerId: s.id, datum: heute, stunden: stundenZahl(slot), status: 'offen' });
     speichern();
   }
   function daSetzen(s: Schueler) {
@@ -84,7 +89,7 @@
   }
   let verspaetung = $state<{ s: Schueler; zeit: string } | null>(null);
   function anwesenheitKlick(s: Schueler) {
-    if (fehlt(s.id)) verspaetung = { s, zeit: hhmm() }; // zweiter Klick: Verspätung anbieten
+    if (fehlt(s.id)) verspaetung = { s, zeit: nachgetragen ? vorschlaege[0].zeit : hhmm() }; // zweiter Klick: Verspätung anbieten
     else if (zuSpaet(s.id)) verspaetung = { s, zeit: zuSpaet(s.id)!.ankunft };
     else {
       fehltSetzen(s);
@@ -193,7 +198,7 @@
   let standText = $state('');
   let standFuer = '';
   $effect.pre(() => {
-    if (kurs && standFuer !== kurs.id) { standFuer = kurs.id; standText = kurs.lernstoff[heute]?.stand ?? ''; davorZeigen = false; }
+    if (kurs && standFuer !== kurs.id + heute) { standFuer = kurs.id + heute; standText = kurs.lernstoff[heute]?.stand ?? ''; davorZeigen = false; }
   });
   let standFeld = $state<HTMLTextAreaElement>();
   const thema = $derived(lernstoff?.text?.trim() || block?.reihe?.titel || '');
@@ -230,8 +235,9 @@
 <svelte:head><title>{kurs?.name} · Stunde</title></svelte:head>
 
 {#if kurs}
-  <KursKopf {kurs} aktiv="stunde" info="Live-Stunde · Raum {kurs.raum} · {anwesend.length} von {liste.length} da">
+  <KursKopf {kurs} aktiv="stunde" info="{slot.art === 'keine' ? 'Heute keine Stunde' : slot.art === 'test' ? 'Teststunde' : nachgetragen ? 'Nachtrag' : 'Live-Stunde'} · Raum {kurs.raum} · {anwesend.length} von {liste.length} da">
     {#snippet rechts()}
+      {#if erfassbar(slot)}
       {#if sitzplanAn}
       <div class="umschalter" role="group" aria-label="Ansicht">
         <button aria-pressed={d.einstellungen.liveAnsicht === 'liste'} onclick={() => { d.einstellungen.liveAnsicht = 'liste'; speichern(); }}>Alphabet</button>
@@ -243,14 +249,39 @@
       <button class="pille" aria-pressed={nurMitarbeit} onclick={() => (nurMitarbeit = !nurMitarbeit)}>Nur mündlich</button>
       {/if}
       <button class="knopf haupt" onclick={abschliessen}>Stunde abschließen</button>
+      {/if}
     {/snippet}
   </KursKopf>
 
   <div class="seite">
-    <div class="balken karte">
-      <Zeitbalken beginn={slot.beginn} ende={slot.ende} jetzt={minJetzt} />
-      {#if slot.ausfall}<span class="klein leise">Diese Stunde fällt laut WebUntis aus. Zeitbalken zum Testen ab Öffnen.</span>
-      {:else if !slot.plan}<span class="klein leise">Keine Stunde laut Plan, Zeitbalken zum Testen ab Öffnen.</span>{/if}
+    {#if !erfassbar(slot)}
+      <section class="karte keine">
+        <h2>Heute keine Stunde in {kurs.klasse}</h2>
+        <p class="leise">Stunden laufen zu ihren festen Zeiten laut Stundenplan. So landet alles, was du erfasst, am richtigen Tag.</p>
+        <div class="zeile wrap">
+          {#if slot.letzte}<a class="knopf haupt" href={stundenAdresse(kurs.id, slot.letzte)}>Letzte Stunde nachtragen · {terminText(slot.letzte)}</a>{/if}
+          {#if slot.naechste}<a class="knopf" href={stundenAdresse(kurs.id, slot.naechste)}>Nächste Stunde · {terminText(slot.naechste)}</a>{/if}
+          <button class="knopf leise" onclick={teststunde}>Teststunde starten</button>
+        </div>
+        {#if !slot.letzte && !slot.naechste}<p class="klein leise">Für diese Klasse steht nichts im Stundenplan. Unter <a href="/mehr/webuntis">Mehr › WebUntis</a> abgleichen.</p>{/if}
+        <p class="klein leise">Die Teststunde läuft in einer Testklasse mit erfundenen Namen, die Zeit läuft ab dem Start. Deine echten Klassen bleiben unberührt.</p>
+      </section>
+    {:else}
+    <!-- Die Kachel füllt sich mit der Zeit (statt eigenem Balken), die Uhrzeit steht nur einmal da -->
+    <div class="balken karte" class:test={slot.art === 'test'} class:nachtrag={nachgetragen}
+      role={slot.balken ? 'progressbar' : undefined} aria-valuemin="0" aria-valuemax="100" aria-valuenow={slot.balken ? Math.round(anteil * 100) : undefined}>
+      {#if slot.balken}<div class="fuellung" class:voll={anteil >= 1} style:width="{anteil * 100}%"></div>{/if}
+      <div class="zeile wrap inhalt">
+        <span class="marke" class:test={slot.art === 'test'}>{MARKE[slot.art]}</span>
+        {#if slot.balken}<b class="zahl rest">{zeitText}</b>{/if}
+        <span class="zahl" class:klein={slot.balken} class:leise={slot.balken}>{nachgetragen ? terminText(slot) : `${slot.beginn}–${slot.ende}`}</span>
+        {#if slot.ausfall}<span class="klein leise">fällt laut WebUntis aus</span>
+        {:else if nachgetragen}<span class="klein leise">wird für diesen Tag gespeichert</span>
+        {:else if slot.art === 'test'}<span class="klein leise">erfundene Namen</span>{/if}
+        <span class="raum"></span>
+        {#if slot.art === 'test'}<button class="pille" onclick={teststunde}>Neu starten</button>
+        {:else if istTest}<button class="pille" onclick={teststunde}>Als Teststunde starten</button>{/if}
+      </div>
     </div>
     {#if standAn && (vorher || merkerJetzt.length)}
       <div class="stehen">
@@ -401,6 +432,7 @@
         </aside>
       {/if}
     </div>
+    {/if}
   </div>
 
   {#if verspaetung}
@@ -468,7 +500,12 @@
 
 <style>
   .seite { padding: 18px 32px 40px; display: flex; flex-direction: column; gap: 16px; }
-  .balken { padding: 14px 20px; }
+  .balken { position: relative; overflow: hidden; padding: 8px 20px; }
+  .balken .inhalt { position: relative; }
+  .fuellung { position: absolute; inset: 0 auto 0 0; background: var(--leo-akzent-hell); border-right: 1px solid var(--leo-akzent); transition: width 20s linear; }
+  .fuellung.voll { border-right: 0; }
+  .rest { font-size: var(--leo-text-xl); font-weight: 700; }
+  .balken.test .fuellung { background: var(--leo-stern-hell); border-right-color: var(--leo-stern); }
   .bereich { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
   .bereich.breit { grid-template-columns: 1fr; }
   .schueler { padding: 16px; }
@@ -534,4 +571,10 @@
   .dialog p { margin: 14px 0 8px; }
   @media (max-width: 1000px) { .bereich { grid-template-columns: 1fr; } }
   @media (max-width: 720px) { .seite { padding: 12px; } .raster { grid-template-columns: 1fr; } .sitze { gap: 4px; } .platz { padding: 4px; min-height: 58px; } .pn { font-size: 11px; white-space: normal; overflow-wrap: break-word; hyphens: auto; line-height: 1.2; } }
+  .keine { display: flex; flex-direction: column; gap: 10px; }
+  .keine h2, .keine p { margin: 0; }
+  .balken.test { border-color: var(--leo-stern); }
+  .marke { font-size: var(--leo-text-s); font-weight: 600; padding: 2px 10px; border-radius: 99px; background: var(--leo-akzent-hell); color: var(--leo-akzent); }
+  .marke.test { background: var(--leo-stern-hell); color: var(--leo-stern); }
+  .link { background: none; border: 0; padding: 0; font: inherit; color: var(--leo-akzent); text-decoration: underline; cursor: pointer; }
 </style>
