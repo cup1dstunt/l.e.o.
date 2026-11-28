@@ -99,7 +99,19 @@ Noten sieht nur die eigene Lehrkraft (E29). Keine Schulleitungs- oder Fachbereic
   folgt, wenn der Schuljahreswechsel (K9) gebaut ist.
 - Nicht gebaut (Backlog): Verlaufsdiagramm je Schüler über Halbjahre (A2), Konferenzansicht (A3), Druck/PDF der Auswertung, Weg B.
 
+### Ausbau 27.11.2026 (V19, Entwurfs-PR)
+- **Schwellen einstellbar:** unter „Genauer hinsehen“ › „Schwellen anpassen“, Plus/Minus, gilt für alle Klassen, „Zurück auf Standard“.
+  Bereiche: Abfall FOS 1–8 NP, OSZ 0,5–3 Noten, still 7–60 Tage (Schritt 7), Fehlzeiten 5–30 % (Schritt 5). Die Kurzfassung 20–30 % folgt der Fehlzeitenschwelle.
+- **Verlauf der Noten (A2):** Linie Klassenschnitt je datierter Leistung, Schüler per Auswahlliste dazu (oder `?s=<id>`), Grenze gestrichelt,
+  oben = besser, darunter Tabelle und mündlich je Monat. Logik `notenVerlauf`, `muendlichSchueler`.
+- **Drucken (A7):** Knopf „Drucken oder als PDF“ in der Klassenauswertung und im Klassenvergleich; Druckansicht ohne Navigation und Bedienknöpfe, mit Kopfzeile „nur für die eigene Lehrkraft“.
+- Getestet: 20 neue Prüfungen, Typprüfung, Build, Ansicht PC 1360 px, Handy 390 px und Druckansicht mit Beispieldaten. Nicht getestet: echter Papierdruck, Tablet, Dunkelmodus.
+- Weiter offen: Konferenzansicht (A3, braucht Fehlzeiten aller Fächer), Halbjahresvergleich (A8).
+
 ## 7 Offene Grundsatzfragen an Konstantin
+
+Gebaut wird mit den Vorschlägen (Antworten stehen noch aus): 1 ja, 2 erst CSV, 3 nur die Note, 4 Schwellen wie vorgeschlagen, jetzt einstellbar.
+
 
 1. **Arbeitsteilung EWH und L.E.O.:** EWH bleibt Korrektur und Klausurstatistik, L.E.O. wird Notenbuch und Klassenauswertung.
    Sollen die EWH-Backlogpunkte 22–25 (Allgemeiner Teil, Mitarbeit nach der Stunde, eigener Stundenplan, Halbjahresnote)

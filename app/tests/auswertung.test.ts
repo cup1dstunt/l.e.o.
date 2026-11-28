@@ -1,6 +1,6 @@
 // Prüft das Modul Auswertung (Notenspiegel, Leistungen, mündlich je Monat, Hinweise) und die EWH-Übernahme (N4).
 // Aufruf: npm test. Alle Namen erfunden.
-import { spiegel, leistungsStatistik, gesamtStatistik, muendlichVerlauf, hinweise, klassenVergleich, spiegelNote } from '../src/lib/auswertung.ts';
+import { spiegel, leistungsStatistik, gesamtStatistik, muendlichVerlauf, hinweise, klassenVergleich, spiegelNote, schwellenVon, schwelleSchritt, istStandard, SCHWELLEN_STANDARD, notenVerlauf, muendlichSchueler, hoeheVon, anwesenheitKurz } from '../src/lib/auswertung.ts';
 import { ewhLesen, zuordnen, vorschau, uebernehmen, csvZeilen } from '../src/lib/ewh.ts';
 
 let ok = 0;
@@ -61,6 +61,33 @@ gleich('a nicht still (20.11.)', h.some((x) => x.sid === 'a' && x.art === 'verst
 gleich('c Fehlzeiten 25 %', h.find((x) => x.sid === 'c' && x.art === 'fehlzeiten')?.text, 'Fehlzeiten 25 %');
 const kv = klassenVergleich(d)[0];
 gleich('Vergleich', [kv.unter, kv.verspaetungen, kv.muendlich, kv.leistungen], [1, 1, 1, 3]);
+
+// ---------- Schwellen der Hinweise (einstellbar) ----------
+gleich('Schwellen Standard', schwellenVon({}), { abfallNP: 3, abfallNote: 1, stillTage: 21, fehlzeitenAb: 20 });
+gleich('Schwellen begrenzt, Unsinn = Standard', schwellenVon({ auswertung: { stillTage: 999, fehlzeitenAb: NaN, abfallNP: 0 } }), { abfallNP: 1, abfallNote: 1, stillTage: 60, fehlzeitenAb: 20 });
+gleich('Schritt Tage +7', schwelleSchritt(SCHWELLEN_STANDARD, 'stillTage', 1), 28);
+gleich('Schritt Note −0,5 am Rand', schwelleSchritt({ ...SCHWELLEN_STANDARD, abfallNote: 0.5 }, 'abfallNote', -1), 0.5);
+gleich('istStandard', [istStandard(SCHWELLEN_STANDARD), istStandard({ ...SCHWELLEN_STANDARD, fehlzeitenAb: 25 })], [true, false]);
+const streng = { abfallNP: 6, abfallNote: 1, stillTage: 60, fehlzeitenAb: 30 };
+const h2 = hinweise(d, kurs, kurs.schueler, '2026-11-26', streng);
+gleich('Abfall 5,5 NP < 6: kein Hinweis', h2.some((x) => x.sid === 'a' && x.art === 'abfall'), false);
+gleich('b 48 Tage < 60: nicht still', h2.some((x) => x.sid === 'b' && x.art === 'verstummt'), false);
+gleich('c 25 % < 30 %: kein Fehlzeitenhinweis', h2.some((x) => x.sid === 'c' && x.art === 'fehlzeiten'), false);
+gleich('feste Ampel bleibt (b unter der Grenze)', h2.some((x) => x.sid === 'b' && x.art === 'unter'), true);
+gleich('Fehlzeiten ab 25 % trifft c genau', hinweise(d, kurs, kurs.schueler, '2026-11-26', { ...SCHWELLEN_STANDARD, fehlzeitenAb: 25 }).some((x) => x.sid === 'c' && x.art === 'fehlzeiten'), true);
+gleich('Kurzfassung 20–30 % folgt der Schwelle', [anwesenheitKurz(d, kurs, kurs.schueler).mittel, anwesenheitKurz(d, kurs, kurs.schueler, streng).mittel], [['c'], []]);
+
+// ---------- Verlauf (A2) ----------
+const vl = notenVerlauf(kurs, kurs.schueler, 'a');
+gleich('Verlauf nach Datum', vl.map((p) => p.leistung.id), ['k1', 't1', 'k2']);
+gleich('Verlauf Klassenschnitt K1', vl[0].klasse, 8);
+gleich('Verlauf Test: UE zählt als 0', [vl[1].klasse, vl[1].anzahl], [(11 + 0 + 9) / 3, 3]);
+gleich('Verlauf Schüler a', vl.map((p) => p.schueler), [12, 11, 6]);
+gleich('Verlauf ohne Schüler', notenVerlauf(kurs, kurs.schueler)[0].schueler, undefined);
+gleich('Verlauf c ohne Klausur 2', notenVerlauf(kurs, kurs.schueler, 'c')[2].schueler, null);
+gleich('Leistung ohne Datum fehlt im Verlauf', notenVerlauf({ ...kurs, leistungen: [...kurs.leistungen, { id: 'x', name: 'ohne', gruppe: 'sl', art: 'Test', gewicht: 1 }] }, kurs.schueler).length, 3);
+gleich('mündlich je Monat für a', muendlichSchueler(d, kurs, 'a'), [{ monat: '2026-10', schnitt: 2, eintraege: 1 }, { monat: '2026-11', schnitt: 1, eintraege: 1 }]);
+gleich('Höhe FOS/OSZ', [hoeheVon('FOS', 15), hoeheVon('FOS', 0), hoeheVon('OSZ', 1), hoeheVon('OSZ', 6)], [1, 0, 1, 0]);
 
 // ---------- EWH: Notenliste einer Klausur ----------
 const notenliste = '﻿LokalerCode;Nachname;Vorname;Stammklasse;Klausur;Status;Teil 1;Teil 2;Format Teil 1;Format Teil 2;Inhalt;Wortschatz;Satzbau/Grammatik;Textgestaltung;Sprache;Gesamt (NP);Note\r\n'
