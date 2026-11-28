@@ -310,6 +310,8 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   const kennungen = new Map<string, Set<string>>();
   const slots = new Set<string>();
   const abIso = opt.ab && opt.ab > isoAusUntis(von) ? opt.ab : '';
+  const meineVorschlaege = new Set([kuerzel, String(sz.person.id), 'u:' + sz.benutzer, ...(kuerzel ? ['u:' + kuerzel] : [])].filter(Boolean));
+  const fremdMeine = new Map<string, Set<string>>(); // Schüler|Datum → meine Kennungen in Zeilen außerhalb meiner Stunden
   let start = new Date((abIso || isoAusUntis(von)) + 'T12:00');
   while (untisDatumAus(start) <= ende) {
     const stueckEnde = new Date(start.getTime() + 13 * 864e5);
@@ -319,7 +321,16 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
     const zeilen = alsListe(await sz.r('getTimetableWithAbsences', { options: { startDate: a, endDate: b } })) as any[];
     for (const z of zeilen) {
       const stunden = stundenWaehlen(stundenNachSchluessel.get(String(z.date)) ?? [], z);
-      if (!stunden.length) continue;
+      if (!stunden.length) {
+        // Zeile außerhalb meiner Stunden, aber mit meiner Kennung: Ich habe für diesen Schüler an diesem Tag auch
+        // fremde Stunden eingetragen (z. B. als Klassenleitung die ganztägige Abwesenheit). Merken, siehe `klassenleitung`.
+        const k = kennungenVon(z).filter((x) => meineVorschlaege.has(x));
+        if (k.length) {
+          const key = `${z.studentId}|${z.date}`;
+          fremdMeine.set(key, new Set([...(fremdMeine.get(key) ?? []), ...k]));
+        }
+        continue;
+      }
       const stunde = stunden[0];
       const slot = `${z.date}-${stunde.start}`;
       slots.add(slot);
@@ -340,11 +351,21 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   const schuelerAlle = alsListe(await sz.r('getStudents')) as any[];
   const finde = schuelerIndex(schuelerAlle, inMeinenStunden.map((x) => x.z.studentId));
 
+  // Klassenleitungs-Einträge (28.11.2026): Das Klassenbuch nennt keine Klasse, `teacherIds` ist leer, eigene Zeilen
+  // erkennt L.E.O. nur über `user` = wer eingetragen hat. Trägt die Klassenleitung eine ganztägige Abwesenheit ein,
+  // steht ihr Name in allen Stunden des Schülers, auch in denen, die zeitgleich mit eigenen Stunden anderer Klassen
+  // liegen. So landeten FOS-Schüler in KA- und AM-Klassen. Solche Zeilen zählen nicht für die Klassenliste.
+  const klassenleitung = (z: any) => {
+    const f = fremdMeine.get(`${z.studentId}|${z.date}`);
+    return !!f && kennungenVon(z).some((x) => f.has(x));
+  };
+
   // 1. Klassenlisten: Schüler aus Zeilen, die ich selbst eingetragen habe (bzw. mit meiner Kennung)
   const liste = new Map<string, Set<number>>();
   for (const { z, stunde, stunden } of inMeinenStunden) {
     // Passt die Zeile zu mehreren eigenen Klassen gleichzeitig, ist unklar, wohin der Schüler gehört: nicht raten.
     if (stunden.length > 1) continue;
+    if (klassenleitung(z)) continue;
     // eigene Einträge, bei Doppelsteckung auch die der Kollegen, die laut Stundenplan in dieser Stunde stehen
     const k = kennungenVon(z);
     if (!(ich && k.includes(ich)) && !k.some((x) => stunde.lehrer.has(x))) continue;
@@ -367,7 +388,7 @@ export async function holen(sz: Sitzung, melde: (t: string) => void, opt: HolenO
   for (const { z, stunden } of inMeinenStunden) {
     const s = finde(z.studentId);
     if (!s) continue;
-    const stunde = stunden.find((x) => liste.get(x.key)?.has(s.id) || (opt.bekannt?.get(x.key)?.has(s.id) && meineZeile(z, x)));
+    const stunde = stunden.find((x) => liste.get(x.key)?.has(s.id) || (opt.bekannt?.get(x.key)?.has(s.id) && meineZeile(z, x) && !klassenleitung(z)));
     if (!stunde) continue;
     const doppelt = `${s.id}-${z.date}-${stunde.start}`;
     if (gesehen.has(doppelt)) continue;
@@ -497,6 +518,7 @@ export interface Ergebnis {
   stammdaten: number;
   pruefungen?: AbgleichZahlen; // Prüfungen im Kalender (V17)
   umgezogen?: number; // aus einer falschen Klasse genommen (Klasse laut Export passt nicht)
+  aufgeraeumt?: number; // beim vollen Abgleich nicht mehr belegt und ohne eigene Einträge, aus der Klasse genommen
 }
 
 const klNorm = (x: string) => (x ?? '').toLowerCase().replace(/\s+/g, '');
@@ -540,6 +562,37 @@ export function falscheKlasseEntfernen(d: Daten): number {
     if (!weg.length) continue;
     k.schueler = k.schueler.filter((i) => !weg.includes(i));
     for (const [platz, id] of Object.entries(k.sitzplan?.belegung ?? {})) if (weg.includes(id)) delete k.sitzplan.belegung[platz as any];
+    n += weg.length;
+  }
+  return n;
+}
+
+/**
+ * Alte Fehlzuordnungen aufräumen (28.11.2026): Beim vollen Abgleich (ganzes Halbjahr) steht fest, welche Schüler WebUntis
+ * einer Klasse zuordnet. Wer aus WebUntis stammt, dort nicht mehr in dieser Klasse auftaucht, nicht aus dem Export kommt
+ * und in dieser Klasse nichts Eigenes hat (keine Note, kein Smiley, keine eigene Anwesenheit), wird aus Liste und Sitzplan
+ * genommen. Mit eigenen Einträgen bleibt der Schüler, damit nichts still verschwindet.
+ */
+function nichtMehrBelegtEntfernen(d: Daten, p: Paket, kid: Map<string, string>, sid: Map<number, string>): number {
+  let n = 0;
+  for (const k of p.kurse) {
+    const kurs = d.kurse.find((x) => x.id === kid.get(untisKey(k)));
+    if (!kurs) continue;
+    const frisch = new Set([...k.schueler].map((x) => sid.get(x)).filter((x): x is string => !!x));
+    if (!frisch.size) continue; // ohne Befund nichts wegnehmen
+    const eigenes = (i: string) =>
+      Object.keys(kurs.zellen).some((z) => z.endsWith(':' + i)) ||
+      Object.keys(kurs.endnoten ?? {}).includes(i) ||
+      d.mitarbeit.some((m) => m.kursId === kurs.id && m.schuelerId === i) ||
+      d.fehlzeiten.some((f) => f.kursId === kurs.id && f.schuelerId === i && f.quelle !== 'untis') ||
+      d.verspaetungen.some((v) => v.kursId === kurs.id && v.schuelerId === i && v.quelle !== 'untis');
+    const weg = kurs.schueler.filter((i) => {
+      const s = d.schueler.find((x) => x.id === i);
+      return !!s && s.untisId !== undefined && s.herkunft !== 'datei' && !frisch.has(i) && !eigenes(i);
+    });
+    if (!weg.length) continue;
+    kurs.schueler = kurs.schueler.filter((i) => !weg.includes(i));
+    for (const [platz, id] of Object.entries(kurs.sitzplan?.belegung ?? {})) if (weg.includes(id)) delete kurs.sitzplan.belegung[platz as any];
     n += weg.length;
   }
   return n;
@@ -678,10 +731,11 @@ export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolea
     ausfaelle: p.ausfaelle.map((a) => `${kid.get(a.key)}|${a.datum}|${a.beginn}`).filter((x) => !x.startsWith('undefined'))
   };
 
+  const aufgeraeumt = p.klassenbuchAb ? 0 : nichtMehrBelegtEntfernen(d, p, kid, sid);
   const umgezogen = falscheKlasseEntfernen(d); // nach dem Stammdaten-Bericht, der die Klassen sicher kennt
   const unsere = d.fehlzeiten.filter((f) => f.quelle === 'untis');
   return {
-    kurseNeu, umgezogen, kurse: kid.size, schuelerNeu, schueler: sid.size,
+    kurseNeu, umgezogen, aufgeraeumt, kurse: kid.size, schuelerNeu, schueler: sid.size,
     fehlzeiten: unsere.length, offen: unsere.filter((f) => f.status === 'offen').length,
     verspaetungen: d.verspaetungen.filter((v) => v.quelle === 'untis').length, stammdaten, pruefungen
   };

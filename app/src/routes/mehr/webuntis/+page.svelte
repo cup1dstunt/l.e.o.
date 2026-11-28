@@ -4,7 +4,7 @@
   import { FELDER, stammdatenPruefen, stammdatenAnwenden, schulmailsEinlesen, mailStand, type Vorschau, type Feld } from '$lib/stammdaten';
   import { name } from '$lib/hilfen';
   import { adressVorschlag } from '$lib/nachschreiben';
-  import { app, zeige, speichern, geheimHolen, geheimSetzen } from '$lib/speicher.svelte';
+  import { app, zeige, speichern, geheimHolen, geheimSetzen, leerStarten, abgleich as abgleichStatus } from '$lib/speicher.svelte';
   import { MERK, untisAuto } from '$lib/untisauto.svelte';
   import { ABSTAND_MIN } from '$lib/untisauto';
   import { BEISPIEL_KURSE } from '$lib/beispiel';
@@ -40,6 +40,16 @@
   let fehler = $state('');
   const beispielDa = $derived(d.kurse.some((k) => !k.untis && BEISPIEL_KURSE.includes(k.id)));
   let beispielEntfernen = $state(true);
+  // Neu anfangen (28.11.2026): sauberer Neuimport, vorher wird ein Stand abgelegt
+  let neuSicher = $state(false);
+  const abgleichAn = $derived(!!abgleichStatus.verbunden);
+  async function neuAnfangen() {
+    await leerStarten();
+    if (d.einstellungen.untis) delete d.einstellungen.untis.vollAbgerufen; // nächster Abgleich holt das ganze Halbjahr
+    speichern();
+    neuSicher = false; ergebnis = null;
+    zeige('Alles gelöscht. Jetzt „Jetzt abgleichen“, danach die Exporte der Klassen einlesen.');
+  }
   const stand = $derived(d.einstellungen.untis);
   let schluesselGemerkt = $state(false);
   geheimHolen('untis').then((g) => (schluesselGemerkt = !!g));
@@ -197,7 +207,7 @@
       {#if ergebnis}
         <div class="kacheln">
           <a class="kachel" href="/klassen"><b class="zahl anzahl">{ergebnis.kurse}</b><span class="klein leise">Klassen{ergebnis.kurseNeu ? `, ${ergebnis.kurseNeu} neu` : ''}</span></a>
-          <a class="kachel" href="/schueler"><b class="zahl anzahl">{ergebnis.schueler}</b><span class="klein leise">Schüler{ergebnis.schuelerNeu ? `, ${ergebnis.schuelerNeu} neu` : ''}{ergebnis.umgezogen ? `, ${ergebnis.umgezogen} aus falscher Klasse genommen` : ''}</span></a>
+          <a class="kachel" href="/schueler"><b class="zahl anzahl">{ergebnis.schueler}</b><span class="klein leise">Schüler{ergebnis.schuelerNeu ? `, ${ergebnis.schuelerNeu} neu` : ''}{ergebnis.umgezogen ? `, ${ergebnis.umgezogen} aus falscher Klasse genommen` : ''}{ergebnis.aufgeraeumt ? `, ${ergebnis.aufgeraeumt} nicht mehr zugeordnet` : ''}</span></a>
           <div class="kachel"><b class="zahl anzahl">{ergebnis.fehlzeiten}</b><span class="klein leise">Fehlzeiten, davon {ergebnis.offen} offen</span></div>
           <div class="kachel"><b class="zahl anzahl">{ergebnis.verspaetungen}</b><span class="klein leise">Verspätungen</span></div>
           <div class="kachel"><b class="zahl anzahl">{ergebnis.stammdaten}</b><span class="klein leise">mit Geburtsdatum aus dem Bericht</span></div>
@@ -205,7 +215,17 @@
       {/if}
       <label class="zeile schalter"><input type="checkbox" checked={d.einstellungen.untisAuto !== false} onchange={autoUmschalten} disabled={!schluesselGemerkt} /> Automatisch abgleichen: beim Entsperren und alle {ABSTAND_MIN} Minuten, solange L.E.O. offen ist</label>
       <p class="klein leise">{#if !schluesselGemerkt}Dafür muss der Schlüssel bzw. das Passwort auf diesem Gerät gemerkt sein.{:else if d.einstellungen.untisAuto === false}Aus. Abgeglichen wird nur mit „Jetzt abgleichen“.{:else if untisAuto.laeuft}Gleicht gerade ab …{:else if untisAuto.fehler}Letzter automatischer Versuch {uhr(untisAuto.versucht)}: {untisAuto.fehler}. L.E.O. versucht es später wieder.{:else}Neue Schüler und Fehlzeiten meldet eine kurze Hinweisleiste. Beispieldaten bleiben dabei unangetastet.{/if}</p>
-      <p class="klein leise">Übernommen werden nur deine eigenen Stunden. Alles andere aus WebUntis wird sofort verworfen. Noten, mündliche Leistungen, Notizen und Sitzpläne bleiben bei jedem Abgleich erhalten. Wer in WebUntis nicht mehr auftaucht, wird nicht gelöscht.</p>
+      <p class="klein leise">Übernommen werden nur deine eigenen Stunden. Alles andere aus WebUntis wird sofort verworfen. Noten, mündliche Leistungen, Notizen und Sitzpläne bleiben bei jedem Abgleich erhalten. Wer laut WebUntis nicht (mehr) in eine Klasse gehört und dort nichts Eigenes hat, wird einmal am Tag beim vollen Abgleich aus der Liste genommen. Mit Noten oder Smileys bleibt er stehen.</p>
+      <h3>Neu anfangen</h3>
+      <p class="klein leise">Löscht alle Klassen, Schüler und Einträge auf diesem Gerät{abgleichAn ? ' und auf deinen verbundenen Geräten' : ''}. Einstellungen, Anmeldung und der gemerkte Schlüssel bleiben. Der jetzige Stand liegt danach unter Mehr › Sicherung und lässt sich zurückholen.</p>
+      {#if neuSicher}
+        <div class="zeile wrap">
+          <button class="knopf warn" type="button" onclick={neuAnfangen} disabled={abgleich}>Ja, alles löschen</button>
+          <button class="knopf leise" type="button" onclick={() => (neuSicher = false)}>Abbrechen</button>
+        </div>
+      {:else}
+        <button class="knopf leise" type="button" onclick={() => (neuSicher = true)} disabled={abgleich}>Alle Klassen löschen und neu übernehmen …</button>
+      {/if}
     </section>
 
     <section class="karte">
