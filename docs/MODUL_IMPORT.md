@@ -1,11 +1,13 @@
 # Modul Import: Klassen und Noten übernehmen
 
+> **28.11.2026 (E122):** Kein eigener iDoceo-Import. Konstantin: „ein Usecase, den kaum jemand braucht“, er selbst fängt in L.E.O. neu an. Ein Excel-Export aus einem anderen Werkzeug geht weiter als eigene Tabelle. Die UPZ ist der Maßstab für die Berechnung (E64 bestätigt), der Umbau des Rechenkerns folgt nach den Fragen in Abschnitt 6.
+
 > Stand 27.11.2026. Plan und Umsetzung im Prototyp (Entwurfs-PR). Gilt als Vorschlag **V20**, bis Konstantin zustimmt.
 > Grundlage: Projektregel „alle Kolleginnen und Kollegen mitnehmen (Papier, iDoceo, UPZ, eigenes Excel)“, BACKLOG S9, S10, UPZ-3, UPZ-10, [UPZ_ANALYSE.md](UPZ_ANALYSE.md), [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md), [MODULE.md](MODULE.md).
 
 ## 1 Ziel
 
-Wer zu L.E.O. wechselt, hat mitten im Halbjahr schon Noten: in der UPZ-Datei der Schule, in einer eigenen Excel-Tabelle oder in iDoceo.
+Wer zu L.E.O. wechselt, hat mitten im Halbjahr schon Noten: in der UPZ-Datei der Schule oder in einer eigenen Excel-Tabelle.
 Das Modul holt **Schülerliste und Noten** aus einer Datei in eine Klasse, ohne Abtippen und ohne Risiko:
 
 1. **Erst Vorschau, dann übernehmen.** Alles auf einer Seite, kein Dialog. Danach „Rückgängig“ in der Hinweisleiste.
@@ -20,7 +22,6 @@ Das Modul holt **Schülerliste und Noten** aus einer Datei in eine Klasse, ohne 
 |---|---|---|
 | **UPZ 10.1** | Blätter „Einstellungen“, „Namen“, „Zeugnis“ bzw. „Zeugnis (FOS)“ | Klasse, Fach, Klassenart (OSZ/IHK/FOS), Halbjahr; Namen und Geschlecht; Klassenarbeiten bzw. Klausuren 1–3 mit Gewicht und Datum; SL 1–4 (Titel aus dem Blatt) und die freien Prozentspalten SL 5–10 aus „SL zus.“ mit Gewichten; mündliche Mitarbeit (ein Prozentwert); Gewicht übrige SL : mündlich |
 | **Eigene Tabelle** | alles andere (.xlsx oder .csv) | eine Zeile je Schüler. Kopfzeile wird gesucht (Name/Nachname/Vorname), Spalten nach Titel gedeutet |
-| **iDoceo-Export** | Dateiname, Text „iDoceo“ oder die Gruppen aus Konstantins Vorlage („Tests und Sonstiges“, „Gesamtnote“) | wie eigene Tabelle; Gruppenspalten (Gesamtnote, Klausuren, Mitarbeit, Tests und Sonstiges) werden als Zwischenergebnis übergangen, Monatsnamen werden Monatsnoten. Smileys, Anmerkungen und Anwesenheit nicht |
 
 ### UPZ im Detail (aus der Vorlage, Zelle für Zelle)
 
@@ -40,7 +41,7 @@ Das Modul holt **Schülerliste und Noten** aus einer Datei in eine Klasse, ohne 
 
 ## 3 Ablauf auf der Seite `/import`
 
-1. **Datei wählen** (.xlsx oder .csv). L.E.O. sagt, was es erkannt hat („UPZ-Datei · KBM 25-2 · Wirtschaft · 1. Hj. 2026/27 · 13 Schüler“). Mehrere Blätter: Auswahl als Pillen (iDoceo: „Noten“ zuerst).
+1. **Datei wählen** (.xlsx oder .csv). L.E.O. sagt, was es erkannt hat („UPZ-Datei · KBM 25-2 · Wirtschaft · 1. Hj. 2026/27 · 13 Schüler“). Mehrere Blätter: Auswahl als Pillen (ein Blatt „Noten“ zuerst).
    Mit Kennwort geschützte Dateien (die UPZ empfiehlt das) und alte .xls kann der Browser nicht öffnen: klare Anleitung, eine Kopie ohne Kennwort zu speichern.
 2. **In welche Klasse?** Vorschlag: gleiche Klasse und gleiches Fach wie in der Datei, sonst die Klasse, in der mindestens die Hälfte der Namen schon steht, sonst „neue Klasse“ (Name, Klasse, Fach, Punkte oder Noten). Mit WebUntis-Verbindung warnt L.E.O., keine doppelte Klasse anzulegen.
 3. **Welche Spalten?** Je Spalte: Klausur · Tests/Sonstiges · mündlich · nicht übernehmen, Skala, Zielspalte (neu oder eine vorhandene gleicher Gruppe), Name und Gewicht. Gleichnamige Spalten werden vorgeschlagen.
@@ -49,7 +50,7 @@ Das Modul holt **Schülerliste und Noten** aus einer Datei in eine Klasse, ohne 
 
 ## 4 Schnittstellen
 
-- **Modulregister:** `import` (Standard an, Startwege UPZ, eigenes Excel, iDoceo), Seite `/import`, Sperrkarte bei ausgeschaltetem Modul kommt vom Register.
+- **Modulregister:** `import` (Standard an, Startwege UPZ und eigenes Excel), Seite `/import`, Sperrkarte bei ausgeschaltetem Modul kommt vom Register.
 - **Einstiege:** Klassen („Aus Datei übernehmen“, auch im leeren Zustand), Notenbuch einer Klasse (Pille „Aus Datei übernehmen“ → `/import?kurs=…`), Tipps im Einrichtungsassistenten.
 - **Daten:** keine neue Datenart. Schüler bekommen `herkunft: 'datei'` (wie beim Stammdaten-Export, E119), der nächste WebUntis-Abgleich ordnet sie über den Namen zu. Neue Klassen haben kein `untis`. Einzelgewicht und Stern einer Zelle bleiben beim Überschreiben erhalten.
 - **Notenbuch:** Klausuren : AT bleibt fest 50 : 50 (E83). Übernommen werden nur Gewichte, die L.E.O. frei kennt (mündlich : Tests, normiert auf 1; Einzelgewichte je Spalte).
@@ -57,7 +58,6 @@ Das Modul holt **Schülerliste und Noten** aus einer Datei in eine Klasse, ohne 
 
 ## 5 Ehrlich: ungetestet
 
-- **iDoceo-Export:** Aufbau nur aus den Screenshots erschlossen (IDOCEO_ANALYSE). Ein echter Export mit Fantasieschülern wäre der wichtigste nächste Test.
 - **Echte eigene Excel-Dateien** von Kolleginnen und Kollegen: Nur mit selbst gebauten Beispielen geprüft.
 - **UPZ aus Excel selbst gespeichert** (nicht LibreOffice): Der Leser ist darauf ausgelegt, getestet wurde mit LibreOffice-Dateien.
 - **Große Dateien, Zip64**, Dateien mit verbundenen Zellen in der Kopfzeile: nicht geprüft.
@@ -67,4 +67,5 @@ Das Modul holt **Schülerliste und Noten** aus einer Datei in eine Klasse, ohne 
 1. **OSZ-Klassen aus der UPZ:** Die UPZ rechnet bis zur Zeugnisnote mit Prozenten, L.E.O. mit dem Notenschnitt. Soll L.E.O. für Klassen aus der UPZ ein Rechenprofil „wie UPZ“ bekommen (Prozente je Leistung speichern)? Vorschlag: ja, als eigener Schritt, weil das den Rechenkern betrifft.
 2. **Noten früherer Halbjahre** aus der UPZ (Spalten „vorher“): als Vorhalbjahresnote übernehmen, sobald es dafür einen Platz gibt (E21)?
 3. **Mündlich aus der UPZ** kommt als eine Spalte „Mündlich (aus UPZ)“ neben die Monatsnoten. Passt das, oder lieber in den aktuellen Monat?
-4. **Wer testet?** Je eine Kollegin oder ein Kollege mit UPZ, eigenem Excel und iDoceo, mit einer Kopie ohne echte Namen.
+4. **Wer testet?** Je eine Kollegin oder ein Kollege mit UPZ und eigenem Excel, mit einer Kopie ohne echte Namen.
+5. **Rechnen wie die UPZ (28.11.):** Fragen 1–7 an Konstantin im Projekt-Thread „Noten genau wie die UPZ berechnen“ (Punkte und Höchstpunktzahl je Spalte, Prozent für reine Noten, mündlich als Prozent, FOS-Tests als Prozent, Auffälligkeiten der UPZ, Umgang mit vorhandenen Noten).
