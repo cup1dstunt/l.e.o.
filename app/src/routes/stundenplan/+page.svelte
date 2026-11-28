@@ -51,6 +51,27 @@
   const ausfaelle = $derived(new Set(d.einstellungen.untis?.ausfaelle ?? []));
 
   const stand = (t: { nr: number; datum: string }) => tagesStand(eintraege(t).map((s) => ({ ...s, ausfall: s.zustand === 'ausfall' })), t.datum, jetzt);
+  // Entwurf 28.11.2026: drei Konzepte für den Zeitverlauf im Wochenplan, umschaltbar (Konstantin wählt eins)
+  const KONZEPTE = [{ nr: 1, name: 'Kacheln verblassen' }, { nr: 2, name: 'Schleier über den Tag' }, { nr: 3, name: 'Leiste neben dem Tag' }] as const;
+  let konzept = $state(1);
+  try { const k = Number(page.url.searchParams.get('konzept') || localStorage.getItem('leo-wochenplan-konzept')); if (k >= 1 && k <= 3) konzept = k; } catch { /* egal */ }
+  $effect(() => { try { localStorage.setItem('leo-wochenplan-konzept', String(konzept)); } catch { /* egal */ } });
+  // Wie weit der heutige Tag im Raster ist (0–100 % der Zeilen), Zeilen gleich hoch gedacht:
+  // innerhalb einer Zeile linear von ihrem Beginn bis zum Beginn der nächsten (letzte Zeile: bis Ende der letzten Stunde)
+  const tagEnde = $derived(Math.max(0, ...d.stundenplan.map((s) => minuten(s.ende))));
+  const rasterPos = $derived.by(() => {
+    const n = zeiten.length;
+    if (!n) return 0;
+    for (let i = n - 1; i >= 0; i--) {
+      const a = minuten(zeiten[i]);
+      if (minJetzt < a) continue;
+      const b = i + 1 < n ? minuten(zeiten[i + 1]) : tagEnde;
+      return Math.min(100, ((i + Math.min(1, (minJetzt - a) / Math.max(1, b - a))) / n) * 100);
+    }
+    return 0;
+  });
+  const heuteSpalte = $derived(tage.findIndex((t) => t.datum === heute));
+  const uhrJetzt = $derived(`${String(jetzt.getHours()).padStart(2, '0')}:${String(jetzt.getMinutes()).padStart(2, '0')}`);
   const LANG = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
   const terminLink = (e: { href?: string; datum: string }, datum: string) => e.href ?? (kalenderAn ? `/kalender?tag=${datum}` : undefined);
 
@@ -103,20 +124,24 @@
   {#if !d.stundenplan.length}
     <section class="karte"><p>Noch kein Stundenplan. Unter <a href="/mehr/webuntis">Mehr › WebUntis</a> abgleichen.</p></section>
   {:else if ansicht === 'woche'}
+    <div class="konzepte zeile wrap" role="group" aria-label="Entwurf: Zeitverlauf">
+      <span class="klein leise">Entwurf Zeitverlauf:</span>
+      {#each KONZEPTE as k}<button class="pille" aria-pressed={konzept === k.nr} onclick={() => (konzept = k.nr)}>{k.nr} · {k.name}</button>{/each}
+    </div>
     <div class="rasterbox">
       <div class="raster" style:grid-template-rows="auto repeat({zeiten.length}, minmax(74px, auto))">
-        <div></div>
+        <div style:grid-area="1 / 1"></div>
         {#each tage as t}
           {@const st = stand(t)}
-          <div class="tagkopf" class:heute={t.datum === heute}>
+          <div class="tagkopf" class:heute={t.datum === heute} style:grid-area="1 / {t.nr + 1}">
             <button class="tagknopf" onclick={() => { tag = t.nr; ansicht = 'tag'; }} title="{LANG[t.nr - 1]} als Tagesansicht öffnen">
               <span class="wtag">{LANG[t.nr - 1]}</span>
               <span class="datum zahl">{t.kurz}</span>
             </button>
-            {#if st.zustand !== 'frei'}
+            {#if st.zustand !== 'frei' && !(t.datum === heute && konzept !== 1)}
               <span class="tagbalken {st.zustand}" title={st.text} role="progressbar" aria-label="Tagesverlauf {LANG[t.nr - 1]}" aria-valuenow={st.prozent} aria-valuemin={0} aria-valuemax={100}><span style:width="{st.prozent}%"></span></span>
-              {#if t.datum === heute}<span class="klein tagtext">{st.text}</span>{/if}
             {/if}
+            {#if t.datum === heute && st.zustand !== 'frei'}<span class="klein tagtext">{st.text}</span>{/if}
             {#each amTag(termineWoche, t.datum) as e (e.art + e.id)}
               {@const ziel = terminLink(e, t.datum)}
               <svelte:element this={ziel ? 'a' : 'span'} href={ziel} class="termin {e.art}" class:ufrei={e.frei} class:fremd={e.termin?.fremd} title="{e.titel}{e.klasse ? ' · ' + e.klasse : ''}">
@@ -125,23 +150,35 @@
             {/each}
           </div>
         {/each}
-        {#each zeiten as z}
-          <div class="zeit zahl klein leise">{z}</div>
+        {#each zeiten as z, zi}
+          <div class="zeit zahl klein leise" style:grid-area="{zi + 2} / 1">{z}</div>
           {#each tage as t}
             {@const s = eintraege(t).find((x) => x.beginn === z)}
             {#if s}
               {@const k = kurs(s.kursId)!}
-              <a class="st {s.zustand}" href={s.zustand === 'ausfall' ? undefined : `/stunde/${k.id}`}>
+              <a class="st {s.zustand} k{konzept}" href={s.zustand === 'ausfall' ? undefined : `/stunde/${k.id}`} style:grid-area="{zi + 2} / {t.nr + 1}" style:--p="{s.zustand === 'jetzt' ? fortschritt(s) : 0}%">
                 <b>{k.klasse}</b><span>{k.fach}</span>
                 <span class="klein leise">{s.beginn}–{s.ende}{k.raum ? ` · ${k.raum}` : ''}</span>
                 {#if s.zustand === 'ausfall'}<span class="klein hinweis">Ausfall</span>{/if}
-                {#if s.zustand === 'jetzt'}<span class="mini-balken"><span style:width="{fortschritt(s)}%"></span></span>{/if}
+                {#if s.zustand === 'jetzt' && konzept === 1}<span class="klein bis">noch {minuten(s.ende) - minJetzt} Min.</span>{/if}
               </a>
             {:else}
-              <div class="zelle" class:heute={t.datum === heute}></div>
+              <div class="zelle" class:heute={t.datum === heute} style:grid-area="{zi + 2} / {t.nr + 1}"></div>
             {/if}
           {/each}
         {/each}
+        {#if heuteSpalte >= 0 && zeiten.length && konzept === 2}
+          <!-- Konzept 2: ein Schleier legt sich von oben über den Tag, an der Kante die Uhrzeit -->
+          <div class="ueber" style:grid-area="2 / {heuteSpalte + 2} / span {zeiten.length} / span 1" aria-hidden="true">
+            <div class="schleier" style:height="{rasterPos}%">{#if rasterPos > 0 && rasterPos < 100}<span class="jetztmarke zahl">{uhrJetzt}</span>{/if}</div>
+          </div>
+        {/if}
+        {#if heuteSpalte >= 0 && zeiten.length && konzept === 3}
+          <!-- Konzept 3: eine Leiste neben dem heutigen Tag füllt sich von oben, ein Punkt zeigt jetzt -->
+          <div class="ueber" style:grid-area="2 / {heuteSpalte + 2} / span {zeiten.length} / span 1" aria-hidden="true">
+            <div class="leiste"><span style:height="{rasterPos}%"></span>{#if rasterPos > 0 && rasterPos < 100}<i style:top="{rasterPos}%" title={uhrJetzt}></i>{/if}</div>
+          </div>
+        {/if}
       </div>
     </div>
   {:else}
@@ -237,6 +274,24 @@
   .st.jetzt { background: var(--leo-akzent); border-color: var(--leo-akzent); color: var(--leo-auf-akzent); }
   .st.jetzt .leise { color: var(--leo-auf-akzent); opacity: .8; }
   .st.vorbei { opacity: .6; }
+  .st { position: relative; overflow: hidden; }
+  .bis { margin-top: 4px; font-weight: 600; }
+  /* Konzept 1: die laufende Kachel verblasst von links nach rechts, so weit die Stunde um ist */
+  .st.jetzt.k1::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--p); background: color-mix(in srgb, var(--leo-papier) 55%, transparent); transition: width .6s ease; pointer-events: none; }
+  .st.jetzt.k1::before { content: ''; position: absolute; top: 0; bottom: 0; left: var(--p); width: 2px; background: var(--leo-auf-akzent); opacity: .9; z-index: 1; }
+  /* Konzept 3: die laufende Kachel füllt sich von oben mit Petrol */
+  .st.jetzt.k3 { background: var(--leo-akzent-hell); color: var(--leo-tinte); border-color: var(--leo-akzent); }
+  .st.jetzt.k3 .leise { color: var(--leo-leise); opacity: 1; }
+  .st.jetzt.k3::after { content: ''; position: absolute; inset: 0 0 auto 0; height: var(--p); background: color-mix(in srgb, var(--leo-akzent) 30%, transparent); transition: height .6s ease; pointer-events: none; }
+  .ueber { position: relative; pointer-events: none; z-index: 2; }
+  /* Konzept 2 */
+  .schleier { position: absolute; left: -3px; right: -3px; top: 0; background: color-mix(in srgb, var(--leo-papier) 58%, transparent); border-bottom: 2px solid var(--leo-akzent); border-radius: var(--leo-r-m) var(--leo-r-m) 0 0; transition: height .6s ease; }
+  .jetztmarke { position: absolute; right: 0; bottom: -11px; font-size: 11px; font-weight: 700; color: var(--leo-auf-akzent); background: var(--leo-akzent); border-radius: 9px; padding: 1px 7px; }
+  /* Konzept 3 */
+  .leiste { position: absolute; left: -6px; top: 0; bottom: 0; width: 4px; border-radius: 9px; background: color-mix(in srgb, var(--leo-akzent) 15%, transparent); }
+  .leiste span { position: absolute; left: 0; right: 0; top: 0; border-radius: 9px; background: var(--leo-akzent); transition: height .6s ease; }
+  .leiste i { position: absolute; left: -4px; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--leo-akzent); box-shadow: 0 0 0 3px var(--leo-karte); }
+  .konzepte { gap: 6px; }
   .st.ausfall { background: transparent; border-style: dashed; color: var(--leo-leise); cursor: default; }
   .st.ausfall b { text-decoration: line-through; }
   .hinweis { color: var(--leo-warnung); font-weight: 600; }
