@@ -613,8 +613,8 @@ export function anwenden(
       erg.zellen++;
     }
   }
-  if (opt.gewichte && p.gewichte) {
-    const summe = p.gewichte.mitarbeit + p.gewichte.sl;
+  const summe = p.gewichte ? p.gewichte.mitarbeit + p.gewichte.sl : 0;
+  if (opt.gewichte && p.gewichte && summe > 0) { // beide 0 (leere Zellen in der Datei) ergäbe NaN-Gewichte
     kurs.gewichte.mitarbeit = Math.round((p.gewichte.mitarbeit / summe) * 100) / 100;
     kurs.gewichte.sl = Math.round((p.gewichte.sl / summe) * 100) / 100;
   }

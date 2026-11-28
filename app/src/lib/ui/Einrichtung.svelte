@@ -7,8 +7,9 @@
   import ModulAuswahl from '$lib/ui/ModulAuswahl.svelte';
 
   const d = app.d!;
-  // Beispieldaten nur anbieten zu ersetzen, solange nichts Echtes da ist
-  const nurBeispiel = !d.einstellungen.untis && !abgleich.verbunden;
+  // Beispieldaten nur anbieten zu ersetzen, solange nichts Echtes da ist. Auch importierte oder selbst angelegte Klassen
+  // (ohne WebUntis) zählen als echt: Beim erneuten Einrichten unter Mehr gingen sie sonst mit „leer starten“ verloren.
+  const nurBeispiel = !d.einstellungen.untis && !abgleich.verbunden && d.kurse.every((k) => k.id === 'k-fos' || k.id === 'k-osz');
   const schritte = nurBeispiel ? ['Bisher', 'Module', 'Daten', 'Fertig'] : ['Bisher', 'Module', 'Fertig'];
   let schritt = $state(0);
   let herkunft = $state<Herkunft | undefined>(d.einstellungen.herkunft);
@@ -25,11 +26,11 @@
     hinweis = '';
     schritt = 1;
   }
-  function abschliessen(ziel?: string) {
+  async function abschliessen(ziel?: string) {
     d.einstellungen.module = entwurf;
     d.einstellungen.herkunft = herkunft;
     d.einstellungen.eingerichtet = true;
-    if (nurBeispiel && daten === 'leer') leerStarten();
+    if (nurBeispiel && daten === 'leer') await leerStarten();
     speichern();
     zeige('Eingerichtet. Unter Mehr › Module kannst du jederzeit umstellen.');
     goto(ziel ?? (nurBeispiel && daten === 'untis' ? '/mehr/webuntis' : '/'));
