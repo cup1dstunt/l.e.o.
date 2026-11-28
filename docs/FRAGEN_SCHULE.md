@@ -20,7 +20,7 @@
 9. (teilweise beantwortet durch die UPZ-Schlüssel) Notenspiegel der Schule für Berufsschule und FOS/DQ (ab wie viel Prozent welche Note), am besten als Dokument.
 10. ~~Kriterienraster Selbsteinschätzung~~ erhalten (08.11.2026), gekürzter Entwurf in BEWERTUNGSBOEGEN.md.
 
-12. **Prozente oder ganze Noten (E125)?** Die UPZ rechnet in der OSZ durchgehend mit Prozenten und in der FOS bei Tests/Sonstiges und mündlich mit Prozenten. Konstantin klärt an der Schule: Ist das zulässig und gewollt? In der FOS muss laut Konstantin mit ganzen Noten je Leistung gerechnet werden. Danach entscheiden: nur notenbasiert, wie UPZ, oder zwei Modi. Beispiele: UPZ_ANALYSE 4.7. Erinnerung an Konstantin vereinbart.
+12. **Prozente oder ganze Noten (E127)?** Die UPZ rechnet in der OSZ durchgehend mit Prozenten und in der FOS bei Tests/Sonstiges und mündlich mit Prozenten. Konstantin klärt an der Schule: Ist das zulässig und gewollt? In der FOS muss laut Konstantin mit ganzen Noten je Leistung gerechnet werden. Danach entscheiden: nur notenbasiert, wie UPZ, oder zwei Modi. Beispiele: UPZ_ANALYSE 4.7. Erinnerung an Konstantin vereinbart.
 
 ## Notenbuch-Modulplanung (Fr 13.11.2026, 10:00)
 

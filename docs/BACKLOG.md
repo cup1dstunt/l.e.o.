@@ -57,7 +57,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | N2 | Vorlagen als Daten, später für Kollegen teilbar | C | 2 | M |
 | N3 | Projektbewertungen als Spalten (Werkstatt-Export JSON/CSV) | K, B | 2 | S |
 | N4 | EWH-Klausurendnoten als Export in eine Spalte (nur Noten, keine EWH-Inhalte). **Entwurf 26.11.:** CSV aus EWH einlesen, optionales Modul (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | K, C | 3 | S |
-| N-EN | **Modul „Einzelnote berechnen“** (V21, E125): Klassenarbeit/Test mit Aufgaben und Punkten je Aufgabe (wie UPZ, mit Aufgabenauswertung) oder nur Gesamtpunktzahl; ergibt die ganze Note fürs Notenbuch. Verwandt mit UPZ-4 | K | 2 | M |
+| N-EN | **Modul „Einzelnote berechnen“** (V21, E127): Klassenarbeit/Test mit Aufgaben und Punkten je Aufgabe (wie UPZ, mit Aufgabenauswertung) oder nur Gesamtpunktzahl; ergibt die ganze Note fürs Notenbuch. Verwandt mit UPZ-4 | K | 2 | M |
 | N5 | Rechenweg der Endnote anzeigen | C | 2 | S |
 | N6 | Was-wäre-wenn / Zielnote („was braucht er in der nächsten Klausur?“) | C | 3 | S |
 | N8 | Seiten je Kurs (Noten, Mitarbeit, Anwesenheit, frei ergänzbar wie Orga/Hausaufgaben) | K (Screenshots) | 1 | M |

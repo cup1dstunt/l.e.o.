@@ -135,7 +135,7 @@ Konstantins E40 sagt dagegen: nur die Endnote runden, bei ,50 entscheidet die Le
 - **Klausur einreichen** (FOS): dasselbe mit **Notenpunkten 0 bis 15**, Teilnehmerzahl, Ausfallquote (Punkte 0 bis 4).
 - Jeweils eine Seite zum Ausdrucken. (Das gleiche Verfahren bildet Konstantins EWH-Tool schon ab; L.E.O. soll nichts doppelt bauen, siehe CLAUDE.md.)
 
-### 4.7 Prozente oder Noten? (Nachtrag 28.11.2026, E125)
+### 4.7 Prozente oder Noten? (Nachtrag 28.11.2026, E127)
 
 Wo die UPZ 10.1 mit **Prozenten** und wo mit **Noten** weiterrechnet (aus den Formeln der Blätter „Zeugnis“, „Zeugnis (FOS)“, „SL zus. (FOS)“):
 

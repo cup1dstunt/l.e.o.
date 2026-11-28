@@ -2,7 +2,7 @@
 
 > **28.11.2026 (E123):** Kein eigener iDoceo-Import. Konstantin: „ein Usecase, den kaum jemand braucht“, er selbst fängt in L.E.O. neu an. Ein Excel-Export aus einem anderen Werkzeug geht weiter als eigene Tabelle. Die UPZ ist der Maßstab für die Berechnung (E64 bestätigt), der Umbau des Rechenkerns folgt nach den Fragen in Abschnitt 6.
 
-> **28.11.2026 (E125):** Der Umbau des Rechenkerns auf die UPZ-Prozentkette ruht, bis Konstantin geklärt hat, ob die Prozentrechnung zulässig ist. Die Fragen in 6.5 sind zurückgestellt. Der Import selbst bleibt unverändert.
+> **28.11.2026 (E127):** Der Umbau des Rechenkerns auf die UPZ-Prozentkette ruht, bis Konstantin geklärt hat, ob die Prozentrechnung zulässig ist. Die Fragen in 6.5 sind zurückgestellt. Der Import selbst bleibt unverändert.
 
 > Stand 27.11.2026. Plan und Umsetzung im Prototyp (Entwurfs-PR). Gilt als Vorschlag **V20**, bis Konstantin zustimmt.
 > Grundlage: Projektregel „alle Kolleginnen und Kollegen mitnehmen (Papier, iDoceo, UPZ, eigenes Excel)“, BACKLOG S9, S10, UPZ-3, UPZ-10, [UPZ_ANALYSE.md](UPZ_ANALYSE.md), [IDOCEO_ANALYSE.md](IDOCEO_ANALYSE.md), [MODULE.md](MODULE.md).
