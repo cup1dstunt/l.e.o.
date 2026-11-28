@@ -135,6 +135,27 @@ Konstantins E40 sagt dagegen: nur die Endnote runden, bei ,50 entscheidet die Le
 - **Klausur einreichen** (FOS): dasselbe mit **Notenpunkten 0 bis 15**, Teilnehmerzahl, Ausfallquote (Punkte 0 bis 4).
 - Jeweils eine Seite zum Ausdrucken. (Das gleiche Verfahren bildet Konstantins EWH-Tool schon ab; L.E.O. soll nichts doppelt bauen, siehe CLAUDE.md.)
 
+### 4.7 Prozente oder Noten? (Nachtrag 28.11.2026, E125)
+
+Wo die UPZ 10.1 mit **Prozenten** und wo mit **Noten** weiterrechnet (aus den Formeln der Blätter „Zeugnis“, „Zeugnis (FOS)“, „SL zus. (FOS)“):
+
+| Schritt | OSZ | FOS |
+|---|---|---|
+| Einzelne Arbeit | Punkte → Prozent → Note | Punkte → Prozent → Notenpunkte |
+| Klassenarbeiten/Klausuren zusammen | **Prozente** gemittelt | **Notenpunkte** gemittelt, gerundet |
+| Tests/Sonstiges („SL zus.“) | **Prozente** gemittelt | **Prozente** gemittelt, dann in Punkte |
+| Mündlich | Prozentwert | Prozentwert → Punkte |
+| SL gesamt, Zeugnis | **Prozente**, Note erst am Ende | **Notenpunkte**, in jeder Stufe gerundet |
+
+Beispiele (FOS-Schlüssel):
+- Tests 0 % („ue“) und 90 %: UPZ 45 % = **5 P**; aus den Einzelnoten (0 + 14) : 2 = **7 P**. Unter 45 % ist eine Punktstufe 9 % breit, darüber 5 %.
+- Tests 40 % und 100 %: UPZ 70 % = **10 P**; aus den Einzelnoten 9,5 P.
+- Runden in Stufen: Klausuren 7 und 8 P, Tests 6 P, mündlich 7 P: UPZ 8 → 7 → **8 P**; einmal am Ende gerundet 7,05 = **7 P**.
+- OSZ: KA 1 mit 9 % (Note 5), KA 2 mit 75 % (Note 2): UPZ 42 % = **Note 5**; aus den Einzelnoten 3,5.
+
+Tests/Sonstiges sind in der FOS 20 % der Zeugnisnote (0,4 × 0,5), eine Abweichung dort verschiebt das Zeugnis um höchstens knapp einen halben Punkt, kann aber die Rundung kippen. Uneinheitlich in der UPZ selbst: Klausuren in Punkten, Tests in Prozent gemittelt.
+Konstantin (28.11.): In der FOS muss je Leistung mit ganzen Noten gerechnet werden; ob die Prozentrechnung zulässig ist, klärt er (FRAGEN_SCHULE, An Konstantin 12).
+
 ## 5 Was die Datei gut macht (und warum Kolleginnen und Kollegen sie nutzen)
 
 - **Alles in einer Datei**: Noten, Fehlzeiten, Termine, Unterrichtsplan, Einreichen-Formulare.
