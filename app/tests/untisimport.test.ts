@@ -1,6 +1,6 @@
 // Prüft die Übernahme aus WebUntis ohne Netz, mit erfundenen Daten (V11).
 // Aufruf: npm test
-import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, schuelerIndex, holen, untisKey, falscheKlasseEntfernen, type Paket } from '../src/lib/untisimport.ts';
+import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, schuelerIndex, holen, untisKey, falscheKlasseEntfernen, bekanntAus, type Paket } from '../src/lib/untisimport.ts';
 import { beispielDaten } from '../src/lib/beispiel.ts';
 import { zerlegen } from '../src/lib/ablage.ts';
 
@@ -188,6 +188,67 @@ gleich('Schüler unbekannt', fi('S-99'), undefined);
   const vorher = da.kurse.length;
   uebernehmen(da, pk, { beispielEntfernen: false, benutzer: 'x', schule: 'x' });
   gleich('kein doppelter Kurs', da.kurse.length, vorher);
+}
+
+// 28.11.2026: Klassenleitung trägt ganztägige Abwesenheit ein. Echtes WebUntis: teacherIds leer, nur `user` = wer eingetragen hat.
+{
+  const tag = (n: number) => { const x = new Date(Date.now() - n * 864e5); return x.getFullYear() * 10000 + (x.getMonth() + 1) * 100 + x.getDate(); };
+  const [t1, t2, t3] = [8, 7, 6].map(tag);
+  const KA = { id: 1, name: 'KA25-i' }, AM = { id: 3, name: 'AM25-BL' };
+  const EN = { id: 10, name: 'E', longname: 'Englisch' };
+  const plan = [t1, t2, t3].flatMap((t) => [
+    { date: t, kl: [KA], su: [EN], te: [{ id: 77, name: 'Ben' }], ro: [], startTime: 800, endTime: 930 },
+    { date: t, kl: [AM], su: [EN], te: [{ id: 77, name: 'Ben' }], ro: [], startTime: 1000, endTime: 1130 }
+  ]);
+  const z = (studentId: string, date: number, startTime: number) => ({ studentId, date, startTime, teacherIds: [], user: 'Ben', excuseStatus: 'entsch.', absenceReason: 'K', absentTime: 90 });
+  const buch = [
+    z('S1', t1, 800), // Anna (KA), von mir in KA eingetragen
+    z('S5', t2, 1000), // Malin (AM), von mir in AM eingetragen
+    // Orlando (FOS, ich bin Klassenleitung): ganzer Tag t2 von mir eingetragen, auch zeitgleich mit KA und AM
+    z('S4', t2, 800), z('S4', t2, 1000), z('S4', t2, 1200), z('S4', t2, 1400)
+  ];
+  const sz: any = {
+    schule: 'x', benutzer: 'Ben', person: { typ: 2, id: 77 }, rechte: 0, abmelden: async () => {},
+    rest: async () => { throw new Error('nicht da'); },
+    r: async (m: string, p: any) => {
+      if (m === 'getCurrentSchoolyear') return { startDate: tag(40), endDate: tag(-60) };
+      if (m === 'getKlassen') return [KA, AM];
+      if (m === 'getSubjects') return [{ ...EN, longName: 'Englisch' }];
+      if (m === 'getRooms' || m === 'getHolidays' || m === 'getExamTypes' || m === 'getExams') return [];
+      if (m === 'getTimetable') return plan;
+      if (m === 'getTimetableWithAbsences') return buch.filter((x) => x.date >= p.options.startDate && x.date <= p.options.endDate);
+      if (m === 'getStudents') return [
+        { id: 501, key: 'S1', foreName: 'Anna', longName: 'Muster', gender: 'female' },
+        { id: 504, key: 'S4', foreName: 'Orlando', longName: 'Bat', gender: 'male' },
+        { id: 505, key: 'S5', foreName: 'Malin', longName: 'Busse', gender: 'female' }
+      ];
+      throw new Error(m);
+    }
+  };
+  const pk = await holen(sz, () => {});
+  const l = (key: string) => [...(pk.kurse.find((k) => untisKey(k) === key)?.schueler ?? [])].sort();
+  gleich('Klassenleitung: KA ohne FOS-Schüler', l('1-10'), [501]);
+  gleich('Klassenleitung: AM ohne FOS-Schüler', l('3-10'), [505]);
+  // Alte Fehlzuordnung (schon in der Klasse) wird beim vollen Abgleich aufgeräumt, Schüler mit eigenen Einträgen bleiben
+  const dk = beispielDaten(new Date('2026-11-18T10:00'));
+  uebernehmen(dk, pk, { beispielEntfernen: true, benutzer: 'x', schule: 'x' });
+  const ka = dk.kurse.find((k) => k.untis && untisKey(k.untis) === '1-10')!;
+  const am = dk.kurse.find((k) => k.untis && untisKey(k.untis) === '3-10')!;
+  dk.schueler.push({ id: 'u504', untisId: 504, vorname: 'Orlando', nachname: 'Bat', geschlecht: 'm', geburt: '', mailDienst: '' });
+  ka.schueler.push('u504'); am.schueler.push('u504'); ka.sitzplan.belegung[30] = 'u504';
+  dk.mitarbeit.push({ id: 'm-orl', kursId: am.id, schuelerId: 'u504', zeit: '2026-11-20T09:00:00.000Z', stufe: 3, bausteine: [] });
+  const bek = bekanntAus(dk);
+  const pk2 = await holen(sz, () => {}, { bekannt: bek });
+  gleich('bekannt hält ihn nicht fest', [...(pk2.kurse.find((k) => untisKey(k) === '1-10')?.schueler ?? [])].sort(), [501]);
+  const e = uebernehmen(dk, pk2, { beispielEntfernen: false, benutzer: 'x', schule: 'x' });
+  gleich('KA aufgeräumt', ka.schueler, ['u501']);
+  gleich('Sitzplan frei', ka.sitzplan.belegung[30], undefined);
+  gleich('AM: mit Smiley bleibt er (nichts verschwindet still)', am.schueler.includes('u504'), true);
+  gleich('Meldung zählt Aufgeräumte', e.aufgeraeumt, 1);
+  // kurzer Abgleich räumt nicht auf
+  ka.schueler.push('u504');
+  uebernehmen(dk, { ...pk2, klassenbuchAb: '2026-11-01' }, { beispielEntfernen: false, benutzer: 'x', schule: 'x' });
+  gleich('kurz: nichts entfernt', ka.schueler.includes('u504'), true);
 }
 
 // Klassenbuch-Nummer passt zum key-Feld, ist aber zufällig auch die id eines anderen Schülers
