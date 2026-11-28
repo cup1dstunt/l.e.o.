@@ -2,7 +2,7 @@
   import { istAn } from '$lib/module';
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId, materialOeffnen } from '$lib/speicher.svelte';
-  import { schuelerVon, kurznameIn, name, heuteISO, minuten, stundenHeute, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { schuelerVon, kurznameIn, namenIn, name, heuteISO, minuten, stundenHeute, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -22,6 +22,7 @@
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
   const liste = $derived(kurs ? schuelerVon(d, kurs) : []);
   const kurzname = $derived(kurznameIn(liste)); // eindeutig bei gleichen Namen (B4)
+  const vollname = $derived(namenIn(liste)); // Vor- und Nachname in Liste und Sitzplan (28.11.)
   const heute = heuteISO();
 
   // Zeitbalken: laufende Stunde laut Plan, sonst 90 Minuten ab Öffnen (zum Testen)
@@ -308,7 +309,7 @@
                 {@const e = letzter(s.id)}
                 <button class="platz" class:fehlt={!!f} class:spaet={!!v} class:gewaehlt={zufallName?.id === s.id} onclick={() => platzKlick(s)}
                   aria-label="{name(s)}: {f ? 'fehlt' : v ? `${v.minuten} min verspätet` : 'da'}">
-                  <span class="pn">{#if gruppeVon.get(s.id)}<b class="gnr">G{gruppeVon.get(s.id)}</b> {/if}{kurzname(s)}</span>
+                  <span class="pn">{#if gruppeVon.get(s.id)}<b class="gnr">G{gruppeVon.get(s.id)}</b> {/if}{vollname(s)}</span>
                   <span class="pu">
                     {#if f}<span class="kennz ue">fehlt</span>{:else if v}<span class="kennz">+{v.minuten}′</span>{/if}
                     {#if e && !f}<Smiley stufe={e.stufe} groesse={24} />{/if}
@@ -319,7 +320,7 @@
           </div></div>
           <div class="tafel klein leise">Lehrertisch · Tafel</div>
           {@const ohnePlatz = liste.filter((x) => !Object.values(sp.belegung).includes(x.id))}
-          {#if ohnePlatz.length}<p class="klein leise">Ohne Platz: {ohnePlatz.map(kurzname).join(', ')} · <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>{/if}
+          {#if ohnePlatz.length}<p class="klein leise">Ohne Platz: {ohnePlatz.map(vollname).join(', ')} · <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>{/if}
           <p class="klein leise hilfe">Oben umschalten, was Antippen bedeutet. <a href="/sitzplan/{kurs.id}">Sitzplan bearbeiten</a></p>
         {:else}
         <div class="raster">
@@ -330,7 +331,7 @@
             {@const tr = mitarbeitTrend(d, kurs.id, s.id)}
             <div class="sk" class:fehlt={!!f} class:gewaehlt={zufallName?.id === s.id}>
               <div class="zeile">
-                <button class="nm" onclick={() => oeffnen(s)} title="Bausteine, Kommentar, Anwesenheit">{kurzname(s)}</button>
+                <button class="nm" onclick={() => oeffnen(s)} title="Bausteine, Kommentar, Anwesenheit">{vollname(s)}</button>
                 {#if tr}<span class="trend {tr}" title="mündlich {tr} als im Vormonat">{PFEIL[tr]}</span>{/if}
                 <button class="anw" class:fehlt={!!f} class:spaet={!!v} onclick={() => anwesenheitKlick(s)} aria-label="Anwesenheit {name(s)}">{f ? 'fehlt' : v ? `+${v.minuten}′` : 'da'}</button>
               </div>
@@ -477,7 +478,7 @@
   .sk.fehlt { background: var(--leo-taste); }
   .sk.fehlt .nm { color: var(--leo-leise); }
   .sk.gewaehlt { background: var(--leo-auswahl); border: 2px solid var(--leo-akzent); }
-  .nm { flex: 1; text-align: left; background: none; border: 0; font-weight: 650; font-size: 15px; padding: 6px 0; min-height: 36px; }
+  .nm { flex: 1; min-width: 0; overflow-wrap: break-word; text-align: left; background: none; border: 0; font-weight: 650; font-size: 15px; padding: 6px 0; min-height: 36px; }
   .anw { min-width: 44px; min-height: 32px; border-radius: var(--leo-r-s); border: 1px solid var(--leo-linie); background: var(--leo-karte); color: var(--leo-leise); font-size: 12px; font-weight: 700; }
   .anw.fehlt { background: var(--leo-warnung-hell); color: var(--leo-warnung); border-color: transparent; }
   .anw.spaet { background: var(--leo-stern-hell); color: #8a6200; border-color: transparent; }
@@ -503,7 +504,7 @@
   .vorschlag .chip[aria-pressed='true'] { background: var(--leo-akzent-hell); }
 
   .platz.gewaehlt { background: var(--leo-auswahl); border: 2px solid var(--leo-akzent); }
-  .pn { font-weight: 650; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pn { font-weight: 650; font-size: 13px; line-height: 1.25; overflow-wrap: break-word; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .pu { display: flex; justify-content: flex-end; align-items: center; gap: 4px; line-height: 0; }
   .zeitfeld { font-size: 20px; }
   .klein-dlg { width: min(440px, 100%); }
@@ -533,5 +534,5 @@
   .ende { justify-content: flex-end; margin-top: 18px; }
   .dialog p { margin: 14px 0 8px; }
   @media (max-width: 1000px) { .bereich { grid-template-columns: 1fr; } }
-  @media (max-width: 720px) { .seite { padding: 12px; } .raster { grid-template-columns: 1fr; } .sitze { gap: 4px; } .platz { padding: 4px; min-height: 58px; } .pn { font-size: 11px; white-space: normal; overflow-wrap: break-word; hyphens: auto; line-height: 1.2; } }
+  @media (max-width: 720px) { .seite { padding: 12px; } .raster { grid-template-columns: 1fr; } .sitze { gap: 4px; } .platz { padding: 4px; min-height: 58px; } .pn { font-size: 11px; hyphens: auto; line-height: 1.2; } }
 </style>

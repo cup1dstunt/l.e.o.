@@ -49,6 +49,8 @@ const bogen = bogenFuer({ fach: 'Englisch', klasse: 'BFS23a' }, '2026-11', krite
 gleich('Bogen: Titel ohne Namen', bogen.titel, 'Englisch · BFS23a · November 2026');
 gleich('Bogen: nur öffentlicher Schlüssel', 'd' in bogen.schluessel, false);
 gleich('Bogen: 5 Kriterien ohne Hausaufgaben', bogen.kriterien.map((k) => k.id), ['beteiligung', 'qualitaet', 'sprache', 'arbeitsverhalten', 'zusammenarbeit']);
+gleich('Bogen: Ich-Form für Schüler (E125)', bogen.kriterien[0].stufen[0], 'Ich melde mich oft von selbst.');
+gleich('Raster: Lehrkrafttext ohne Ich-Form (E125)', kriterien.every((k) => k.stufen.every((t) => !/^(Ich|Mein|Mir|Man versteht mich)/.test(t))), true);
 const runde = { monat: '2026-11', frist: '2026-12-04', basis: 'https://leo.example.de', links: { s1: { token } } };
 const mail = selbstMail(SELBST_MAIL, selbstMailWerte(runde, { fach: 'Englisch', klasse: 'BFS23a' }, { id: 's1', vorname: 'Mia', nachname: 'Test' }));
 gleich('Mail: Betreff', mail.betreff, 'Selbsteinschätzung Englisch: November 2026');

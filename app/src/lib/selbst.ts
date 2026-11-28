@@ -68,7 +68,7 @@ export function bogenFuer(kurs: Pick<Kurs, 'fach' | 'klasse'>, monat: string, kr
   return {
     titel: `${kurs.fach} · ${kurs.klasse} · ${monatText(monat)}`,
     frist,
-    kriterien: kriterien.map((k) => ({ id: k.id, name: k.name, stufen: k.stufen })),
+    kriterien: kriterien.map((k) => ({ id: k.id, name: k.name, stufen: k.selbst ?? k.stufen })), // Ich-Form für die Schüler (E125)
     schluessel: { kty: schluessel.kty, crv: schluessel.crv, x: schluessel.x, y: schluessel.y }
   };
 }

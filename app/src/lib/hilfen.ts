@@ -23,6 +23,19 @@ export function kurznameIn(alle: Schueler[]): (s: Schueler) => string {
   }
   return (s: Schueler) => fest.get(s.id) ?? kurzname(s);
 }
+/** Volle Namen (Vor- und Nachname), bei ganz gleichem Namen mit Geburtsjahr bzw. laufender Nummer. Für die Stunde (28.11.). */
+export function namenIn(alle: Schueler[]): (s: Schueler) => string {
+  const fest = new Map<string, string>();
+  const gruppen = new Map<string, Schueler[]>();
+  for (const s of alle) { const k = name(s); gruppen.set(k, [...(gruppen.get(k) ?? []), s]); }
+  for (const [k, gleich] of gruppen) {
+    if (gleich.length < 2) continue;
+    const jahre = gleich.map((x) => x.geburt?.slice(0, 4) ?? '');
+    const jahrHilft = jahre.every((j) => j) && new Set(jahre).size === jahre.length;
+    gleich.forEach((s, i) => fest.set(s.id, `${k} ${jahrHilft ? `(${s.geburt.slice(2, 4)})` : `(${i + 1})`}`));
+  }
+  return (s: Schueler) => fest.get(s.id) ?? name(s);
+}
 export const alter = (s: Schueler, heute = new Date()) => {
   if (!s.geburt) return null; // aus WebUntis ohne Export unbekannt
   const g = new Date(s.geburt);

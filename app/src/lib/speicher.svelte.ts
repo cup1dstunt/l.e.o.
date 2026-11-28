@@ -9,6 +9,7 @@ import type { Daten, Kurs, Material } from './typen.ts';
 import { MAX_DATEI, dateienInBenutzung, zeigbar } from './material.ts';
 import { ARTEN, kennungenEindeutig, zerlegen, unterschied, datensatz, zusammensetzen, schluessel as satzSchluessel, type Art, type Datensatz } from './ablage.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
+import { rasterTexteUmstellen } from './raster.ts';
 import * as sich from './sicherung.ts';
 import type { Stand, Ueberblick, SicherungsDatei } from './sicherung.ts';
 import { entscheiden, kursMischen, rufen, geraetName, DienstFehler, type FernSatz, type Anmeldung, type Aenderungen, type Senden } from './abgleich.ts';
@@ -22,6 +23,7 @@ function migrieren(d: Daten): Daten {
   d.einstellungen.liveAnsicht ??= 'liste';
   d.einstellungen.sperreMinuten ??= 15;
   d.einstellungen.eingerichtet ??= true; // vorhandene Daten aus der Zeit vor dem Einrichtungsassistenten
+  rasterTexteUmstellen(d.einstellungen.raster); // Kopien alter Vorlagen: Lehrkrafttext ohne Ich-Form (E125)
   for (const k of d.kurse) kursMigrieren(k);
   return d;
 }

@@ -5,19 +5,54 @@ import type { Baustein, Daten, Kurs, Leistung, Profil, Raster, RasterEinschaetzu
 import { monatsVorschlag } from './rechnen.ts';
 
 type Stufen4 = [string, string, string, string];
-const k = (id: string, name: string, stufen: Stufen4, gewicht?: number): RasterKriterium => ({ id, name, stufen, ...(gewicht ? { gewicht } : {}) });
+/** stufen: Beschreibung für die Lehrkraft (dritte Person). selbst: dieselben Stufen in Ich-Form für den Schülerbogen (E125). */
+const k = (id: string, name: string, stufen: Stufen4, gewicht?: number, selbst?: Stufen4): RasterKriterium =>
+  ({ id, name, stufen, ...(selbst ? { selbst } : {}), ...(gewicht ? { gewicht } : {}) });
 
 /** Eingebaute Vorlagen (E112): höchstens 5 Kriterien, damit eine Einschätzung etwa 10 Sekunden dauert.
  *  Häufigkeit und Qualität der Beiträge sind getrennt, Qualität und Sprache zählen doppelt (E113, je Klasse änderbar).
  *  Hausaufgaben ist optional und je Klasse zuschaltbar. */
 export const MAX_KRITERIEN = 5;
 
-const BETEILIGUNG = k('beteiligung', 'Beteiligung', ['Ich melde mich oft von selbst.', 'Ich beteilige mich regelmäßig.', 'Ich sage meist nur etwas, wenn ich gefragt werde.', 'Ich beteilige mich kaum.']);
-const QUALITAET_ = k('qualitaet', 'Qualität der Beiträge', ['Meine Beiträge sind treffend und bringen das Gespräch weiter.', 'Meine Beiträge sind meist richtig und sachbezogen.', 'Meine Beiträge sind oft ungenau oder kurz.', 'Meine Beiträge passen selten zum Thema.']);
-const QUALITAET: RasterKriterium = { ...QUALITAET_, gewicht: 2 };
-const ARBEIT = k('arbeitsverhalten', 'Arbeitsverhalten', ['Ich arbeite konzentriert, habe mein Material dabei und bin pünktlich.', 'Ich arbeite meist konzentriert, bin vorbereitet und selten zu spät.', 'Ich brauche oft Aufforderung, bin nicht vorbereitet oder komme manchmal zu spät.', 'Ich arbeite kaum mit, lenke andere ab oder komme oft zu spät.']);
-const ZUSAMMEN = k('zusammenarbeit', 'Zusammenarbeit', ['Ich übernehme Verantwortung in der Gruppe und helfe anderen.', 'Ich bringe mich in Gruppen ein.', 'Ich mache in Gruppen nur auf Aufforderung mit.', 'Ich bringe mich in Gruppen nicht ein.']);
-const HAUSAUFGABEN: RasterKriterium = { ...k('hausaufgaben', 'Hausaufgaben', ['Immer vollständig und gut.', 'Meistens vollständig.', 'Oft lückenhaft.', 'Fast nie gemacht.']), optional: true };
+/** Ich-Sätze der Vorlagen bis 28.11.2026. Kopien mit genau diesen Texten werden beim Laden umgestellt (E125). */
+const ICH = {
+  beteiligung: ['Ich melde mich oft von selbst.', 'Ich beteilige mich regelmäßig.', 'Ich sage meist nur etwas, wenn ich gefragt werde.', 'Ich beteilige mich kaum.'] as Stufen4,
+  qualitaet: ['Meine Beiträge sind treffend und bringen das Gespräch weiter.', 'Meine Beiträge sind meist richtig und sachbezogen.', 'Meine Beiträge sind oft ungenau oder kurz.', 'Meine Beiträge passen selten zum Thema.'] as Stufen4,
+  arbeitsverhalten: ['Ich arbeite konzentriert, habe mein Material dabei und bin pünktlich.', 'Ich arbeite meist konzentriert, bin vorbereitet und selten zu spät.', 'Ich brauche oft Aufforderung, bin nicht vorbereitet oder komme manchmal zu spät.', 'Ich arbeite kaum mit, lenke andere ab oder komme oft zu spät.'] as Stufen4,
+  zusammenarbeit: ['Ich übernehme Verantwortung in der Gruppe und helfe anderen.', 'Ich bringe mich in Gruppen ein.', 'Ich mache in Gruppen nur auf Aufforderung mit.', 'Ich bringe mich in Gruppen nicht ein.'] as Stufen4,
+  sprache: ['Ich spreche flüssig, mit treffenden Wörtern und sicherer Grammatik.', 'Man versteht mich gut, Fehler stören kaum.', 'Ich spreche in kurzen, einfachen Sätzen, Fehler stören manchmal.', 'Mir fehlen oft die Wörter, man versteht mich schwer.'] as Stufen4,
+  fachsprache: ['Ich nutze Fachbegriffe sicher und verstehe Aufgaben sofort.', 'Ich nutze Fachbegriffe meist richtig und verstehe das meiste.', 'Ich umschreibe Fachbegriffe und verstehe das Wichtigste.', 'Mir fehlen Fachbegriffe, Aufgaben verstehe ich oft nicht.'] as Stufen4
+};
+const LEHRKRAFT: Record<keyof typeof ICH, Stufen4> = {
+  beteiligung: ['meldet sich oft von selbst', 'beteiligt sich regelmäßig', 'äußert sich meist nur auf Ansprache', 'beteiligt sich kaum'],
+  qualitaet: ['Beiträge treffend, bringen das Gespräch weiter', 'Beiträge meist richtig und sachbezogen', 'Beiträge oft ungenau oder kurz', 'Beiträge passen selten zum Thema'],
+  arbeitsverhalten: ['arbeitet konzentriert, hat Material dabei, ist pünktlich', 'arbeitet meist konzentriert, ist vorbereitet, selten zu spät', 'braucht oft Aufforderung, ist unvorbereitet oder manchmal zu spät', 'arbeitet kaum mit, lenkt andere ab oder kommt oft zu spät'],
+  zusammenarbeit: ['übernimmt Verantwortung in der Gruppe, hilft anderen', 'bringt sich in Gruppen ein', 'macht in Gruppen nur auf Aufforderung mit', 'bringt sich in Gruppen nicht ein'],
+  sprache: ['spricht flüssig, mit treffenden Wörtern und sicherer Grammatik', 'gut verständlich, Fehler stören kaum', 'kurze, einfache Sätze, Fehler stören manchmal', 'Wörter fehlen oft, schwer verständlich'],
+  fachsprache: ['nutzt Fachbegriffe sicher, versteht Aufgaben sofort', 'nutzt Fachbegriffe meist richtig, versteht das meiste', 'umschreibt Fachbegriffe, versteht das Wichtigste', 'Fachbegriffe fehlen, versteht Aufgaben oft nicht']
+};
+
+const BETEILIGUNG = k('beteiligung', 'Beteiligung', LEHRKRAFT.beteiligung, undefined, ICH.beteiligung);
+const QUALITAET = k('qualitaet', 'Qualität der Beiträge', LEHRKRAFT.qualitaet, 2, ICH.qualitaet);
+const ARBEIT = k('arbeitsverhalten', 'Arbeitsverhalten', LEHRKRAFT.arbeitsverhalten, undefined, ICH.arbeitsverhalten);
+const ZUSAMMEN = k('zusammenarbeit', 'Zusammenarbeit', LEHRKRAFT.zusammenarbeit, undefined, ICH.zusammenarbeit);
+const HAUSAUFGABEN: RasterKriterium = { ...k('hausaufgaben', 'Hausaufgaben', ['immer vollständig und sorgfältig', 'meistens vollständig', 'oft lückenhaft', 'fast nie gemacht'], undefined,
+  ['Meine Hausaufgaben sind immer vollständig und sorgfältig.', 'Meine Hausaufgaben sind meistens vollständig.', 'Meine Hausaufgaben sind oft lückenhaft.', 'Ich mache meine Hausaufgaben fast nie.']), optional: true };
+
+/** Eigene Raster, die noch die alten Ich-Sätze einer Vorlage als Lehrkrafttext haben, auf die dritte Person umstellen.
+ *  Die Ich-Sätze bleiben als Text für die Selbsteinschätzung erhalten. Selbst geschriebene Texte bleiben unberührt. */
+export function rasterTexteUmstellen(raster: Raster[] = []): number {
+  let n = 0;
+  for (const r of raster) for (const b of r.bereiche) for (const kr of b.kriterien) {
+    if (kr.selbst) continue;
+    const art = (Object.keys(ICH) as (keyof typeof ICH)[]).find((a) => ICH[a].every((t, i) => kr.stufen[i] === t));
+    if (!art) continue;
+    kr.selbst = [...ICH[art]];
+    kr.stufen = [...LEHRKRAFT[art]];
+    n++;
+  }
+  return n;
+}
 
 export const VORLAGEN: Raster[] = [
   {
@@ -25,7 +60,7 @@ export const VORLAGEN: Raster[] = [
     bereiche: [
       { name: 'Beiträge', gewicht: 1, kriterien: [
         BETEILIGUNG, QUALITAET,
-        k('sprache', 'Sprache', ['Ich spreche flüssig, mit treffenden Wörtern und sicherer Grammatik.', 'Man versteht mich gut, Fehler stören kaum.', 'Ich spreche in kurzen, einfachen Sätzen, Fehler stören manchmal.', 'Mir fehlen oft die Wörter, man versteht mich schwer.'], 2)
+        k('sprache', 'Sprache', LEHRKRAFT.sprache, 2, ICH.sprache)
       ] },
       { name: 'Arbeitsweise', gewicht: 1, kriterien: [ARBEIT, ZUSAMMEN, HAUSAUFGABEN] }
     ]
@@ -35,7 +70,7 @@ export const VORLAGEN: Raster[] = [
     bereiche: [
       { name: 'Beiträge', gewicht: 1, kriterien: [
         BETEILIGUNG, QUALITAET,
-        k('fachsprache', 'Fachsprache und Verstehen', ['Ich nutze Fachbegriffe sicher und verstehe Aufgaben sofort.', 'Ich nutze Fachbegriffe meist richtig und verstehe das meiste.', 'Ich umschreibe Fachbegriffe und verstehe das Wichtigste.', 'Mir fehlen Fachbegriffe, Aufgaben verstehe ich oft nicht.'], 2)
+        k('fachsprache', 'Fachsprache und Verstehen', LEHRKRAFT.fachsprache, 2, ICH.fachsprache)
       ] },
       { name: 'Arbeitsweise', gewicht: 1, kriterien: [ARBEIT, ZUSAMMEN, HAUSAUFGABEN] }
     ]
