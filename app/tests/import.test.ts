@@ -1,4 +1,4 @@
-// Prüft das Import-Modul (docs/MODUL_IMPORT.md): Excel-Leser, UPZ-Datei, eigene Tabelle, iDoceo-Export, Vorschau, Übernehmen.
+// Prüft das Import-Modul (docs/MODUL_IMPORT.md): Excel-Leser, UPZ-Datei, eigene Tabelle, Vorschau, Übernehmen.
 // Aufruf: npm test. Alle Namen erfunden. Die echte UPZ-Vorlage liegt nicht im Repo; die Test-Mappe hat nur die Zellen,
 // die L.E.O. liest, an denselben Stellen wie UPZ 10.1. Mit der echten Vorlage (gefüllt mit den Referenzwerten aus
 // docs/testfaelle/upz_referenzwerte.json, in LibreOffice neu berechnet) stimmten am 27.11.2026 alle 98 Einzelwerte.
@@ -200,12 +200,12 @@ gleich('CSV2 in FOS', pC2.spalten[0].werte.map((w) => umrechnen(w, pC2.spalten[0
 const b3 = csvAlsBlatt('Liste;Test\nMia Ahlers;12\nJonas Brandt;7\n');
 const p3 = tabelleLesen(b3, 'x.csv');
 gleich('ohne Namenskopf', [p3.schueler.map((s) => s.nachname), p3.hinweise.some((h) => h.includes('Keine Spalte'))], [['Ahlers', 'Brandt'], true]);
-gleich('Nachname zuerst', tabelleLesen(b3, 'x.csv', 'tabelle', { nachnameZuerst: true }).schueler[0], { nachname: 'Mia', vorname: 'Ahlers' });
+gleich('Nachname zuerst', tabelleLesen(b3, 'x.csv', { nachnameZuerst: true }).schueler[0], { nachname: 'Mia', vorname: 'Ahlers' });
 
-// ---------- iDoceo-Export (Aufbau nach Konstantins Vorlage; echter Export noch nicht gesehen) ----------
+// ---------- Tabelle mit Gruppenspalten und Zwischenergebnissen (z. B. Export aus einem anderen Notenbuch) ----------
 const mI = await xlsxLesen(mappe({
   Noten: {
-    A1: 'iDoceo · 2FOS 25-1 Eng', A3: 'Nachname', B3: 'Vorname', C3: 'Gesamtnote', D3: 'Klausuren', E3: 'Klausur 1', F3: 'Mitarbeit', G3: 'August', H3: 'September',
+    A1: '2FOS 25-1 Eng', A3: 'Nachname', B3: 'Vorname', C3: 'Gesamtnote', D3: 'Klausuren', E3: 'Klausur 1', F3: 'Mitarbeit', G3: 'August', H3: 'September',
     I3: 'Tests und Sonstiges', J3: 'Test 1', K3: 'Berlin Day Pitch (100 %)',
     A4: 'Ahlers', B4: 'Mia', C4: 10.25, D4: 9, E4: 9, F4: 12, G4: 12, H4: 12, I4: 11, J4: 11, K4: 11,
     A5: 'Brandt', B5: 'Jonas', C5: 4.5, D5: 0, E5: 0, F5: 9, G5: 8, H5: 10, I5: 9, J5: '☹', K5: 9
@@ -213,13 +213,13 @@ const mI = await xlsxLesen(mappe({
   Mitarbeit: { A1: 'Nachname', A2: 'Ahlers', B1: '17.09.2026', B2: '☺' }
 })) as Mappe;
 const pI = paketAus(mI, 'export.xlsx', undefined, { schuljahr: 2026 });
-gleich('iDoceo erkannt', [pI.quelle, pI.blatt, pI.profil], ['idoceo', 'Noten', 'FOS']);
-gleich('iDoceo Spalten', pI.spalten.map((s) => [s.name, s.gruppe]), [
+gleich('Gruppen-Tabelle', [pI.quelle, pI.blatt, pI.profil], ['tabelle', 'Noten', 'FOS']);
+gleich('Gruppen-Tabelle Spalten', pI.spalten.map((s) => [s.name, s.gruppe]), [
   ['Gesamtnote', null], ['Klausuren', null], ['Klausur 1', 'klausuren'], ['Mitarbeit', null], ['August', 'mitarbeit'], ['September', 'mitarbeit'],
   ['Tests und Sonstiges', null], ['Test 1', 'sl'], ['Berlin Day Pitch', 'sl']
 ]);
-gleich('iDoceo Smiley übergangen', pI.spalten.find((s) => s.name === 'Test 1')!.werte, [{ zahl: 11 }, null]);
-gleich('iDoceo Hinweis', pI.hinweise.some((h) => h.includes('Smileys')), true);
+gleich('Smiley übergangen', pI.spalten.find((s) => s.name === 'Test 1')!.werte, [{ zahl: 11 }, null]);
+gleich('Hinweis Spalten ohne Zahlen', pI.hinweise.length, 0);
 
 // ---------- Zuordnung, Vorschau, Übernehmen ----------
 const schueler: any[] = [

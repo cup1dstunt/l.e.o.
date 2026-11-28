@@ -1,4 +1,5 @@
-// Import-Modul (docs/MODUL_IMPORT.md, Vorschlag V20): Klassen und Noten aus UPZ, eigener Excel-Tabelle oder iDoceo-Export.
+// Import-Modul (docs/MODUL_IMPORT.md, Vorschlag V20): Klassen und Noten aus der UPZ oder einer eigenen Excel-Tabelle.
+// Ein iDoceo-Import ist bewusst nicht dabei (E123): kaum jemand an der Schule nutzt iDoceo. Ein Excel-Export aus iDoceo geht trotzdem als eigene Tabelle.
 // Reine Logik ohne Oberfläche, damit alles testbar ist. Oberfläche: /import.
 //
 // Grundsätze:
@@ -15,7 +16,7 @@ import { nameNorm } from './stammdaten.ts';
 import { ausVorlage } from './sitzplan.ts';
 import { excelDatum, spaltenName, zelle, type Blatt, type Mappe, type Wert } from './xlsx.ts';
 
-export type Quelle = 'upz' | 'idoceo' | 'tabelle';
+export type Quelle = 'upz' | 'tabelle';
 export type Skala = 'np' | 'note' | 'prozent';
 export type Schluessel = 'OSZ' | 'IHK' | 'FOS';
 
@@ -49,7 +50,7 @@ export interface ISpalte {
 export interface Paket {
   quelle: Quelle;
   dateiname: string;
-  blatt?: string; // gelesenes Tabellenblatt (eigene Tabelle, iDoceo)
+  blatt?: string; // gelesenes Tabellenblatt (eigene Tabelle)
   klasse?: string;
   fach?: string;
   profil?: Profil;
@@ -313,13 +314,13 @@ function adresseSpalte(c: string) {
   return s;
 }
 
-// ---------- Eigene Tabelle und iDoceo-Export ----------
+// ---------- Eigene Tabelle ----------
 
 const kopfNorm = (k: string) => nameNorm(k).replace(/[^a-z0-9 ]/g, '').trim();
 const NACHNAME = /^(nachname|familienname|name|schueler(in)?|schuelername|schueler innen|lernende|apellidos?|surname|last ?name|student)$/;
 const VORNAME = /^(vorname|rufname|nombre|first ?name|given ?name)$/;
 const SUMMENZEILE = /^(durchschnitt|mittelwert|schnitt|klassenschnitt|summe|anzahl|media|average|max|min|o|notenspiegel)\b/;
-// Spalten, die in der Datei aus anderen Spalten berechnet werden (iDoceo-Vorlagen, eigene Excel): L.E.O. rechnet selbst
+// Spalten, die in der Datei aus anderen Spalten berechnet werden (Gesamtnote, Durchschnitte, Gruppensummen): L.E.O. rechnet selbst
 const ERGEBNIS = /^(gesamt|gesamtnote|endnote|zeugnis|zeugnisnote|halbjahresnote|schnitt|durchschnitt|o|summe|klausuren|klassenarbeiten|sonstige leistungen|sonstige|tests und sonstiges|tests sonstiges|mitarbeit|muendlich|muendliche leistungen|at|sl|note|noten|abitur|abiturpruefung|gesamtnote \d+ halbjahr|\d+ halbjahr|vorhalbjahr)$/;
 const FEHLZEIT = /(fehlzeit|fehlstunde|fehltag|anwesenheit|verspaet|abwesen)/;
 const MONATE = ['jan', 'feb', 'maer', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dez'];
@@ -378,23 +379,8 @@ function kopfZeile(b: Blatt): number {
   return 1;
 }
 
-/** Hinweise auf einen iDoceo-Export: Dateiname, Text „iDoceo“ oder die Gruppen aus Konstantins iDoceo-Vorlagen. */
-export function istIdoceo(m: Mappe, dateiname: string): boolean {
-  if (/idoceo/i.test(dateiname)) return true;
-  for (const b of m.blaetter) {
-    let gruppen = 0;
-    for (const v of b.zellen.values()) {
-      if (typeof v !== 'string') continue;
-      if (/idoceo/i.test(v)) return true;
-      if (/^(Tests und Sonstiges|Sonstige Leistungen|Gesamtnote)$/i.test(v.trim())) gruppen++;
-    }
-    if (gruppen >= 2) return true;
-  }
-  return false;
-}
-
-/** Ein Tabellenblatt einer eigenen Excel-Datei oder eines iDoceo-Exports lesen. */
-export function tabelleLesen(b: Blatt, dateiname: string, quelle: 'tabelle' | 'idoceo' = 'tabelle', opt: TabellenOptionen = {}): Paket {
+/** Ein Tabellenblatt einer eigenen Excel-Datei lesen. */
+export function tabelleLesen(b: Blatt, dateiname: string, opt: TabellenOptionen = {}): Paket {
   const heute = new Date();
   const schuljahr = opt.schuljahr ?? (heute.getMonth() >= 7 ? heute.getFullYear() : heute.getFullYear() - 1);
   const kz = kopfZeile(b);
@@ -460,17 +446,16 @@ export function tabelleLesen(b: Blatt, dateiname: string, quelle: 'tabelle' | 'i
     });
   }
   if (ohneZahlen) hinweise.push(`${ohneZahlen} ${ohneZahlen === 1 ? 'Spalte enthält' : 'Spalten enthalten'} keine Zahlen (z. B. Smileys oder Kommentare) und ${ohneZahlen === 1 ? 'wird' : 'werden'} nicht übernommen.`);
-  if (quelle === 'idoceo') hinweise.push('Aus iDoceo kommen nur Zahlen. Smileys, Anmerkungen und Anwesenheit bleiben in iDoceo, Fehlzeiten kommen aus WebUntis.');
 
   // Profil: überwiegend Notenpunkte → FOS, Noten → OSZ; Klassenname mit FOS gewinnt
   const zaehl = (s: Skala) => spalten.filter((x) => x.gruppe && x.skala === s).length;
   const profil: Profil = /fos/i.test(dateiname + b.name) ? 'FOS' : zaehl('np') > zaehl('note') ? 'FOS' : 'OSZ';
   // Ganze Zahlen 1–6 in einer Punkte-Tabelle sind auch Punkte
   if (profil === 'FOS') for (const s of spalten) if (s.skala === 'note' && s.grund?.startsWith('Nur ganze Zahlen')) { s.skala = 'np'; s.grund = undefined; }
-  return { quelle, dateiname, blatt: b.name, profil, schluessel: profil === 'FOS' ? 'FOS' : 'OSZ', schueler, spalten, hinweise, namenEinspaltig: einspaltig || undefined };
+  return { quelle: 'tabelle', dateiname, blatt: b.name, profil, schluessel: profil === 'FOS' ? 'FOS' : 'OSZ', schueler, spalten, hinweise, namenEinspaltig: einspaltig || undefined };
 }
 
-/** Welches Blatt einer Mappe passt am besten? Das mit den meisten Zahlen, bei iDoceo bevorzugt „Noten“. */
+/** Welches Blatt einer Mappe passt am besten? Das mit den meisten Zahlen, ein Blatt „Noten“ zuerst. */
 export function blattVorschlag(m: Mappe): number {
   let best = 0, punkte = -1;
   m.blaetter.forEach((b, i) => {
@@ -482,11 +467,11 @@ export function blattVorschlag(m: Mappe): number {
   return best;
 }
 
-/** Datei verstehen: UPZ, iDoceo oder eigene Tabelle. */
+/** Datei verstehen: UPZ oder eigene Tabelle. */
 export function paketAus(m: Mappe, dateiname: string, blattNr?: number, opt: TabellenOptionen = {}): Paket {
   if (istUpz(m)) return upzLesen(m, dateiname);
   const b = m.blaetter[blattNr ?? blattVorschlag(m)] ?? m.blaetter[0];
-  return tabelleLesen(b, dateiname, istIdoceo(m, dateiname) ? 'idoceo' : 'tabelle', opt);
+  return tabelleLesen(b, dateiname, opt);
 }
 
 // ---------- Zuordnung zur Klasse in L.E.O. ----------

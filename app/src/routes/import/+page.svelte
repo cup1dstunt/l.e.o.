@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Import-Modul (V20, docs/MODUL_IMPORT.md): Klassen und Noten aus UPZ, eigener Excel-Tabelle oder iDoceo-Export.
+  // Import-Modul (V20, docs/MODUL_IMPORT.md): Klassen und Noten aus der UPZ oder einer eigenen Excel-Tabelle.
   // Ablauf ohne Dialog, alles auf einer Seite: Datei → Wohin → Spalten → Schüler → Vorschau → übernehmen (mit Rückgängig).
   // Die Datei bleibt im Gerät. Nichts Bestehendes wird überschrieben, solange es nicht ausdrücklich eingeschaltet ist.
   import { page } from '$app/state';
@@ -164,7 +164,7 @@
 
   const GRUPPEN: [Gruppe | null, string][] = [['klausuren', 'Klausur'], ['sl', 'Tests/Sonstiges'], ['mitarbeit', 'mündlich'], [null, 'nicht übernehmen']];
   const SKALEN: [Skala, string][] = [['np', 'Punkte 0–15'], ['note', 'Noten 1–6'], ['prozent', 'Prozent']];
-  const QUELLE = { upz: 'UPZ-Datei', idoceo: 'Export aus iDoceo', tabelle: 'Eigene Tabelle' } as const;
+  const QUELLE = { upz: 'UPZ-Datei', tabelle: 'Eigene Tabelle' } as const;
   const LABEL: Record<string, string> = { neu: 'neu', gleich: 'gleich', abweichend: 'weicht ab', leer: '' };
 </script>
 
@@ -181,7 +181,6 @@
       <div class="quellen">
         <div><b>UPZ</b><p class="klein leise">Die Excel-Datei der Schule (eine Klasse, ein Fach). L.E.O. liest Namen, Klassenarbeiten bzw. Klausuren, sonstige Leistungen mit Gewichten und die mündliche Mitarbeit und rechnet mit denselben Schlüsseln (OSZ, IHK, FOS).</p></div>
         <div><b>Eigene Excel-Tabelle</b><p class="klein leise">.xlsx oder .csv, eine Zeile je Schüler, oben die Spaltentitel. Spalten wie „Klausur 1“, „Test“, „Okt“ erkennt L.E.O., alles andere stellst du unten ein.</p></div>
-        <div><b>iDoceo</b><p class="klein leise">In iDoceo die Klasse als Excel exportieren. Übernommen werden die Zahlen. Smileys und Anmerkungen bleiben in iDoceo.</p></div>
       </div>
       <div class="zeile wrap">
         <button class="knopf haupt" onclick={() => eingabe?.click()} disabled={laedt}>{laedt ? 'Lese …' : mappe ? 'Andere Datei wählen' : 'Datei wählen'}</button>
@@ -329,7 +328,7 @@
 <style>
   .seite { padding: 24px 32px 40px; max-width: 1100px; display: flex; flex-direction: column; gap: 16px; }
   .wrap { flex-wrap: wrap; margin: 10px 0; }
-  .quellen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 8px 0; }
+  .quellen { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 8px 0; }
   .quellen p { margin: 4px 0 0; }
   .neu-klasse { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
   .spalten { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }

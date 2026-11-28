@@ -38,7 +38,7 @@ Grundsätze:
 | Organisation | Dateiablage | Material je Reihe, Stunde und Klasse in Planung und Live-Stunde | – | an |
 | Organisation | Auswertung (`statistik`) | Auswertungsreiter je Klasse und Vergleich eigener Klassen | – | an |
 | Organisation | EWH-Übernahme (`ewh`) | Klausurnoten aus einer CSV übernehmen | – | aus |
-| Organisation | Import | Seite „Klassen und Noten übernehmen“ aus UPZ, eigenem Excel oder iDoceo, Einstieg unter Klassen und im Notenbuch ([MODUL_IMPORT.md](MODUL_IMPORT.md)) | – | an |
+| Organisation | Import | Seite „Klassen und Noten übernehmen“ aus UPZ oder eigenem Excel, Einstieg unter Klassen und im Notenbuch ([MODUL_IMPORT.md](MODUL_IMPORT.md)) | – | an |
 
 Bewusst **kein** Modul:
 - **Anwesenheit erfassen** gehört zur Live-Stunde (antippen, wer fehlt). Das Modul „Fehlzeiten“ ist die Auswertung.

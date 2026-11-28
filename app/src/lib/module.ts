@@ -73,7 +73,7 @@ export const MODULE: Modul[] = [
     pfade: ['/auswertung'], reiter: { text: 'Auswertung', pfad: '/auswertung/', aktiv: 'auswertung' } },
   { id: 'ewh', name: 'EWH-Übernahme', text: 'Klausurnoten aus EWH Korrektur übernehmen.', bereich: 'organisation', standard: false,
     pfade: ['/ewh/'] },
-  { id: 'import', name: 'Import', text: 'Klassen und Noten aus der UPZ, einer eigenen Excel-Tabelle oder einem iDoceo-Export übernehmen, mit Vorschau und ohne Überschreiben.', bereich: 'organisation', standard: true,
+  { id: 'import', name: 'Import', text: 'Klassen und Noten aus der UPZ oder einer eigenen Excel-Tabelle übernehmen, mit Vorschau und ohne Überschreiben.', bereich: 'organisation', standard: true,
     pfade: ['/import'] }
 ];
 
@@ -159,9 +159,8 @@ export const STARTWEGE: Startweg[] = [
       'Was du nicht brauchst, bleibt aus. Unter Mehr › Module kommt es mit einem Tipp dazu.'
     ] },
   { id: 'idoceo', name: 'iDoceo', text: 'Notenbuch, Smileys, Anwesenheit auf dem iPad.',
-    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'ablage', 'statistik', 'import'],
+    module: [...ALLE_UNTERRICHT, 'anwesenheit', 'nachschreiben', 'stundenplan', 'kalender', 'ablage', 'statistik'],
     tipps: [
-      'Noten aus iDoceo holst du über Klassen › Aus Datei übernehmen (iDoceo-Export als Excel). Smileys und Anmerkungen bleiben in iDoceo.',
       'Das Notenbuch ist aufgebaut wie die iDoceo-Vorlagen: Klausuren und Sonstige je 50 %, Sonstige aus mündlich und Tests.',
       'Smileys gibt es weiter, Kommentare kommen aus Textbausteinen statt aus der Tastatur.',
       'Schüler und Fehlzeiten holst du aus WebUntis, nichts wird mehr von Hand angelegt.'

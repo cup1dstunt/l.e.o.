@@ -45,7 +45,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4). Einfügen aus IServ-Text gebaut (E119) | K, B | 2 | M |
 | S7 | Offizielle Untis-Platform-API (Stammdaten, Stundenplan, Fehlzeiten) | B | 2 | L |
 | S8 | Inoffizielle WebUntis-JSON-RPC mit Rückfall auf Datei-Import | B | 3 | M |
-| S9 | iDoceo-Import (nett, nicht entscheidend; Wechsel zum Semesterende). Entwurf 27.11. im Modul Import (V20), echter Export noch ungetestet | B | 3 | M |
+| S9 | ~~iDoceo-Import~~ entfällt (E123, 28.11.): kaum jemand nutzt iDoceo, Excel-Export geht als eigene Tabelle | B | – | – |
 | S10 | **UPZ-Dateien** analysieren, Import und Vorlagen daraus | K | 1 (Analyse) | ? |
 | S11 | Volljährigkeit aus dem Alter ableiten (wer bekommt Post: Schüler oder Eltern) | C | 3 | S |
 
