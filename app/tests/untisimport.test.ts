@@ -2,6 +2,7 @@
 // Aufruf: npm test
 import { artAusUntis, isoAusUntis, zeitAusUntis, einheiten, tabelleLesen, datumLesen, stammdatenEinlesen, uebernehmen, profilAus, geschlechtAus, kennungWaehlen, schuelerIndex, holen, untisKey, falscheKlasseEntfernen, type Paket } from '../src/lib/untisimport.ts';
 import { beispielDaten } from '../src/lib/beispiel.ts';
+import { zerlegen } from '../src/lib/ablage.ts';
 
 let ok = 0;
 let fehler = 0;
@@ -48,7 +49,19 @@ const paket: Paket = {
   verspaetungen: [{ key: '1-2', untisId: 9001, datum: '2026-11-04', ankunft: '08:09', minuten: 9 }],
   ausfaelle: [], stammdaten: []
 };
+// Eigene bzw. importierte Klasse ohne WebUntis (z. B. Testklasse) mit Smiley: darf beim Entfernen der Beispiele nicht verschwinden
+d.schueler.push({ id: 'eigen1', vorname: 'Eva', nachname: 'Eigen', geschlecht: 'w', geburt: '', mailDienst: '' });
+d.kurse.push({ ...d.kurse[0], id: 'eigene-klasse', name: 'Testklasse', schueler: ['eigen1', 's0'], untis: undefined });
+d.mitarbeit.push({ id: 'smiley-eigen', kursId: 'eigene-klasse', schuelerId: 'eigen1', zeit: '2026-11-27T09:00:00.000Z', stufe: 4, bausteine: [] });
+d.stundenplan.push({ kursId: 'eigene-klasse', tag: 5, beginn: '10:00', ende: '11:30' } as any);
 const e = uebernehmen(d, paket, { beispielEntfernen: true, benutzer: 'x', schule: 'osz-lus' });
+gleich('eigene Klasse bleibt', d.kurse.some((k) => k.id === 'eigene-klasse'), true);
+gleich('Smiley der eigenen Klasse bleibt', d.mitarbeit.some((m) => m.id === 'smiley-eigen'), true);
+gleich('Beispiel-Smileys weg', d.mitarbeit.filter((m) => m.kursId === 'k-fos' || m.kursId === 'k-osz').length, 0);
+gleich('Schüler der eigenen Klasse bleiben', ['eigen1', 's0'].map((i) => d.schueler.some((s) => s.id === i)), [true, true]);
+gleich('eigener Stundenplan bleibt', d.stundenplan.some((s) => s.kursId === 'eigene-klasse'), true);
+d.kurse = d.kurse.filter((k) => k.id !== 'eigene-klasse');
+d.stundenplan = d.stundenplan.filter((s) => s.kursId !== 'eigene-klasse');
 gleich('ergebnis', [e.kurse, e.kurseNeu, e.schueler, e.fehlzeiten, e.verspaetungen], [1, 1, 2, 1, 1]);
 gleich('beispiel weg', d.kurse.length, 1);
 gleich('stundenplan', d.stundenplan.length, 1);
@@ -181,6 +194,29 @@ gleich('Schüler unbekannt', fi('S-99'), undefined);
 {
   const f = schuelerIndex([{ id: 5, key: '7' }, { id: 7, key: '9' }, { id: 8, key: '11' }], ['7', '9', '11']);
   gleich('Feld mit den meisten Treffern zuerst', f('7')?.id, 5);
+}
+
+// 28.11.2026: Alte Klasse (vor PR #36 mit Namen der zusammengelegten Stunde) bekommt den neuen Schlüssel, die KA-Stunden
+// allein eine neue Klasse. Diese durfte nicht dieselbe Kennung bekommen, sonst überschrieb sie beim Speichern die Noten.
+{
+  const dd = beispielDaten(new Date('2026-11-18T10:00'));
+  const b = { kuerzel: 'Abc', von: '2026-08-24', bis: '2027-01-29', stunden: [], fehlzeiten: [], verspaetungen: [], ausfaelle: [], stammdaten: [],
+    schueler: [{ untisId: 1, vorname: 'A', nachname: 'A', geschlecht: 'w' }, { untisId: 2, vorname: 'B', nachname: 'B', geschlecht: 'm' }] } as any;
+  uebernehmen(dd, { ...b, kurse: [{ klasseId: 5, fachId: 12, name: 'KA, FOS WiSo', fach: 'WiSo', klasse: 'KA 25-1, FOS 26-2', raum: '', gehalten: 1, anzahl: 5, schueler: new Set([1, 2]) }] }, { beispielEntfernen: true, benutzer: 'x', schule: 'x' });
+  dd.kurse[0].zellen['k:u1'] = { wert: 3 };
+  uebernehmen(dd, { ...b, kurse: [
+    { klasseId: 5, klassen: [5, 7], fachId: 12, name: 'KA, FOS WiSo', fach: 'WiSo', klasse: 'KA 25-1, FOS 26-2', raum: '', gehalten: 1, anzahl: 3, schueler: new Set([2]) },
+    { klasseId: 5, fachId: 12, name: 'KA WiSo', fach: 'WiSo', klasse: 'KA 25-1', raum: '', gehalten: 1, anzahl: 3, schueler: new Set([1]) }] }, { beispielEntfernen: false, benutzer: 'x', schule: 'x' });
+  gleich('keine doppelte Kennung', new Set(dd.kurse.map((k) => k.id)).size, dd.kurse.length);
+  const gesp = [...zerlegen(dd).get('kurse')!.values()].map((j) => JSON.parse(j));
+  gleich('beide Klassen gespeichert', gesp.length, 2);
+  gleich('Note bleibt gespeichert', gesp.find((k) => k.zellen['k:u1'])?.zellen['k:u1']?.wert, 3);
+  // dritter Abgleich: nichts Neues, keine weitere Klasse
+  const n = dd.kurse.length;
+  uebernehmen(dd, { ...b, kurse: [
+    { klasseId: 5, klassen: [5, 7], fachId: 12, name: 'KA, FOS WiSo', fach: 'WiSo', klasse: 'KA 25-1, FOS 26-2', raum: '', gehalten: 1, anzahl: 3, schueler: new Set([2]) },
+    { klasseId: 5, fachId: 12, name: 'KA WiSo', fach: 'WiSo', klasse: 'KA 25-1', raum: '', gehalten: 1, anzahl: 3, schueler: new Set([1]) }] }, { beispielEntfernen: false, benutzer: 'x', schule: 'x' });
+  gleich('stabil beim nächsten Abgleich', dd.kurse.length, n);
 }
 
 console.log(`${ok} Übernahme-Prüfungen bestanden, ${fehler} fehlgeschlagen`);

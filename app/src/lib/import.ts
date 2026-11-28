@@ -1,5 +1,5 @@
 // Import-Modul (docs/MODUL_IMPORT.md, Vorschlag V20): Klassen und Noten aus der UPZ oder einer eigenen Excel-Tabelle.
-// Ein iDoceo-Import ist bewusst nicht dabei (E122): kaum jemand an der Schule nutzt iDoceo. Ein Excel-Export aus iDoceo geht trotzdem als eigene Tabelle.
+// Ein iDoceo-Import ist bewusst nicht dabei (E123): kaum jemand an der Schule nutzt iDoceo. Ein Excel-Export aus iDoceo geht trotzdem als eigene Tabelle.
 // Reine Logik ohne Oberfläche, damit alles testbar ist. Oberfläche: /import.
 //
 // Grundsätze:

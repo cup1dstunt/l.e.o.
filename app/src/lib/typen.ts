@@ -370,7 +370,8 @@ export interface Einstellungen {
   eingerichtet?: boolean; // false = Einrichtungsassistent beim ersten Start noch offen; fehlt = ältere Daten, gilt als eingerichtet
   herkunft?: 'papier' | 'idoceo' | 'upz' | 'excel' | 'neu'; // womit die Lehrkraft vorher gearbeitet hat (Einrichtung)
   kalender?: KalenderAbgleich; // Abgleich mit IServ und WebUntis (K3, K10, V17)
-  auswertung?: Partial<{ abfallNP: number; abfallNote: number; stillTage: number; fehlzeitenAb: number }>; // eigene Hinweisschwellen (auswertung.ts), fehlt = Standard
+  ewhAdresse?: string; // Adresse der eigenen EWH-Installation, nur für den Link „in EWH ansehen“ (optional, V16)
+  auswertung?: Partial<{ abfallNP: number; abfallNote: number; stillTage: number; fehlzeitenAb: number; grenzeNP: number; grenzeNote: number }>; // eigene Hinweisschwellen (auswertung.ts), fehlt = Standard
 }
 
 /** Stand des Kalenderabgleichs. Der IServ-Abo-Link selbst liegt verschlüsselt im Tresor (geheim „iserv“), nie hier. */

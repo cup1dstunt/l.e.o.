@@ -25,6 +25,12 @@ const NAMEN: [string, string, 'w' | 'm'][] = [
 const tag = (d: Date) => d.toISOString().slice(0, 10);
 const neueId = (p: string, i: number) => `${p}${i}`;
 
+/** Feste Kennungen der Beispielklassen. Nur diese gelten beim WebUntis-Abgleich als „Beispiel“ (nicht eigene, importierte oder Testklassen). */
+export const BEISPIEL_KURSE = ['k-fos', 'k-osz'];
+/** Beispielschüler haben die Kennungen s0, s1, … und keine WebUntis-Nummer. */
+export const istBeispielSchueler = (s: { id: string; untisId?: number; herkunft?: string }) =>
+  s.untisId === undefined && s.herkunft !== 'datei' && /^s\d+$/.test(s.id) && Number(s.id.slice(1)) < NAMEN.length;
+
 export function beispielDaten(heute = new Date()): Daten {
   const rnd = zufall(42);
   const schueler: Schueler[] = NAMEN.map(([v, n, g], i) => ({

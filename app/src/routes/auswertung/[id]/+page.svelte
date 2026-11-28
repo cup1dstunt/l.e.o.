@@ -38,7 +38,7 @@
   const inNote = (sp: Spiegel, n: number) => Object.entries(sp.werte).filter(([w]) => spiegelNote(kurs.profil, Number(w)) === n).flatMap(([, s]) => s);
   let offen = $state<string | null>(null); // aufgeklappte Leistung
   const hoehe = (sp: Spiegel, i: number) => `${(sp.noten[i] / Math.max(1, ...sp.noten)) * 100}%`;
-  const ART: Record<HinweisArt, string> = { unter: 'unter der Grenze', kippe: 'auf der Kippe', abfall: 'Leistungsabfall', verstummt: 'mündlich still', fehlzeiten: 'Fehlzeiten' };
+  const ART: Record<HinweisArt, string> = { unter: 'unter der Grenze', kippe: 'auf der Kippe', abfall: 'Leistungsabfall', grenze: 'an der Grenze', verstummt: 'mündlich still', fehlzeiten: 'Fehlzeiten' };
   // Schwellen der Hinweise: gelten für alle Klassen, Plus/Minus statt Eintippen
   let schwellenOffen = $state(false);
   function schwelle(k: keyof Schwellen, r: 1 | -1) {
@@ -53,8 +53,12 @@
     { k: 'abfallNP', text: 'Leistungsabfall FOS', zeige: (w) => `${w} NP` },
     { k: 'abfallNote', text: 'Leistungsabfall OSZ', zeige: (w) => `${zahl(w, 1)} ${w === 1 ? 'Note' : 'Noten'}` },
     { k: 'stillTage', text: 'Mündlich still seit', zeige: (w) => `${w} Tagen` },
-    { k: 'fehlzeitenAb', text: 'Fehlzeiten ab', zeige: (w) => `${w} %` }
+    { k: 'fehlzeitenAb', text: 'Fehlzeiten ab', zeige: (w) => `${w} %` },
+    { k: 'grenzeNP', text: 'Letzte Note FOS bis', zeige: (w) => `${w} NP` },
+    { k: 'grenzeNote', text: 'Letzte Note OSZ ab', zeige: (w) => `Note ${zahl(w, w % 1 ? 1 : 0)}` }
   ];
+  const grenzeText = $derived(fos ? `${schw.grenzeNP} NP oder weniger` : `Note ${zahl(schw.grenzeNote, schw.grenzeNote % 1 ? 1 : 0)} oder schlechter`);
+  const ewhAdresse = $derived(d.einstellungen.ewhAdresse?.trim() || '');
   const abfallText = $derived(fos ? `${schw.abfallNP} NP` : `${zahl(schw.abfallNote, 1)} ${schw.abfallNote === 1 ? 'Note' : 'Noten'}`);
 
   // Verlauf (A2): Klassenschnitt je datierter Leistung, auf Wunsch ein Schüler dazu
@@ -217,6 +221,7 @@
                   </table>
                   {#if st.E.length + st.offen.length}<p class="klein">Nachschreiben: {namen([...st.E, ...st.offen])} · <a href="/nachschreiben">zur Nachschreibeliste ›</a></p>{/if}
                   {#if st.leer.length}<p class="klein leise">Noch leer: {namen(st.leer)}</p>{/if}
+                  {#if l.ewh}<p class="klein leise">Aus EWH übernommen ({l.ewh.titel}). {#if ewhAdresse}<a href={ewhAdresse} target="_blank" rel="noopener">Genaueres zur Note und Leistungsentwicklung in EWH ›</a>{:else if ewhAn}Für einen Link zu EWH die Adresse unter <a href="/ewh/{kurs.id}">Aus EWH übernehmen</a> eintragen.{/if}</p>{/if}
                   {#if l.gruppe === 'klausuren' && sp.anzahl}<p class="klein leise">Anteil unter der Grenze {prozent(sp.unter / sp.anzahl)}{sp.unter / sp.anzahl > 1 / 3 ? ' – mehr als ein Drittel, Genehmigung durch die Schulleitung nötig' : ''}.</p>{/if}
                 </div>
               {/if}
@@ -228,7 +233,7 @@
 
     <section class="karte breit">
       <div class="zeile"><h2 class="raum">Genauer hinsehen</h2><button class="pille nicht-drucken" aria-pressed={schwellenOffen} onclick={() => (schwellenOffen = !schwellenOffen)}>Schwellen anpassen</button></div>
-      <p class="klein leise">Leise Hinweise, keine Bewertung: Leistungsabfall (letzte Note {abfallText} unter dem eigenen Schnitt), seit {schw.stillTage} Tagen mündlich still, Fehlzeiten ab {schw.fehlzeitenAb} %, Gesamtnote unter der Grenze oder auf der Kippe.</p>
+      <p class="klein leise">Leise Hinweise, keine Bewertung: Leistungsabfall (letzte Note {abfallText} unter dem eigenen Schnitt), letzte Note an der Grenze ({grenzeText}, zum Vorwarnen), seit {schw.stillTage} Tagen mündlich still, Fehlzeiten ab {schw.fehlzeitenAb} %, Gesamtnote unter der Grenze oder auf der Kippe.</p>
       {#if schwellenOffen}
         <div class="detail schwellen nicht-drucken">
           {#each SCHWELLE_TEXT as x (x.k)}
@@ -302,7 +307,7 @@
   .chips { display: flex; gap: 6px; flex-wrap: wrap; }
   .hchip { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: var(--leo-r-pill); background: var(--leo-taste); color: var(--leo-tinte); }
   .hchip.unter, .hchip.abfall { background: var(--leo-warnung-hell); color: var(--leo-warnung); }
-  .hchip.kippe, .hchip.fehlzeiten { background: var(--leo-stern-hell); color: #8a6200; }
+  .hchip.kippe, .hchip.fehlzeiten, .hchip.grenze { background: var(--leo-stern-hell); color: #8a6200; }
   .schwellen { display: grid; gap: 6px; }
   .sz { display: grid; grid-template-columns: minmax(150px, 220px) auto 90px auto 1fr; gap: 8px; align-items: center; }
   .sz b { text-align: center; }

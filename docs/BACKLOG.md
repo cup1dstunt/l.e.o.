@@ -45,7 +45,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4). Einfügen aus IServ-Text gebaut (E119) | K, B | 2 | M |
 | S7 | Offizielle Untis-Platform-API (Stammdaten, Stundenplan, Fehlzeiten) | B | 2 | L |
 | S8 | Inoffizielle WebUntis-JSON-RPC mit Rückfall auf Datei-Import | B | 3 | M |
-| S9 | ~~iDoceo-Import~~ entfällt (E122, 28.11.): kaum jemand nutzt iDoceo, Excel-Export geht als eigene Tabelle | B | – | – |
+| S9 | ~~iDoceo-Import~~ entfällt (E123, 28.11.): kaum jemand nutzt iDoceo, Excel-Export geht als eigene Tabelle | B | – | – |
 | S10 | **UPZ-Dateien** analysieren, Import und Vorlagen daraus | K | 1 (Analyse) | ? |
 | S11 | Volljährigkeit aus dem Alter ableiten (wer bekommt Post: Schüler oder Eltern) | C | 3 | S |
 
@@ -83,7 +83,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | M1 | Anwesenheit und Mitarbeit als Kategorien mit Smiley, Kommentar aus **Textbausteinen** zum Antippen | K | 1 | M |
 | M8 | Eine Anmerkung für mehrere Schüler gleichzeitig | C | 1 | S |
 | M9 | Mitarbeit-Spalte mit Titel und Datum (z. B. „Jigsaw Reading“) | K (Screenshots) | 1 | S |
-| M10 | **Mitarbeit im frei gewählten Rhythmus** (Stunde, Woche, Einheit, Monat, keiner) | K | 1 | S |
+| M10 | **Mitarbeit im frei gewählten Rhythmus** (Stunde, Woche, Einheit, Monat, keiner). **Planungspunkt 28.11.:** Im Personalisierungsmenü einstellbar machen, wie die Lehrkraft mündliche Noten vergibt (jede Stunde, je Unterrichtseinheit, je Monat, je Halbjahr). Danach richten sich Erinnerungen (M11) und der Hinweis „mündlich still“ in der Auswertung. Konstantin überlegt noch, nicht bauen | K | 1 | S |
 | M11 | Erinnerung am Ende des Zeitraums: „Mitarbeitsnoten für Oktober fehlen noch“ | K | 2 | S |
 | M12 | **Selbsteinschätzung der Schüler** nach Kriterien (Link/QR, ohne Konto), danach Einschätzung der Lehrkraft daneben | K | 2 | M |
 | M13 | Bericht zur Mitarbeit je Zeitraum als PDF/Mail | K | 3 | M |
@@ -160,7 +160,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | A1 | Statistiken überall sammeln, übersichtlich darstellen. **Entwurf 26.11.:** Reiter „Auswertung“ je Klasse und Klassenvergleich (V16, [MODUL_AUSWERTUNG.md](MODUL_AUSWERTUNG.md)) | B | 2 | M |
 | A2 | Verlaufsdiagramme je Schüler, Kurs, Klasse (Noten, Mitarbeit, Fehlzeiten, Hausaufgaben). **Entwurf 27.11.:** Notenverlauf Klasse + Schüler in der Auswertung (V19) | B | 2 | M |
 | A3 | Konferenzansicht: ganze Klasse, alle Fehlzeiten aller Fächer, Kurzübersicht je Schüler | B | 2 | M |
-| A6 | EWH-Noten direkt abrufen statt CSV (Weg B: Abrufschlüssel und Lese-Endpunkt in EWH), erst wenn beide schulweit laufen | C | 3 | M |
+| A6 | EWH-Noten direkt abrufen statt CSV (Weg B: Abrufschlüssel und Lese-Endpunkt in EWH). Konstantin 28.11.: später gewünscht; Aufwand je ca. ein Tag in EWH und L.E.O., siehe MODUL_AUSWERTUNG 7.1 | C | 3 | M |
 | A7 | Auswertung drucken bzw. als PDF. **Entwurf 27.11.** (V19) | C | 3 | S |
 | A8 | Halbjahresvergleich je Klasse nach dem Schuljahreswechsel (K9) | C | 3 | S |
 | A4 | Endnoten **aktiv** an die Klassenleitung schicken (statt Zettel/Rundmail), nur wer will (E29) | C | 2 | M |
