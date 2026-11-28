@@ -217,6 +217,7 @@
       <button class="pille" onclick={() => (dlg = 'gewichte')}>Profil <b>{kurs.profil}</b> · Gewichte</button>
       {#if istAn(d.einstellungen, 'muendlich')}<button class="pille" onclick={() => (dlg = 'monat')}>Monatsnote vorschlagen</button>{/if}
       {#if istAn(d.einstellungen, 'ewh')}<a class="pille" href="/ewh/{kurs.id}">Aus EWH übernehmen</a>{/if}
+      {#if istAn(d.einstellungen, 'import')}<a class="pille" href="/import?kurs={kurs.id}">Aus Datei übernehmen</a>{/if}
       <button class="knopf haupt" onclick={() => (dlg = 'neu')}>+ Leistung</button>
     {/snippet}
   </KursKopf>

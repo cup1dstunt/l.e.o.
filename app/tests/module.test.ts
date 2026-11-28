@@ -22,7 +22,9 @@ gleich('kern nicht ausschaltbar', istAn({ module: { notenbuch: false } }, 'noten
 gleich('leer statistik', istAn({}, 'statistik'), true);
 gleich('EWH standardmäßig aus', istAn({}, 'ewh'), false);
 gleich('EWH einschaltbar', istAn({ module: { ewh: true } }, 'ewh'), true);
-gleich('Import bleibt in Vorbereitung', istAn({ module: { import: true } }, 'import'), false);
+gleich('Import standardmäßig an', istAn({}, 'import'), true);
+gleich('Import ausschaltbar', istAn({ module: { import: false } }, 'import'), false);
+gleich('pfad import', modulFuerPfad('/import')?.id, 'import');
 
 // Alte Einstellung aus E114 bleibt gültig
 gleich('alt planung aus', istAn({ module: { planung: false, kalender: true } }, 'planung'), false);
@@ -61,6 +63,8 @@ for (const w of STARTWEGE) {
   gleich(`${w.id} tipps`, w.tipps.length > 0, true);
 }
 gleich('papier ohne kalender', istAn({ module: auswahlFuer('papier') }, 'kalender'), false);
+gleich('upz mit import', istAn({ module: auswahlFuer('upz') }, 'import'), true);
+gleich('papier ohne import', istAn({ module: auswahlFuer('papier') }, 'import'), false);
 gleich('upz ohne sitzplan', istAn({ module: auswahlFuer('upz') }, 'sitzplan'), false);
 gleich('idoceo mit sitzplan', istAn({ module: auswahlFuer('idoceo') }, 'sitzplan'), true);
 gleich('idoceo mit Dateiablage und Auswertung', istAn({ module: auswahlFuer('idoceo') }, 'ablage') && istAn({ module: auswahlFuer('idoceo') }, 'statistik'), true);
