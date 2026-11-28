@@ -16,6 +16,9 @@ import { eintraege } from '../src/lib/kalender.ts';
 import { materialListe } from '../src/lib/material.ts';
 import { zerlegen, zusammensetzen, datensatz } from '../src/lib/ablage.ts';
 import { stammdatenPruefen } from '../src/lib/stammdaten.ts';
+import { klassenTeile } from '../src/lib/untisimport.ts';
+import { kurznameIn } from '../src/lib/hilfen.ts';
+import { spaltenVorlage } from '../src/lib/sitzplan.ts';
 
 let ok = 0;
 const befunde: string[] = [];
@@ -198,6 +201,28 @@ for (const m of MODULE) {
   pruefe('Stammdaten GH alle Treffer', v.treffer.length === gh.schueler.length, `${v.treffer.length}/${gh.schueler.length}`);
   pruefe('Stammdaten GH neuer Schüler in GH 25-2 erkannt', v.neu.some((x: any) => x.kursId === 'f-gh'), JSON.stringify(v.neu.map((x: any) => x.kursId)));
 }
+
+// 13 Nachbesserungen nach der Testrunde (B3, B4, B7)
+pruefe('B7 Schrägstrich', JSON.stringify(klassenTeile('GH 25-1/25-2')) === '["GH 25-1","GH 25-2"]', JSON.stringify(klassenTeile('GH 25-1/25-2')));
+pruefe('B7 Komma unverändert', JSON.stringify(klassenTeile('GH 25-1, GH 25-2')) === '["GH 25-1","GH 25-2"]');
+pruefe('B7 FOS-Kurzform', JSON.stringify(klassenTeile('1FOS 26-2/26-3')) === '["1FOS 26-2","1FOS 26-3"]', JSON.stringify(klassenTeile('1FOS 26-2/26-3')));
+{
+  const gh = d.kurse.find((x) => x.id === 'f-gh')!;
+  const alt = gh.klasse;
+  gh.klasse = 'GH 25-1/25-2';
+  const v = stammdatenPruefen(d, 'Nachname;Vorname;Klasse\nNeumann;Jasper;GH 25-2\n');
+  pruefe('B7 Stammdaten mit Schrägstrich', v.neu.some((x: any) => x.kursId === 'f-gh'), JSON.stringify(v.neu.map((x: any) => x.kursId)));
+  gh.klasse = alt;
+}
+{
+  const k = d.kurse.find((x) => x.id === 'f-fos11e')!;
+  const sus = k.schueler.map((id) => d.schueler.find((s) => s.id === id)!);
+  const kurz = kurznameIn(sus);
+  const namen = sus.map(kurz);
+  pruefe('B4 Kurznamen eindeutig', new Set(namen).size === namen.length, namen.filter((n, i) => namen.indexOf(n) !== i).join(', '));
+  pruefe('B4 sonst unverändert', kurz(sus[0]) === `${sus[0].vorname} ${sus[0].nachname[0]}.` || namen.filter((n) => n.startsWith(sus[0].vorname)).length > 1);
+}
+pruefe('B3 Gänge schmal', spaltenVorlage(d.kurse[2].sitzplan).split(' minmax').length === 8 && spaltenVorlage(d.kurse[2].sitzplan).includes('0.35fr'), spaltenVorlage(d.kurse[2].sitzplan));
 
 console.log(`Fantasieklassen: ${ok} ok, ${befunde.length} Befunde`);
 for (const b of befunde) console.log(' ✗ ' + b);

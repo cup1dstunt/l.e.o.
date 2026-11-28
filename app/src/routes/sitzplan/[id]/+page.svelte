@@ -2,14 +2,15 @@
   // Sitzplan-Editor (E86): Vorlage wählen, Tische ein-/ausschalten, Schüler ziehen (Maus) oder antippen und Platz antippen (Touch, Stift).
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { schuelerVon, kurzname, name } from '$lib/hilfen';
-  import { VORLAGEN, ausVorlage, ausEigener, alsVorlage, verteilen, lehrersicht } from '$lib/sitzplan';
+  import { schuelerVon, kurznameIn, name } from '$lib/hilfen';
+  import { VORLAGEN, ausVorlage, ausEigener, alsVorlage, verteilen, lehrersicht, spaltenVorlage } from '$lib/sitzplan';
   import KursKopf from '$lib/ui/KursKopf.svelte';
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
   const sp = $derived(kurs.sitzplan);
   const liste = $derived(schuelerVon(d, kurs));
+  const kurzname = $derived(kurznameIn(liste)); // eindeutig bei gleichen Namen (B4)
   const platzVon = (sid: string) => Object.entries(sp.belegung).find(([, v]) => v === sid)?.[0];
   const ohnePlatz = $derived(liste.filter((s) => platzVon(s.id) === undefined));
   let tischeBearbeiten = $state(false);
@@ -132,7 +133,7 @@
     <div class="bereich">
       <section class="karte raumplan">
         <p class="klein leise sicht">Lehrersicht: du schaust von vorne auf die Klasse.</p>
-        <div class="raster" style:grid-template-columns="repeat({sp.spalten}, minmax(0, 1fr))">
+        <div class="wisch"><div class="raster" style:grid-template-columns={tischeBearbeiten ? `repeat(${sp.spalten}, minmax(32px, 1fr))` : spaltenVorlage(sp)}>
           <!-- Lehrersicht (E91): Raster um 180° gedreht, vorne (Reihe 0) ist unten -->
           {#each lehrersicht(sp.tische.length) as i (i)}
             {@const tisch = sp.tische[i]}
@@ -147,7 +148,7 @@
               {#if s}{kurzname(s)}{:else if tisch}<span class="leise">frei</span>{/if}
             </button>
           {/each}
-        </div>
+        </div></div>
         <div class="tafel klein leise">Lehrertisch · Tafel</div>
         <p class="klein leise">{plaetze} Plätze · {liste.length} Schüler. {tischeBearbeiten ? 'Felder antippen schaltet Tische ein oder aus.' : 'Ziehen oder antippen und Zielplatz antippen. Auf einen besetzten Platz ziehen tauscht.'}</p>
       </section>
@@ -180,6 +181,7 @@
   .bereich { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: start; }
   .tafel { text-align: center; border-top: 3px solid var(--leo-linie); margin: 16px 20% 12px; padding-top: 4px; }
   .sicht { margin: 0 0 12px; text-align: center; }
+  .wisch { overflow-x: auto; }
   .raster { display: grid; gap: 6px; }
   .zelle { min-height: 56px; border: 1px dashed transparent; border-radius: var(--leo-r-m); background: transparent; font-size: 13px; font-weight: 600; padding: 4px; overflow: hidden; text-overflow: ellipsis; }
   .zelle.bearbeiten { border-color: var(--leo-linie); }
@@ -189,5 +191,5 @@
   .namen { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
   .name { text-align: left; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); background: var(--leo-karte); padding: 10px 12px; cursor: grab; }
   aside h2 { display: flex; gap: 8px; align-items: baseline; }
-  @media (max-width: 900px) { .bereich { grid-template-columns: 1fr; } .seite { padding: 12px; } .zelle { font-size: 11px; min-height: 48px; } }
+  @media (max-width: 900px) { .bereich { grid-template-columns: 1fr; } .seite { padding: 12px; } .zelle { font-size: 11px; min-height: 48px; padding: 2px; white-space: normal; overflow-wrap: break-word; hyphens: auto; line-height: 1.2; } .raster { gap: 4px; } }
 </style>

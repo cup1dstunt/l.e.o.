@@ -45,7 +45,7 @@ Alle Wünsche und Ideen an einer Stelle. Nichts davon ist verpflichtend, bis es 
 | S6 | Dienstmails aus IServ: IDM-REST-API, sonst Benutzerliste, sonst Adressmuster mit Prüfliste. Für den Start reicht das Muster (E106), IServ-Anbindung optional später zusammen mit dem IServ-Login (G4). Einfügen aus IServ-Text gebaut (E119) | K, B | 2 | M |
 | S7 | Offizielle Untis-Platform-API (Stammdaten, Stundenplan, Fehlzeiten) | B | 2 | L |
 | S8 | Inoffizielle WebUntis-JSON-RPC mit Rückfall auf Datei-Import | B | 3 | M |
-| S9 | iDoceo-Import (nett, nicht entscheidend; Wechsel zum Semesterende) | B | 3 | M |
+| S9 | iDoceo-Import (nett, nicht entscheidend; Wechsel zum Semesterende). Entwurf 27.11. im Modul Import (V20), echter Export noch ungetestet | B | 3 | M |
 | S10 | **UPZ-Dateien** analysieren, Import und Vorlagen daraus | K | 1 (Analyse) | ? |
 | S11 | Volljährigkeit aus dem Alter ableiten (wer bekommt Post: Schüler oder Eltern) | C | 3 | S |
 
@@ -304,14 +304,14 @@ Details: [UPZ_ANALYSE.md](UPZ_ANALYSE.md), Testwerte: [testfaelle/upz_referenzwe
 |---|---|---|---|---|
 | UPZ-1 | **Rechenprofile OSZ und FOS** genau nach UPZ (E64), IHK nur als unauffällige Zusatzoption | K | 1 | M |
 | UPZ-2 | **Notenschlüssel als Daten** je Bildungsgang (E63) | K | 1 | S |
-| UPZ-3 | **UPZ-Import** (Namen, Noten, Fehlzeiten aus der Excel-Datei), siehe I28 | K | 2 | M |
+| UPZ-3 | **UPZ-Import** (Namen, Noten, Fehlzeiten aus der Excel-Datei), siehe I28. Entwurf 27.11. (V20): Namen und Noten ja, Fehlzeiten bewusst nicht (WebUntis) | K | 2 | M |
 | UPZ-4 | **Teilpunkte je Aufgabe** mit Aufgabenanalyse, Notenspiegel und Schlüssel mit halben Punkten | K | 2 | M |
 | UPZ-5 | **Fehlzeiten-Logik** wie UPZ plus „N“ im Zeugnis bei über 30 % (E62, Quelle WebUntis): „x“ = nicht angerechnet, Schwellen 15/20/30 %, Datum für Infobrief, Übertrag ins 2. Halbjahr automatisch | K | 1 | M |
 | UPZ-6 | **Terminrechner**: G/U-Wochen, Berliner Ferien, Stunden je Termin | K | 2 | M |
 | UPZ-7 | **Unterrichtsplan / Stoffverteilung** je Termin, ohne dass Verschieben Einträge zerstört | K | 3 | M |
 | UPZ-8 | **Einreichen-PDFs** (KA und Klausur) mit Notenverteilung und Anteil 5/6 | K | 2 | M |
 | UPZ-9 | **Druckansichten**: Zeugnislisten für Fachlehrer (Ersatz der UPZ-Zensurenliste, Konstantin 09.11.2026) und für Kollegen mit Papier-Notenbuch | K | 3 | S |
-| UPZ-10 | **Allgemeiner Excel-Import-Assistent** für eigene Dateien | K | 3 | L |
+| UPZ-10 | **Allgemeiner Excel-Import-Assistent** für eigene Dateien. Entwurf 27.11. im Modul Import (V20) | K | 3 | L |
 | UPZ-11 | **Halbjahresdurchschnitt** über alle Fächer | K | 3 | S |
 | UPZ-12 | **Mitarbeit:** L.E.O. bildet aus Monatsnoten eine Gesamtmitarbeit und reicht sie ins Profil weiter (die UPZ kennt nur eine Gesamtangabe), Gewichtung frei | K | 1 | S |
 

@@ -9,7 +9,7 @@
 // gehört, und davon nur Name, Geburtsdatum, Geschlecht, Klasse, Nachteilsausgleich und die schulische Mailadresse.
 // Private Adressen, Anschrift, Telefon und alles andere werden nicht gespeichert (Konstantin 26.11.: Schulmail reicht).
 import type { Daten, Kurs, Schueler } from './typen.ts';
-import { tabelleLesen, datumLesen, geschlechtAus } from './untisimport.ts';
+import { tabelleLesen, datumLesen, geschlechtAus, klassenTeile } from './untisimport.ts';
 import { DOMAIN, adressVorschlag } from './nachschreiben.ts';
 
 export type Feld = 'nachname' | 'vorname' | 'geburt' | 'geschlecht' | 'klasse' | 'mail' | 'nta' | 'id';
@@ -61,7 +61,7 @@ export const nameNorm = (x: string) =>
   (x ?? '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
     .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[-‐'’]/g, ' ').replace(/\s+/g, ' ').trim();
 
-const klassenVon = (k: Kurs) => k.klasse.split(',').map((x) => x.trim()).filter(Boolean);
+const klassenVon = (k: Kurs) => klassenTeile(k.klasse);
 const istSchulmail = (m: string) => new RegExp(`@${DOMAIN.replace(/\./g, '\\.')}$`, 'i').test(m.trim());
 
 export interface Zeile {

@@ -3,7 +3,7 @@
   // Gruppennote aus dem Projektraster, Abweichung je Mitglied, Übernahme als eine Notenbuchspalte.
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { name, kurzname, datumKurz, heuteISO, isoDatum } from '$lib/hilfen';
+  import { name, kurznameIn, datumKurz, heuteISO, isoDatum } from '$lib/hilfen';
   import { rechne, zahl } from '$lib/rechnen';
   import { bilden, staerke } from '$lib/gruppen';
   import { fuellen, mailLink, schulAdresse } from '$lib/nachschreiben';
@@ -17,6 +17,7 @@
 
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
+  const kurzname = $derived(kurznameIn(d.schueler.filter((x) => kurs.schueler.includes(x.id)))); // eindeutig bei gleichen Namen (B4)
   const fos = $derived(kurs?.profil === 'FOS');
   const heute = heuteISO();
   const person = (id: string) => d.schueler.find((s) => s.id === id);

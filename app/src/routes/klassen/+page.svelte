@@ -20,9 +20,9 @@
 </script>
 
 <div class="seite">
-  <div class="zeile"><h1 class="raum">Klassen</h1>{#if istAn(d.einstellungen, 'statistik')}<a class="knopf" href="/auswertung">Alle Klassen vergleichen</a>{/if}</div>
+  <div class="zeile"><h1 class="raum">Klassen</h1>{#if istAn(d.einstellungen, 'import')}<a class="knopf leise" href="/import">Aus Datei übernehmen</a>{/if}{#if istAn(d.einstellungen, 'statistik')}<a class="knopf" href="/auswertung">Alle Klassen vergleichen</a>{/if}</div>
   {#if !d.kurse.length}
-    <section class="karte leer"><p>Noch keine Klassen. Unter <a href="/mehr/webuntis">Mehr › WebUntis</a> holst du sie aus deinem Stundenplan.</p></section>
+    <section class="karte leer"><p>Noch keine Klassen. Unter <a href="/mehr/webuntis">Mehr › WebUntis</a> holst du sie aus deinem Stundenplan.{#if istAn(d.einstellungen, 'import')} Oder du übernimmst sie <a href="/import">aus einer Datei</a> (UPZ, Excel, iDoceo).{/if}</p></section>
   {/if}
   <div class="raster">
     {#each d.kurse as k (k.id)}
