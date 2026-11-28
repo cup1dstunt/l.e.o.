@@ -138,7 +138,7 @@ export function anwesenheitKurz(d: Daten, kurs: Kurs, ids: string[], s: Schwelle
   return r;
 }
 
-export type HinweisArt = 'abfall' | 'verstummt' | 'fehlzeiten' | 'kippe' | 'unter';
+export type HinweisArt = 'abfall' | 'grenze' | 'verstummt' | 'fehlzeiten' | 'kippe' | 'unter';
 export interface Hinweis { sid: string; art: HinweisArt; text: string }
 
 const TAG = 86_400_000;
@@ -149,14 +149,18 @@ export interface Schwellen {
   abfallNote: number; // OSZ: so viele Notenstufen schlechter
   stillTage: number; // so viele Tage ohne Eintrag bei den mündlichen Leistungen
   fehlzeitenAb: number; // Fehlzeiten ab diesem Prozentwert
+  grenzeNP: number; // FOS: letzte Note so viele Notenpunkte oder weniger (Vorwarnung)
+  grenzeNote: number; // OSZ: letzte Note so schlecht oder schlechter
 }
-export const SCHWELLEN_STANDARD: Schwellen = { abfallNP: 3, abfallNote: 1, stillTage: 21, fehlzeitenAb: 20 };
+export const SCHWELLEN_STANDARD: Schwellen = { abfallNP: 3, abfallNote: 1, stillTage: 21, fehlzeitenAb: 20, grenzeNP: 5, grenzeNote: 4 };
 /** Erlaubte Bereiche und Schritte für die Plus/Minus-Knöpfe. */
 export const SCHWELLEN_BEREICH: Record<keyof Schwellen, { min: number; max: number; schritt: number }> = {
   abfallNP: { min: 1, max: 8, schritt: 1 },
   abfallNote: { min: 0.5, max: 3, schritt: 0.5 },
   stillTage: { min: 7, max: 60, schritt: 7 },
-  fehlzeitenAb: { min: 5, max: 30, schritt: 5 }
+  fehlzeitenAb: { min: 5, max: 30, schritt: 5 },
+  grenzeNP: { min: 0, max: 8, schritt: 1 },
+  grenzeNote: { min: 3, max: 5, schritt: 0.5 }
 };
 
 /** Schwellen aus den Einstellungen, fehlende oder unsinnige Werte fallen auf den Standard zurück. */
@@ -182,6 +186,7 @@ export const istStandard = (s: Schwellen) => (Object.keys(SCHWELLEN_STANDARD) as
 /** Wer braucht einen zweiten Blick? Leise Hinweise, keine Bewertung (PLANUNG M „Mustererkennung“).
  *  Standard (einstellbar, Schwellen):
  *  - abfall: letzte Note deutlich schlechter als der eigene Schnitt davor (FOS 3 NP, OSZ 1 Note), mindestens 2 Noten davor
+ *  - grenze: letzte Note an oder unter der Grenze (FOS 5 NP oder weniger, OSZ Note 4 oder schlechter), zum Vorwarnen
  *  - verstummt: früher mündliche Einträge, seit 21 Tagen keiner
  *  - fehlzeiten: ab 20 %
  *  - unter / kippe: wie die Warnampel im Notenbuch (fest) */
@@ -203,6 +208,11 @@ export function hinweise(d: Daten, kurs: Kurs, ids: string[], heute: string, s: 
       const davor = reihe.slice(0, -1).reduce((a, x) => a + x.w, 0) / (reihe.length - 1);
       const schlechter = fos ? davor - letzte.w : letzte.w - davor;
       if (schlechter >= schwelle - 1e-9) raus.push({ sid, art: 'abfall', text: `${letzte.l.name}: ${zeigeNote(letzte.w)}, vorher im Schnitt ${zeigeNote(davor)}` });
+    }
+    if (reihe.length) {
+      const letzte = reihe[reihe.length - 1];
+      const anGrenze = fos ? letzte.w <= s.grenzeNP + 1e-9 : letzte.w >= s.grenzeNote - 1e-9;
+      if (anGrenze) raus.push({ sid, art: 'grenze', text: `${letzte.l.name}: ${zeigeNote(letzte.w)}` });
     }
     const eigene = d.mitarbeit.filter((m) => m.kursId === kurs.id && m.schuelerId === sid);
     if (eigene.length) {

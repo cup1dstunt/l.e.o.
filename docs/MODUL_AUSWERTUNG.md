@@ -108,15 +108,26 @@ Noten sieht nur die eigene Lehrkraft (E29). Keine Schulleitungs- oder Fachbereic
 - Getestet: 20 neue Prüfungen, Typprüfung, Build, Ansicht PC 1360 px, Handy 390 px und Druckansicht mit Beispieldaten. Nicht getestet: echter Papierdruck, Tablet, Dunkelmodus.
 - Weiter offen: Konferenzansicht (A3, braucht Fehlzeiten aller Fächer), Halbjahresvergleich (A8).
 
-## 7 Offene Grundsatzfragen an Konstantin
+## 7 Grundsatzfragen, beantwortet am 28.11.2026 (E122)
 
-Gebaut wird mit den Vorschlägen (Antworten stehen noch aus): 1 ja, 2 erst CSV, 3 nur die Note, 4 Schwellen wie vorgeschlagen, jetzt einstellbar.
+1. **Arbeitsteilung:** EWH und L.E.O. sind getrennte Werkzeuge. EWH verwaltet nur Klausuren, L.E.O. ist das Notenbuch. Frage entfällt.
+2. **Weg:** Erst CSV. Ein späterer Abgleich ist gewünscht (siehe 7.1).
+3. **Was übernehmen:** nur die Note. Dazu ein Link zu EWH an übernommenen Klausuren („Genaueres zur Note und Leistungsentwicklung in EWH“),
+   sobald die Lehrkraft die Adresse ihrer EWH-Installation auf der Seite „Aus EWH übernehmen“ einträgt. Der Link öffnet EWH, L.E.O. sendet nichts.
+   EWH nutzt derzeit nur Konstantin; die Verbindungen werden später ausgebaut, jetzt liegt der Schwerpunkt auf L.E.O.
+4. **Hinweise:** Schwellen passen. Neu: **Vorwarnung „letzte Note an der Grenze“**, FOS 5 NP oder weniger (einstellbar 0–8), OSZ Note 4 oder schlechter
+   (einstellbar 3–5), damit man Schüler früh vorwarnen kann. Die Schwelle „mündlich still“ bleibt vorläufig: Sie hängt davon ab, wie eine Lehrkraft
+   mündliche Noten vergibt (jede Stunde, je Einheit, je Monat, je Halbjahr). Das soll später im Personalisierungsmenü einstellbar werden (Backlog M10).
 
+### 7.1 Einschätzung: Abgleich statt CSV (Weg B, Backlog A6)
 
-1. **Arbeitsteilung EWH und L.E.O.:** EWH bleibt Korrektur und Klausurstatistik, L.E.O. wird Notenbuch und Klassenauswertung.
-   Sollen die EWH-Backlogpunkte 22–25 (Allgemeiner Teil, Mitarbeit nach der Stunde, eigener Stundenplan, Halbjahresnote)
-   dann in EWH gestrichen werden? Vorschlag: ja, sonst entsteht dasselbe zweimal.
-2. **Weg:** Reicht die CSV-Datei (Weg A), oder soll L.E.O. später direkt aus EWH abrufen (Weg B, braucht eine Änderung in EWH)?
-   Vorschlag: erst A, B erst, wenn beide schulweit laufen.
-3. **Was übernehmen:** nur die Note (Vorschlag) oder zusätzlich Inhalt/Sprache als Information an der Zelle?
-4. **Hinweise „Genauer hinsehen“:** Passen die Schwellen (3 NP Abfall, 21 Tage still, 20 % Fehlzeiten)?
+Nicht umständlich, weil die CSV-Übernahme schon die ganze Logik hat (Zuordnung über Namen, Vorschau, „überschreibt nie eine geklärte Zelle“, Rückgängig).
+Ein Abgleich tauscht nur die Quelle aus:
+- **In EWH (eigenes Repo):** ein Lese-Endpunkt „Noten meiner Klausuren“ (nur Note, Status, Datum, Titel), geschützt mit einem persönlichen Abrufschlüssel,
+  den die Lehrkraft in EWH erzeugt und widerrufen kann, dazu CORS-Freigabe für die L.E.O.-Adresse. Etwa ein Arbeitstag mit Tests.
+- **In L.E.O.:** Abrufschlüssel im Tresor des Geräts (wie IServ und WebUntis), Knopf „Aus EWH aktualisieren“, danach dieselbe Vorschau wie bei der CSV.
+  Etwa ein Arbeitstag. Automatischer Abgleich im Hintergrund wäre ein kleiner Zusatz, aber die Vorschau sollte bleiben, damit nie ungeprüft Noten wandern.
+- **Voraussetzung:** EWH muss vom Gerät aus erreichbar sein (z. B. über das Netz der Schule oder den eigenen Server), und es braucht eine kleine Sicherheitsprüfung
+  in EWH, weil dort eine neue Tür entsteht.
+- **Empfehlung:** jetzt nicht einführen, weil der Schwerpunkt auf L.E.O. liegt und nur eine Lehrkraft EWH nutzt. Wenn die EWH-Seite gebaut wird,
+  ist die L.E.O.-Seite schnell nachgezogen. Eine gemeinsame Schülernummer gibt es weiterhin nicht (LUSD gegen WebUntis), die Zuordnung bleibt über Namen.

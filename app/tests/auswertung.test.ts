@@ -63,12 +63,12 @@ const kv = klassenVergleich(d)[0];
 gleich('Vergleich', [kv.unter, kv.verspaetungen, kv.muendlich, kv.leistungen], [1, 1, 1, 3]);
 
 // ---------- Schwellen der Hinweise (einstellbar) ----------
-gleich('Schwellen Standard', schwellenVon({}), { abfallNP: 3, abfallNote: 1, stillTage: 21, fehlzeitenAb: 20 });
-gleich('Schwellen begrenzt, Unsinn = Standard', schwellenVon({ auswertung: { stillTage: 999, fehlzeitenAb: NaN, abfallNP: 0 } }), { abfallNP: 1, abfallNote: 1, stillTage: 60, fehlzeitenAb: 20 });
+gleich('Schwellen Standard', schwellenVon({}), { abfallNP: 3, abfallNote: 1, stillTage: 21, fehlzeitenAb: 20, grenzeNP: 5, grenzeNote: 4 });
+gleich('Schwellen begrenzt, Unsinn = Standard', schwellenVon({ auswertung: { stillTage: 999, fehlzeitenAb: NaN, abfallNP: 0 } }), { abfallNP: 1, abfallNote: 1, stillTage: 60, fehlzeitenAb: 20, grenzeNP: 5, grenzeNote: 4 });
 gleich('Schritt Tage +7', schwelleSchritt(SCHWELLEN_STANDARD, 'stillTage', 1), 28);
 gleich('Schritt Note −0,5 am Rand', schwelleSchritt({ ...SCHWELLEN_STANDARD, abfallNote: 0.5 }, 'abfallNote', -1), 0.5);
 gleich('istStandard', [istStandard(SCHWELLEN_STANDARD), istStandard({ ...SCHWELLEN_STANDARD, fehlzeitenAb: 25 })], [true, false]);
-const streng = { abfallNP: 6, abfallNote: 1, stillTage: 60, fehlzeitenAb: 30 };
+const streng = { abfallNP: 6, abfallNote: 1, stillTage: 60, fehlzeitenAb: 30, grenzeNP: 5, grenzeNote: 4 };
 const h2 = hinweise(d, kurs, kurs.schueler, '2026-11-26', streng);
 gleich('Abfall 5,5 NP < 6: kein Hinweis', h2.some((x) => x.sid === 'a' && x.art === 'abfall'), false);
 gleich('b 48 Tage < 60: nicht still', h2.some((x) => x.sid === 'b' && x.art === 'verstummt'), false);
@@ -76,6 +76,15 @@ gleich('c 25 % < 30 %: kein Fehlzeitenhinweis', h2.some((x) => x.sid === 'c' && 
 gleich('feste Ampel bleibt (b unter der Grenze)', h2.some((x) => x.sid === 'b' && x.art === 'unter'), true);
 gleich('Fehlzeiten ab 25 % trifft c genau', hinweise(d, kurs, kurs.schueler, '2026-11-26', { ...SCHWELLEN_STANDARD, fehlzeitenAb: 25 }).some((x) => x.sid === 'c' && x.art === 'fehlzeiten'), true);
 gleich('Kurzfassung 20–30 % folgt der Schwelle', [anwesenheitKurz(d, kurs, kurs.schueler).mittel, anwesenheitKurz(d, kurs, kurs.schueler, streng).mittel], [['c'], []]);
+
+// ---------- Vorwarnung: letzte Note an der Grenze ----------
+gleich('a: Klausur 2 mit 6 NP > 5: keine Vorwarnung', h.some((x) => x.sid === 'a' && x.art === 'grenze'), false);
+gleich('a: bei Grenze 6 NP Vorwarnung', hinweise(d, kurs, kurs.schueler, '2026-11-26', { ...SCHWELLEN_STANDARD, grenzeNP: 6 }).find((x) => x.sid === 'a' && x.art === 'grenze')?.text, 'Klausur 2: 6 NP');
+gleich('b: letzte Note UE (0 NP) im Test, Vorwarnung', h.some((x) => x.sid === 'b' && x.art === 'grenze'), true);
+const oszKurs: any = { ...kurs, id: 'o', profil: 'OSZ', zellen: { 'k1:a': { wert: 2 }, 'k2:a': { wert: 4 }, 'k1:c': { wert: 3 }, 'k2:c': { wert: 3.5 } } };
+const ho = hinweise({ ...d, kurse: [oszKurs] }, oszKurs, ['a', 'c'], '2026-11-26');
+gleich('OSZ: Note 4 = Vorwarnung, 3,5 nicht', [ho.some((x) => x.sid === 'a' && x.art === 'grenze'), ho.some((x) => x.sid === 'c' && x.art === 'grenze')], [true, false]);
+gleich('OSZ: Grenze 3,5 trifft auch c', hinweise({ ...d, kurse: [oszKurs] }, oszKurs, ['c'], '2026-11-26', { ...SCHWELLEN_STANDARD, grenzeNote: 3.5 }).some((x) => x.art === 'grenze'), true);
 
 // ---------- Verlauf (A2) ----------
 const vl = notenVerlauf(kurs, kurs.schueler, 'a');
