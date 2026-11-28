@@ -2,7 +2,7 @@
   import { page } from '$app/state';
   import { istAn } from '$lib/module';
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { schuelerVon, name, alter, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { schuelerVon, name, verspaetungenImMonat, verspaetungText, alter, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { nachschreibLage, fallSchluessel } from '$lib/nachschreiben';
   import { rechne, mittel, zellSchluessel, zahl, bestanden, SKALA, monatsVorschlag, zellWert, warnungen } from '$lib/rechnen';
   import { einschaetzungVon, rasterErgebnis, rasterDerEinschaetzung, mindestSmileys } from '$lib/raster';
@@ -172,7 +172,7 @@
       const ein = einschaetzungVon(kurs, monat, s.id);
       const r = ein ? rasterErgebnis(rasterDerEinschaetzung(d, kurs, ein), ein.stufen, kurs.profil, kurs) : null;
       const v = r?.note != null ? { note: r.smiley!, wert: r.note } : monatsVorschlag(kurs.profil, stufen);
-      return { s, n: stufen.length, v, raster: r?.note != null, wenig: stufen.length < mindestSmileys(kurs) };
+      return { s, n: stufen.length, v, raster: r?.note != null, wenig: stufen.length < mindestSmileys(kurs), spaet: verspaetungenImMonat(d, kurs.id, s.id, monat) };
     })
   );
   let geaendert = $state<Record<string, string>>({});
@@ -407,7 +407,7 @@
               {#each vorschlaege as r}
                 {@const ist = monatSpalte ? zelle(monatSpalte, r.s) : undefined}
                 <tr>
-                  <td>{name(r.s)}<div class="klein leise">{#if r.raster}aus dem Raster · {r.n} Smileys{:else}{r.n} Einträge{r.v ? ` · Ø Smiley ${zahl(r.v.note)}` : ''}{/if}{#if r.wenig && !r.raster} · <a href="/muendlich/{kurs.id}?monat={monat}&s={r.s.id}">mit Raster einschätzen</a>{/if}</div></td>
+                  <td>{name(r.s)}<div class="klein leise">{#if r.raster}aus dem Raster · {r.n} Smileys{:else}{r.n} Einträge{r.v ? ` · Ø Smiley ${zahl(r.v.note)}` : ''}{/if}{#if r.wenig && !r.raster} · <a href="/muendlich/{kurs.id}?monat={monat}&s={r.s.id}">mit Raster einschätzen</a>{/if}</div>{#if r.spaet.anzahl}<div class="klein spaet-m">{verspaetungText(r.spaet)}</div>{/if}</td>
                   <td><input class="eingabe klein-in" value={geaendert[r.s.id] ?? (r.v ? r.v.wert : '')} oninput={(e) => (geaendert[r.s.id] = (e.currentTarget as HTMLInputElement).value)} aria-label="Vorschlag {name(r.s)}" /></td>
                   <td>{#if ist?.wert !== undefined}<span class="leise klein">steht: {ist.wert}</span>{/if}</td>
                   <td><button class="knopf leise" disabled={!r.v && !geaendert[r.s.id]} onclick={() => monatUebernehmen(r.s.id)} aria-label="übernehmen">✓</button></td>
@@ -529,4 +529,5 @@
   .klein-in { width: 70px; text-align: center; }
   .dialog p { margin: 12px 0 6px; }
   @media (max-width: 720px) { .seite { padding: 12px 12px 200px; } .formular.zwei { grid-template-columns: 1fr; } .kacheln { grid-template-columns: 1fr 1fr; } }
+  .spaet-m { color: #8a6200; font-weight: 600; }
 </style>

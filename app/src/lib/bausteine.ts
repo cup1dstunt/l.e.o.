@@ -34,7 +34,7 @@ export const BAUSTEINE: Baustein[] = [
   ...b(4, 'Zusammenarbeit', 'macht in der Gruppe kaum mit'),
   // Stufe 5: sehr schwach
   ...b(5, 'Beteiligung', 'verweigert die Mitarbeit'),
-  ...b(5, 'Arbeitsverhalten', 'stört den Unterricht', 'beschäftigt sich mit anderem (z. B. Handy)'),
+  ...b(5, 'Arbeitsverhalten', 'stört den Unterricht', 'beschäftigt sich mit anderem (z. B. Handy) oder schläft'),
   ...b(5, 'Zusammenarbeit', 'behindert die Gruppenarbeit'),
   ...b(5, 'Hausaufgaben', 'Hausaufgaben fehlen')
 ];

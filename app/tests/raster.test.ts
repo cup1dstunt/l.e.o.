@@ -1,6 +1,7 @@
 // Prüft das Kriterienraster der mündlichen Leistungen (FB7, E110). Aufruf: npm test
 import { VORLAGEN, rasterTexteUmstellen, rasterErgebnis, belege, monatsSpalte, rasterFuer, rasterKopie, mindestSmileys, rasterDerEinschaetzung, MAX_KRITERIEN, kriteriumGewicht } from '../src/lib/raster.ts';
 import { BAUSTEINE } from '../src/lib/bausteine.ts';
+import { verspaetungenImMonat, verspaetungText } from '../src/lib/hilfen.ts';
 import { kursMischen } from '../src/lib/abgleich.ts';
 import type { Kurs, Raster } from '../src/lib/typen.ts';
 
@@ -130,6 +131,18 @@ const kurs = (): Kurs => ({
   gleich('Umstellen: zweimal ändert nichts', rasterTexteUmstellen([alt]), 0);
   gleich('Bausteine: je Stufe 5 bis 6', [1, 2, 3, 4, 5].map((s) => BAUSTEINE.filter((b) => b.stufe === s).length).every((n) => n >= 5 && n <= 6), true);
   gleich('Bausteine: alle mit Kriterium', BAUSTEINE.every((b) => !!b.kriterium), true);
+}
+
+// Verspätungen im Monat für Stunde und Monatsnote (E125)
+{
+  const d = { verspaetungen: [
+    { id: '1', kursId: 'k', schuelerId: 's', datum: '2026-11-18', ankunft: '08:20', minuten: 20 },
+    { id: '2', kursId: 'k', schuelerId: 's', datum: '2026-11-04', ankunft: '08:10', minuten: 10 },
+    { id: '3', kursId: 'k', schuelerId: 's', datum: '2026-10-28', ankunft: '08:05', minuten: 5 },
+    { id: '4', kursId: 'x', schuelerId: 's', datum: '2026-11-05', ankunft: '08:05', minuten: 5 }
+  ] } as unknown as Parameters<typeof verspaetungenImMonat>[0];
+  gleich('Verspätungen im Monat', verspaetungText(verspaetungenImMonat(d, 'k', 's', '2026-11')), '2× zu spät, 30 Min. (04.11., 18.11.)');
+  gleich('keine Verspätung', verspaetungText(verspaetungenImMonat(d, 'k', 's', '2026-12')), '');
 }
 
 console.log(`raster: ${ok} ok, ${fehler} Fehler`);

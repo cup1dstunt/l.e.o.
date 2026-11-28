@@ -2,7 +2,7 @@
   import { istAn } from '$lib/module';
   import { page } from '$app/state';
   import { app, speichern, zeige, neueId, materialOeffnen } from '$lib/speicher.svelte';
-  import { schuelerVon, kurznameIn, namenIn, name, heuteISO, minuten, stundenHeute, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
+  import { schuelerVon, kurznameIn, namenIn, name, verspaetungenImMonat, verspaetungText, heuteISO, minuten, stundenHeute, datumKurz, datumWt, mitarbeitTrend, PFEIL } from '$lib/hilfen';
   import { STUFEN, bausteinStufe, bausteineVon } from '$lib/bausteine';
   import { druck } from '$lib/druck';
   import Smiley from '$lib/ui/Smiley.svelte';
@@ -68,6 +68,8 @@
   }
 
   // Anwesenheit (E84): nur da / fehlt. Zweiter Klick auf „fehlt“ erfasst eine Verspätung.
+  /** Verspätungen dieses Monats (mit heute), damit sie beim Bewerten sichtbar sind (E125). */
+  const spaetMonat = (sid: string) => verspaetungenImMonat(d, kurs.id, sid, heute.slice(0, 7));
   const zuSpaet = (sid: string) => d.verspaetungen.find((v) => v.kursId === kurs.id && v.schuelerId === sid && v.datum === heute);
   const hhmm = (dt = new Date()) => `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
   function fehltSetzen(s: Schueler) {
@@ -333,6 +335,7 @@
               <div class="zeile">
                 <button class="nm" onclick={() => oeffnen(s)} title="Bausteine, Kommentar, Anwesenheit">{vollname(s)}</button>
                 {#if tr}<span class="trend {tr}" title="mündlich {tr} als im Vormonat">{PFEIL[tr]}</span>{/if}
+                {#if spaetMonat(s.id).anzahl}<span class="spaetm" title="Verspätungen im Monat: {verspaetungText(spaetMonat(s.id))}">{spaetMonat(s.id).anzahl}× spät</span>{/if}
                 <button class="anw" class:fehlt={!!f} class:spaet={!!v} onclick={() => anwesenheitKlick(s)} aria-label="Anwesenheit {name(s)}">{f ? 'fehlt' : v ? `+${v.minuten}′` : 'da'}</button>
               </div>
               {#if f}
@@ -438,6 +441,7 @@
           <button class="pille" aria-pressed={!!f} onclick={() => fehltSetzen(s)}>fehlt</button>
           <button class="pille" aria-pressed={!!v} onclick={() => { fenster = null; verspaetung = { s, zeit: v?.ankunft ?? hhmm() }; }}>{v ? `verspätet ${v.minuten} min` : 'verspätet …'}</button>
         </div>
+        {#if spaetMonat(s.id).anzahl}<p class="klein spaethinweis">Verspätungen im Monat: {verspaetungText(spaetMonat(s.id))}</p>{/if}
         {#if !f}
           <p class="klein leise">Mündlich heute</p>
           <div class="grosse">
@@ -499,6 +503,8 @@
   .platz.frei { background: var(--leo-flaeche-leise); border-style: dashed; }
   .platz.fehlt { background: var(--leo-taste); color: var(--leo-leise); }
   .platz.spaet { border-color: #e3bf3c; }
+  .spaetm { font-size: var(--leo-text-xs); background: var(--leo-stern-hell); color: #8a6200; font-weight: 600; border-radius: var(--leo-r-pill); padding: 2px 8px; white-space: nowrap; }
+  .spaethinweis { background: var(--leo-stern-hell); color: #8a6200; border-radius: var(--leo-r-m); padding: 6px 10px; font-weight: 600; }
   .sitzkopf { margin-bottom: 10px; flex-wrap: wrap; }
   .vorschlag { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 12px; }
   .vorschlag .chip[aria-pressed='true'] { background: var(--leo-akzent-hell); }
