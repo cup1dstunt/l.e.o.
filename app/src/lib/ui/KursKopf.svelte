@@ -4,6 +4,13 @@
   import { app } from '$lib/speicher.svelte';
   import { kursReiter } from '$lib/module';
   let { kurs, aktiv, info = '', rechts }: { kurs: Kurs; aktiv: 'noten' | 'stunde' | 'planung' | 'sitzplan' | 'anwesenheit' | 'muendlich' | 'gruppenarbeit' | 'auswertung'; info?: string; rechts?: Snippet } = $props();
+  // Am Handy den aktiven Reiter ins Bild holen (B8), sonst steht z. B. „Auswertung“ außerhalb
+  let nav = $state<HTMLElement>();
+  $effect(() => {
+    void aktiv;
+    const a = nav?.querySelector<HTMLElement>('a.aktiv');
+    if (nav && a && a.offsetLeft + a.offsetWidth > nav.clientWidth - 32) nav.scrollLeft = a.offsetLeft - 16;
+  });
 </script>
 
 <header class="kopf">
@@ -13,7 +20,7 @@
     <div class="raum"></div>
     {@render rechts?.()}
   </div>
-  <nav class="reiter" aria-label="Kursansichten">
+  <nav class="reiter" aria-label="Kursansichten" bind:this={nav}>
     {#each kursReiter(app.d?.einstellungen) as r (r.aktiv)}
       <a href="{r.pfad}{kurs.id}" class:aktiv={aktiv === r.aktiv}>{r.text}</a>
     {/each}
@@ -24,7 +31,11 @@
   .kopf { background: var(--leo-karte); border-bottom: 1px solid var(--leo-linie); padding: 14px 32px 0; position: sticky; top: 0; z-index: 15; }
   .titel { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; row-gap: 8px; }
   .titel h1 { font-size: 20px; }
-  .reiter { display: flex; gap: 28px; margin-top: 10px; overflow-x: auto; }
+  .reiter { display: flex; gap: 28px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
+  /* Wisch-Hinweis (Testrunde B8): rechts weich auslaufen, solange weitere Reiter folgen */
+  @media (max-width: 720px) {
+    .reiter { gap: 22px; mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); padding-right: 32px; }
+  }
   .reiter a { padding: 10px 2px 12px; text-decoration: none; color: var(--leo-leise); border-bottom: 3px solid transparent; }
   .reiter a.aktiv { color: var(--leo-tinte); font-weight: 700; border-color: var(--leo-akzent); }
   @media (max-width: 720px) { .kopf { padding: 12px 16px 0; } }

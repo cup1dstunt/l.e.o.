@@ -1,7 +1,7 @@
 <script lang="ts">
   // Werkzeuge der Live-Stunde: fairer Zufall (P5, E109) und Gruppen (P7, P8), dazu die Beamer-Ansicht (P6, PF25).
   import { app, speichern, zeige, neueId } from '$lib/speicher.svelte';
-  import { kurzname, name, datumKurz, heuteISO } from '$lib/hilfen';
+  import { kurznameIn, name, datumKurz, heuteISO } from '$lib/hilfen';
   import { rechne } from '$lib/rechnen';
   import { ziehe, zuruecknehmen, neuerStand, lose, rundenStand } from '$lib/zufall';
   import { bilden, staerke, verstoesse, tauschen, regelUmschalten, gruppenAnzahl, satzKuerzen } from '$lib/gruppen';
@@ -13,6 +13,7 @@
 
   let { kurs, anwesend, gewaehlt = $bindable() }: { kurs: Kurs; anwesend: Schueler[]; gewaehlt?: string } = $props();
   const d = app.d!;
+  const kurzname = $derived(kurznameIn(d.schueler.filter((x) => kurs.schueler.includes(x.id)))); // eindeutig bei gleichen Namen (B4)
   const person = (id: string) => d.schueler.find((s) => s.id === id);
   const kn = (id: string) => { const s = person(id); return s ? kurzname(s) : '?'; };
 

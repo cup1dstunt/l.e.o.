@@ -4,7 +4,7 @@
   import { page } from '$app/state';
   import { app } from '$lib/speicher.svelte';
   import { istAn } from '$lib/module';
-  import { schuelerVon, kurzname, name, datumKurz, heuteISO, prozent } from '$lib/hilfen';
+  import { schuelerVon, kurznameIn, name, datumKurz, heuteISO, prozent } from '$lib/hilfen';
   import { zahl } from '$lib/rechnen';
   import { gesamtStatistik, leistungsStatistik, muendlichVerlauf, anwesenheitKurz, hinweise, hinweiseJeSchueler, SPIEGEL_BEREICH, spiegelNote, type Spiegel, type HinweisArt } from '$lib/auswertung';
   import { monatsNameLang } from '$lib/raster';
@@ -14,6 +14,7 @@
   const d = app.d!;
   const kurs = $derived(d.kurse.find((k) => k.id === page.params.id)!);
   const liste = $derived(kurs ? schuelerVon(d, kurs) : []);
+  const kurzname = $derived(kurznameIn(liste)); // eindeutig bei gleichen Namen (B4)
   const ids = $derived(liste.map((s) => s.id));
   const fos = $derived(kurs?.profil === 'FOS');
   const wer = (sid: string) => liste.find((s) => s.id === sid);

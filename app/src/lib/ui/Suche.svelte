@@ -13,9 +13,12 @@
     const d = app.d!;
     const t = q.trim().toLowerCase();
     const liste: { text: string; neben: string; href: string }[] = [];
+    const namen = new Map<string, number>();
+    for (const s of d.schueler) namen.set(name(s), (namen.get(name(s)) ?? 0) + 1);
     for (const s of d.schueler) {
       const k = d.kurse.find((x) => x.schueler.includes(s.id));
-      liste.push({ text: name(s), neben: `Schüler · ${k?.klasse ?? ''}`, href: `/schueler/${s.id}?kurs=${k?.id}` });
+      const zusatz = (namen.get(name(s)) ?? 0) > 1 ? (s.geburt ? ` · geb. ${s.geburt.slice(0, 4)}` : ' · gleicher Name') : ''; // B4
+      liste.push({ text: name(s), neben: `Schüler · ${k?.klasse ?? ''}${zusatz}`, href: `/schueler/${s.id}?kurs=${k?.id}` });
     }
     for (const k of d.kurse) {
       liste.push({ text: k.name, neben: 'Klasse · Notenbuch', href: `/kurs/${k.id}` });
