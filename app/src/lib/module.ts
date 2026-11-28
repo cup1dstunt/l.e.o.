@@ -61,10 +61,10 @@ export const MODULE: Modul[] = [
     pfade: ['/anwesenheit/'], reiter: { text: 'Anwesenheit', pfad: '/anwesenheit/', aktiv: 'anwesenheit' } },
   { id: 'nachschreiben', name: 'Nachschreiben', text: 'Wer eine Klausur verpasst hat, Termin festlegen, Mail-Entwurf an die Schüler.', bereich: 'organisation', standard: true,
     pfade: ['/nachschreiben'] },
-  { id: 'stundenplan', name: 'Stundenplan', text: 'Dein Plan als Woche oder Tag, aus WebUntis.', bereich: 'organisation', standard: true,
+  { id: 'stundenplan', name: 'Stundenplan', text: 'Dein Plan als Woche oder Tag, aus WebUntis. Nach Schulschluss zeigt er den nächsten Unterrichtstag.', bereich: 'organisation', standard: true,
     pfade: ['/stundenplan'] },
-  { id: 'kalender', name: 'Kalender', text: 'Monatsansicht mit Klausuren, Nachschreibeterminen, Ferien und eigenen Terminen, abgeglichen mit WebUntis (Prüfungen, Ausfälle) und deinem IServ-Kalender.', bereich: 'organisation', standard: true,
-    braucht: ['stundenplan'] },
+  { id: 'kalender', name: 'Kalender', text: 'Eigener Reiter mit Monatsansicht: Klausuren, Nachschreibetermine, Ferien und eigene Termine, abgeglichen mit WebUntis (Prüfungen, Ausfälle) und deinem IServ-Kalender.', bereich: 'organisation', standard: true,
+    braucht: ['stundenplan'], pfade: ['/kalender'] },
   { id: 'planung', name: 'Semesterplanung', text: 'Unterrichtsreihen auf die freien Blöcke legen, Thema und Hausaufgabe je Block.', bereich: 'organisation', standard: true,
     pfade: ['/planung/'], reiter: { text: 'Planung', pfad: '/planung/', aktiv: 'planung' } },
 

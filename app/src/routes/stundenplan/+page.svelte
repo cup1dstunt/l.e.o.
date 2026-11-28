@@ -4,22 +4,24 @@
   import { minuten, WOCHENTAGE } from '$lib/hilfen';
   import type { Stunde } from '$lib/typen';
   import { page } from '$app/state';
+  import { goto } from '$app/navigation';
   import { eintraege as kalEintraege, amTag } from '$lib/kalender';
-  import KalenderMonat from '$lib/ui/KalenderMonat.svelte';
+  import { bezugstag, wochenVersatz, tagesStand } from '$lib/wochenplan';
 
   // Stundenplan als Woche (Raster) oder als Tag (Liste), Entwurf A + B vom 19.11.2026.
+  // Seit 28.11.2026 (E125): Kalender ist ein eigener Reiter; nach Schulschluss zeigt der Plan den nächsten Unterrichtstag.
   const d = app.d!;
   const MERK = 'leo-stundenplan-ansicht';
-  // Monat = Kalender (E115), nur wenn das Modul an ist
   const kalenderAn = $derived(istAn(d.einstellungen, 'kalender'));
-  let ansicht = $state<'woche' | 'tag' | 'monat'>('woche');
+  let ansicht = $state<'woche' | 'tag'>('woche');
   try {
     const m = localStorage.getItem(MERK);
-    if (m === 'tag' || m === 'monat' || (!m && innerWidth < 700)) ansicht = (m as 'tag' | 'monat') || 'tag';
+    if (m === 'tag' || (!m && innerWidth < 700)) ansicht = 'tag';
   } catch { /* egal */ }
   const wunsch = page.url.searchParams.get('ansicht');
-  if (wunsch === 'monat' || wunsch === 'woche' || wunsch === 'tag') ansicht = wunsch;
-  $effect(() => { if (ansicht === 'monat' && !kalenderAn) ansicht = 'woche'; });
+  // Alte Links auf die Monatsansicht führen in den Kalender
+  if (wunsch === 'monat') goto('/kalender', { replaceState: true });
+  if (wunsch === 'woche' || wunsch === 'tag') ansicht = wunsch;
   $effect(() => { try { localStorage.setItem(MERK, ansicht); } catch { /* egal */ } });
 
   const iso = (x: Date) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
@@ -30,7 +32,10 @@
   const heute = $derived(iso(jetzt));
   const minJetzt = $derived(jetzt.getHours() * 60 + jetzt.getMinutes());
 
-  let woche = $state(0); // Versatz in Wochen
+  // Bezugstag: heute, solange heute noch Unterricht kommt, sonst der nächste Unterrichtstag
+  const start = bezugstag(d.stundenplan, new Date());
+  const wtVon = (iso: string) => ((new Date(iso + 'T12:00').getDay() + 6) % 7) + 1;
+  let woche = $state(wochenVersatz(new Date(), start.datum)); // Versatz in Wochen
   const montag = $derived(new Date(montagVon(jetzt).getTime() + woche * 7 * 864e5));
   const tage = $derived(WOCHENTAGE.map((w, i) => { const t = new Date(montag.getTime() + i * 864e5); return { nr: i + 1, w, datum: iso(t), kurz: t.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) }; }));
   const kw = $derived.by(() => {
@@ -39,11 +44,15 @@
     return 1 + Math.round(((t.getTime() - j.getTime()) / 864e5 - 3 + ((j.getDay() + 6) % 7)) / 7);
   });
 
-  let tag = $state(Math.min(5, Math.max(1, new Date().getDay() || 1)));
+  let tag = $state(Math.min(5, wtVon(start.datum)));
 
   const zeiten = $derived([...new Set(d.stundenplan.map((s) => s.beginn))].sort((a, b) => minuten(a) - minuten(b)));
   const kurs = (id: string) => d.kurse.find((k) => k.id === id);
   const ausfaelle = $derived(new Set(d.einstellungen.untis?.ausfaelle ?? []));
+
+  const stand = (t: { nr: number; datum: string }) => tagesStand(eintraege(t).map((s) => ({ ...s, ausfall: s.zustand === 'ausfall' })), t.datum, jetzt);
+  const LANG = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
+  const terminLink = (e: { href?: string; datum: string }, datum: string) => e.href ?? (kalenderAn ? `/kalender?tag=${datum}` : undefined);
 
   type Eintrag = Stunde & { datum: string; zustand: '' | 'jetzt' | 'vorbei' | 'ausfall' };
   function eintraege(t: { nr: number; datum: string }): Eintrag[] {
@@ -60,10 +69,14 @@
   const termineWoche = $derived(kalenderAn ? kalEintraege(d, tage[0].datum, tage[4].datum) : []);
   const tagWahl = $derived(tage[tag - 1]);
   const tagListe = $derived(eintraege(tagWahl));
+  const standTag = $derived(stand(tagWahl));
   const summe = $derived(tage.flatMap((t) => eintraege(t)));
   const fortschritt = (s: Eintrag) => Math.min(100, ((minJetzt - minuten(s.beginn)) / (minuten(s.ende) - minuten(s.beginn))) * 100);
 
-  function zuHeute() { woche = 0; tag = Math.min(5, Math.max(1, new Date().getDay() || 1)); }
+  // „Heute“ führt zum Bezugstag (nach Schulschluss der nächste Unterrichtstag)
+  const amBezug = $derived(woche === wochenVersatz(jetzt, start.datum) && (ansicht === 'woche' || tagWahl.datum === start.datum));
+  function zuHeute() { woche = wochenVersatz(new Date(), start.datum); tag = Math.min(5, wtVon(start.datum)); }
+  const startText = new Date(start.datum + 'T12:00').toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' });
 </script>
 
 <div class="seite">
@@ -72,18 +85,19 @@
     <div class="zeile wrap" role="group" aria-label="Ansicht">
       <button class="pille" aria-pressed={ansicht === 'woche'} onclick={() => (ansicht = 'woche')}>Woche</button>
       <button class="pille" aria-pressed={ansicht === 'tag'} onclick={() => (ansicht = 'tag')}>Tag</button>
-      {#if kalenderAn}<button class="pille" aria-pressed={ansicht === 'monat'} onclick={() => (ansicht = 'monat')}>Monat</button>{/if}
+      {#if kalenderAn}<a class="pille nurgross" href="/kalender">Kalender ›</a>{/if}
     </div>
   </div>
 
-  {#if ansicht === 'monat'}
-    <KalenderMonat />
-  {:else}
+  {#if start.versetzt && amBezug}
+    <p class="hinweisbox klein">Heute ist kein Unterricht mehr. Du siehst den nächsten Unterrichtstag: <b>{startText}</b></p>
+  {/if}
+
   <div class="zeile wrap">
     <button class="knopf leise" onclick={() => woche--} aria-label="Vorige Woche">‹</button>
     <b class="zahl">KW {kw} · {tage[0].kurz} bis {tage[4].kurz}</b>
     <button class="knopf leise" onclick={() => woche++} aria-label="Nächste Woche">›</button>
-    {#if woche !== 0 || (ansicht === 'tag' && tagWahl.datum !== heute)}<button class="knopf leise" onclick={zuHeute}>Heute</button>{/if}
+    {#if !amBezug}<button class="knopf leise" onclick={zuHeute}>{start.versetzt ? 'Nächster Unterrichtstag' : 'Heute'}</button>{/if}
   </div>
 
   {#if !d.stundenplan.length}
@@ -93,9 +107,23 @@
       <div class="raster" style:grid-template-rows="auto repeat({zeiten.length}, minmax(74px, auto))">
         <div></div>
         {#each tage as t}
-          <button class="tagkopf" class:heute={t.datum === heute} onclick={() => { tag = t.nr; ansicht = 'tag'; }} title="Tagesansicht">{t.w} {t.kurz}
-            {#each amTag(termineWoche, t.datum) as e (e.art + e.id)}<span class="termin {e.art}" class:ufrei={e.frei}>{e.beginn ? e.beginn + ' ' : ''}{e.titel}</span>{/each}
-          </button>
+          {@const st = stand(t)}
+          <div class="tagkopf" class:heute={t.datum === heute}>
+            <button class="tagknopf" onclick={() => { tag = t.nr; ansicht = 'tag'; }} title="{LANG[t.nr - 1]} als Tagesansicht öffnen">
+              <span class="wtag">{LANG[t.nr - 1]}</span>
+              <span class="datum zahl">{t.kurz}</span>
+            </button>
+            {#if st.zustand !== 'frei'}
+              <span class="tagbalken {st.zustand}" title={st.text} role="progressbar" aria-label="Tagesverlauf {LANG[t.nr - 1]}" aria-valuenow={st.prozent} aria-valuemin={0} aria-valuemax={100}><span style:width="{st.prozent}%"></span></span>
+              {#if t.datum === heute}<span class="klein tagtext">{st.text}</span>{/if}
+            {/if}
+            {#each amTag(termineWoche, t.datum) as e (e.art + e.id)}
+              {@const ziel = terminLink(e, t.datum)}
+              <svelte:element this={ziel ? 'a' : 'span'} href={ziel} class="termin {e.art}" class:ufrei={e.frei} class:fremd={e.termin?.fremd} title="{e.titel}{e.klasse ? ' · ' + e.klasse : ''}">
+                <span class="ttitel">{e.beginn ? e.beginn + ' ' : ''}{e.titel}</span>{#if e.klasse}<span class="tklasse">{e.klasse}</span>{/if}
+              </svelte:element>
+            {/each}
+          </div>
         {/each}
         {#each zeiten as z}
           <div class="zeit zahl klein leise">{z}</div>
@@ -117,14 +145,21 @@
       </div>
     </div>
   {:else}
-    <div class="zeile wrap">
+    <div class="tagwahl">
       {#each tage as t}
         <button class="pille" class:heute={t.datum === heute} aria-pressed={t.nr === tag} onclick={() => (tag = t.nr)} title={t.datum === heute ? 'heute' : undefined}>{t.w} {t.kurz.slice(0, 3)}</button>
       {/each}
     </div>
     <div class="liste">
+        <div class="tagzeile">
+          <span><b class="wtag-gross">{LANG[tagWahl.nr - 1]}</b> <span class="zahl datum-gross">{tagWahl.kurz}</span>{#if tagWahl.datum === heute} <span class="klein marke">heute</span>{/if}</span>
+          {#if standTag.zustand !== 'frei'}
+            <span class="tagbalken gross {standTag.zustand}" role="progressbar" aria-label="Tagesverlauf" aria-valuenow={standTag.prozent} aria-valuemin={0} aria-valuemax={100}><span style:width="{standTag.prozent}%"></span></span>
+            <span class="klein leise">{standTag.text}</span>
+          {/if}
+        </div>
       {#each amTag(termineWoche, tagWahl.datum) as e (e.art + e.id)}
-        <a class="termin gross {e.art}" class:ufrei={e.frei} href={e.href ?? '/stundenplan?ansicht=monat'}>{e.beginn ? e.beginn + ' · ' : 'ganztägig · '}{e.titel}{e.klasse ? ` · ${e.klasse}` : ''}{e.frei ? ' · unterrichtsfrei' : ''}</a>
+        <a class="termin gross {e.art}" class:ufrei={e.frei} class:fremd={e.termin?.fremd} href={terminLink(e, tagWahl.datum)}>{e.beginn ? e.beginn + ' · ' : 'ganztägig · '}{e.titel}{e.klasse ? ` · ${e.klasse}` : ''}{e.frei ? ' · unterrichtsfrei' : ''}</a>
       {/each}
       {#each tagListe as s, i}
         {@const k = kurs(s.kursId)!}
@@ -134,7 +169,7 @@
           <span class="uhr zahl">{s.beginn}<br /><span class="klein leise">{s.ende}</span></span>
           <span class="mitte">
             <b>{k.klasse}</b> {k.fach}<br />
-            <span class="klein leise">{k.raum ? `Raum ${k.raum} · ` : ''}{k.schueler.length} Schüler{s.zustand === 'jetzt' ? ' · läuft gerade' : ''}</span>
+            <span class="klein leise">{k.raum ? `Raum ${k.raum} · ` : ''}Schüler ({k.schueler.length}){s.zustand === 'jetzt' ? ' · läuft gerade' : ''}</span>
             {#if s.zustand === 'ausfall'}<br /><span class="klein hinweis">Ausfall laut WebUntis</span>{/if}
             {#if s.zustand === 'jetzt'}<span class="mini-balken"><span style:width="{fortschritt(s)}%"></span></span>{/if}
           </span>
@@ -146,27 +181,50 @@
     </div>
   {/if}
 
-  {/if}
-
-  {#if ansicht !== 'monat'}
   <p class="klein leise">
     {summe.filter((s) => s.zustand !== 'ausfall').length} Stunden diese Woche{summe.some((s) => s.zustand === 'ausfall') ? `, ${summe.filter((s) => s.zustand === 'ausfall').length} Ausfall` : ''}.
     Quelle: {d.einstellungen.untis ? `WebUntis, abgeglichen ${new Date(d.einstellungen.untis.abgerufen).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} (Wochenmuster, Ausfälle bis zum Abgleich)` : 'Beispieldaten'}.
   </p>
-  {/if}
 </div>
 
 <style>
-  .seite { padding: 24px 32px 40px; display: grid; gap: 14px; }
+  .seite { padding: 24px 32px 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
   @media (max-width: 720px) { .seite { padding: 16px; } }
   .kopf { justify-content: space-between; }
+  .wrap { flex-wrap: wrap; }
+  .tagwahl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; max-width: 620px; }
+  .tagwahl .pille { justify-content: center; padding: 0 6px; }
+  @media (max-width: 720px) { .nurgross { display: none; } }
   .pille.heute:not([aria-pressed='true']) { border-color: var(--leo-akzent); color: var(--leo-akzent); }
   .rasterbox { overflow-x: auto; }
   .raster { display: grid; grid-template-columns: 56px repeat(5, minmax(130px, 1fr)); gap: 6px; min-width: 720px; }
-  .tagkopf { font: inherit; font-size: 13px; font-weight: 600; text-align: left; padding: 6px 10px; border-radius: 8px; border: 0; background: transparent; color: var(--leo-tinte); cursor: pointer; }
-  .tagkopf.heute { background: var(--leo-akzent-hell); color: var(--leo-akzent); }
+  .tagkopf { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px 8px; border-radius: var(--leo-r-m); min-width: 0; }
+  .tagkopf.heute { background: var(--leo-akzent-hell); }
+  .tagknopf { font: inherit; text-align: left; padding: 2px 4px; margin: -2px -4px 0; border: 0; border-radius: 6px; background: transparent; color: var(--leo-tinte); cursor: pointer; display: flex; flex-direction: column; }
+  .tagknopf:hover .wtag, .tagknopf:focus-visible .wtag { text-decoration: underline; text-underline-offset: 3px; }
+  .wtag { font-size: 15px; font-weight: 650; }
+  .datum { font-size: 20px; font-weight: 650; line-height: 1.15; }
+  .heute .tagknopf { color: var(--leo-akzent); }
+  .tagtext { color: var(--leo-akzent); font-weight: 600; }
+  .tagbalken { display: block; height: 6px; border-radius: 9px; background: var(--leo-linie-fein); overflow: hidden; }
+  .tagbalken span { display: block; height: 100%; background: var(--leo-akzent); border-radius: 9px; transition: width .6s ease; }
+  .tagbalken.vorbei span { background: var(--leo-leise); opacity: .45; }
+  .heute .tagbalken { background: color-mix(in srgb, var(--leo-akzent) 18%, var(--leo-karte)); }
+  .tagbalken.gross { height: 8px; flex: 1; min-width: 140px; }
+  .tagzeile { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .wtag-gross { font-size: 20px; font-weight: 650; }
+  .datum-gross { font-size: 20px; color: var(--leo-leise); }
+  .marke { color: var(--leo-akzent); font-weight: 650; margin-left: 6px; }
+  .hinweisbox { margin: 0; padding: 10px 14px; border-radius: var(--leo-r-m); background: var(--leo-akzent-hell); color: var(--leo-tinte); }
   .zeit { padding-top: 8px; }
-  .tagkopf { display: flex; flex-direction: column; gap: 3px; }
+  a.pille { text-decoration: none; }
+  .termin { display: flex; flex-direction: column; }
+  .ttitel { overflow: hidden; text-overflow: ellipsis; }
+  .tklasse { font-size: 11px; font-weight: 650; color: var(--leo-leise); overflow: hidden; text-overflow: ellipsis; }
+  .termin.gross { display: block; }
+  .termin.gross .tklasse { display: inline; font-size: inherit; }
+  .termin.gross .tklasse::before { content: ' · '; }
+  .termin.fremd { border-left-style: dashed; background: transparent; border: 1px dashed var(--leo-linie); border-left: 3px dashed var(--leo-leise); }
   .termin { font-size: 11.5px; font-weight: 500; padding: 1px 6px; border-radius: 4px; background: var(--leo-taste); border-left: 3px solid var(--leo-leise); color: var(--leo-tinte); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
   .termin.klausur { background: var(--leo-stern-hell); border-color: var(--leo-stern); }
   .termin.ferien { border-color: var(--leo-linie); color: var(--leo-leise); }

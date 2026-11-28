@@ -181,7 +181,7 @@
             {/if}
             {#if b.zustand === 'unterricht' || (b.terminId && d.termine.find((t) => t.id === b.terminId)?.art === 'ausfall')}
               <button class="pille" aria-pressed={!!b.terminId} onclick={() => ausfallUmschalten(b)} title={b.terminId ? 'Ausfall zurücknehmen' : 'Block fällt aus (z. B. Prüfung, Fortbildung)'}>{b.terminId ? 'fällt aus ✓' : 'fällt aus'}</button>
-            {:else if b.terminId}<a class="klein" href="/stundenplan?ansicht=monat">im Kalender</a>{:else}<span></span>{/if}
+            {:else if b.terminId}<a class="klein" href="/kalender">im Kalender</a>{:else}<span></span>{/if}
             {#if ablageAn && offenBlock === b.datum + b.beginn}
               {@const f = materialFuer(d.material, kurs.id, b.datum, b.zustand === 'unterricht' ? b.reihe?.id : undefined)}
               <div class="material">

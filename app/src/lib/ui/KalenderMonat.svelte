@@ -7,11 +7,15 @@
   import { fenster } from '$lib/iserv';
   import type { Termin, TerminArt } from '$lib/typen';
   import KalenderQuellen from './KalenderQuellen.svelte';
+  import { untrack } from 'svelte';
 
+  // `start`: Tag, der zuerst gewählt ist (z. B. aus dem Stundenplan über ?tag=)
+  let { start }: { start?: string } = $props();
   const d = app.d!;
   const heute = heuteISO();
-  let monat = $state(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  let gewaehlt = $state(heute);
+  const anfang = untrack(() => (start && /^\d{4}-\d{2}-\d{2}$/.test(start) ? start : heute)); // nur der Anfangswert
+  let monat = $state(new Date(+anfang.slice(0, 4), +anfang.slice(5, 7) - 1, 1));
+  let gewaehlt = $state(anfang);
 
   const tage = $derived.by(() => {
     const erster = new Date(monat);
@@ -117,7 +121,10 @@
   }
   const herkunft = (e: Eintrag) =>
     e.quelle && e.art !== 'ferien' ? QUELLEN[e.quelle] : e.termin ? artName(e.art) : e.art === 'klausur' ? 'Klausur' : e.art === 'test' ? 'Leistung' : e.art === 'ferien' ? 'Ferien/Feiertag' : 'Nachschreiben';
-  const kurz = (e: Eintrag) => (e.beginn ? `${e.beginn} ` : '') + e.titel + (e.klasse && e.art !== 'nachschreiben' ? ` · ${e.klasse.split(' ')[0]}` : '');
+  const kl = (e: Eintrag) => e.klasse!.split(', ').map((x) => x.split(' ')[0]).join(', ');
+  // Prüfung einer anderen Lehrkraft: Klasse vorn, damit sie in der schmalen Zelle nicht abgeschnitten wird (E125)
+  const kurz = (e: Eintrag) => e.termin?.fremd && e.klasse ? `${kl(e)}: ${e.titel.replace(' (andere Lehrkraft)', '')} (andere LK)`
+    : (e.beginn ? `${e.beginn} ` : '') + e.titel + (e.klasse && e.art !== 'nachschreiben' ? ` · ${kl(e)}` : '');
 </script>
 
 <div class="zeile wrap">
@@ -208,6 +215,7 @@
 
 <style>
   .monat { font-size: 17px; min-width: 150px; text-align: center; }
+  .wrap { flex-wrap: wrap; }
   .monatsraster { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) repeat(2, minmax(0, .55fr)); gap: 4px; }
   .wt { padding: 2px 6px; }
   .tag { font: inherit; text-align: left; min-height: 92px; padding: 6px; border-radius: var(--leo-r-m); border: 1px solid var(--leo-linie); background: var(--leo-karte); color: var(--leo-tinte);

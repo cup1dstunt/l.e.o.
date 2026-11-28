@@ -16,7 +16,7 @@
 <header class="kopf">
   <div class="titel">
     <h1>{kurs.name}</h1>
-    <span class="leise">{info || `${kurs.schueler.length} Schüler · Raum ${kurs.raum} · ${kurs.profil}`}</span>
+    <span class="leise">{info || `Schüler (${kurs.schueler.length}) · Raum ${kurs.raum} · ${kurs.profil}`}</span>
     <div class="raum"></div>
     {@render rechts?.()}
   </div>

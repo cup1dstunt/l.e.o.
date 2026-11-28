@@ -19,7 +19,7 @@ Bilder: [konzept/planung-kalender/](konzept/planung-kalender/).
 | Live-Stunde | Banner „Wo wir stehengeblieben sind“ + „Heute geplant“; Lernstoff = Thema des Blocks; „Reihe braucht 1 Block mehr“ |
 | Klasse › Planung | Kennzahlen, Zeitstrahl, Reihen, kommende Blöcke, Rückblick mit Stand je Tag |
 | Stundenplan › Woche/Tag | Termine über dem Tag |
-| Stundenplan › Monat | Kalender mit Formular für eigene Termine, .ics hin und zurück |
+| Kalender (eigener Reiter, seit E125) | Monatsansicht mit Formular für eigene Termine, .ics hin und zurück |
 | Notenbuch | Klausuren und Tests mit Datum kommen von selbst in den Kalender und markieren den Block |
 | Nachschreiben | Termine kommen von selbst in den Kalender |
 | WebUntis | echte Stunden im Schuljahr (auch Blockwochen, A/B-Wochen), Ausfälle, Ferien und Feiertage |
