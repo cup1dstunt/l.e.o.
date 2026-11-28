@@ -135,8 +135,8 @@
     {#if !sicher}
       <button class="knopf leise" onclick={() => (sicher = true)}>Beispieldaten neu laden …</button>
     {:else}
-      <span class="warn">Alle Änderungen gehen verloren.</span>
-      <button class="knopf leise warn" onclick={() => { zuruecksetzen(); sicher = false; zeige('Beispieldaten neu geladen'); }}>Ja, neu laden</button>
+      <span class="warn">Alle Klassen und Einträge werden ersetzt. Der jetzige Stand wird vorher abgelegt.</span>
+      <button class="knopf leise warn" onclick={async () => { sicher = false; await zuruecksetzen(); zeige('Beispieldaten neu geladen. Der Stand davor liegt unter „Stände“.'); }}>Ja, neu laden</button>
       <button class="knopf leise" onclick={() => (sicher = false)}>Abbrechen</button>
     {/if}
   </div>

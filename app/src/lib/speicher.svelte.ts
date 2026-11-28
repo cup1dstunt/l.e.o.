@@ -7,7 +7,7 @@ import * as tresorFn from './tresor.ts';
 import type { Tresor, Datenschluessel, GeheimSatz, GeheimText } from './tresor.ts';
 import type { Daten, Kurs, Material } from './typen.ts';
 import { MAX_DATEI, dateienInBenutzung, zeigbar } from './material.ts';
-import { ARTEN, zerlegen, unterschied, datensatz, zusammensetzen, schluessel as satzSchluessel, type Art, type Datensatz } from './ablage.ts';
+import { ARTEN, kennungenEindeutig, zerlegen, unterschied, datensatz, zusammensetzen, schluessel as satzSchluessel, type Art, type Datensatz } from './ablage.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
 import * as sich from './sicherung.ts';
 import type { Stand, Ueberblick, SicherungsDatei } from './sicherung.ts';
@@ -174,6 +174,8 @@ async function jetztSpeichern() {
   zeitgeber = undefined;
   if (!app.d || angehalten) return;
   try {
+    const doppelt = kennungenEindeutig(app.d);
+    if (doppelt.length) zeige(`${doppelt.length} doppelte Kennung${doppelt.length > 1 ? 'en' : ''} repariert (${doppelt.map((x) => x.alt).slice(0, 3).join(', ')}), nichts überschrieben`);
     await schreiben($state.snapshot(app.d) as Daten);
     app.gespeichert = true;
     app.fehler = '';
@@ -346,7 +348,9 @@ export async function passwortAendern(alt: string, neu: string): Promise<string>
   return '';
 }
 
-export function zuruecksetzen() {
+export async function zuruecksetzen() {
+  await fertigSpeichern();
+  await standAnlegen('vorher').catch(() => {}); // wiederherstellbar unter Mehr › Sicherung
   const alt = app.d?.einstellungen;
   app.d = beispielDaten();
   app.d.einstellungen.passwort = alt?.passwort; // Anmeldung bleibt (verschlüsselt prüft der Tresor, dann ist pw leer)
@@ -359,7 +363,9 @@ export function zuruecksetzen() {
 }
 
 /** Einrichtung (docs/MODULE.md): ohne Beispieldaten anfangen. Einstellungen bleiben, alle Klassen und Einträge gehen. */
-export function leerStarten() {
+export async function leerStarten() {
+  await fertigSpeichern();
+  await standAnlegen('vorher').catch(() => {}); // wiederherstellbar unter Mehr › Sicherung
   const d = app.d!;
   d.schueler = []; d.kurse = []; d.mitarbeit = []; d.fehlzeiten = []; d.verspaetungen = [];
   d.notizen = []; d.nachschreiben = []; d.termine = []; d.stundenplan = [];

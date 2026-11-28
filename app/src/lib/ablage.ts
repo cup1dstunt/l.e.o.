@@ -22,6 +22,32 @@ export function schluessel(art: Art, x: any): string {
   return String(x.id);
 }
 
+/**
+ * Schutz vor stillem Datenverlust (28.11.2026): Gespeichert wird je Kennung. Tragen zwei Einträge derselben Art dieselbe
+ * Kennung, überschreibt der eine den anderen, ohne dass es jemand merkt (so gingen Noten und Smileys nach PR #36 verloren).
+ * Hier bekommt jeder spätere Doppelgänger eine freie Kennung `<id>~n`. Verweise (z. B. kursId) bleiben beim ersten Eintrag.
+ * Gibt die umbenannten Einträge zurück. Der Stundenplan hat keine eigene Kennung und bleibt außen vor.
+ */
+export function kennungenEindeutig(d: Daten): { art: Art; alt: string; neu: string }[] {
+  const out: { art: Art; alt: string; neu: string }[] = [];
+  for (const art of ARTEN) {
+    if (art === 'einstellungen' || art === 'stundenplan') continue;
+    const liste = ((d as any)[art] ?? []) as { id: unknown }[];
+    const belegt = new Set(liste.map((x) => String(x.id)));
+    const gesehen = new Set<string>();
+    for (const x of liste) {
+      const id = String(x.id);
+      if (!gesehen.has(id)) { gesehen.add(id); continue; }
+      let neu = `${id}~2`;
+      for (let n = 3; belegt.has(neu); n++) neu = `${id}~${n}`;
+      x.id = neu;
+      belegt.add(neu); gesehen.add(neu);
+      out.push({ art, alt: id, neu });
+    }
+  }
+  return out;
+}
+
 /** Zerlegt die Daten in Art → (id → JSON-Text). Der Text dient zum Vergleich und wird so gespeichert. */
 export function zerlegen(d: Daten): Map<Art, Map<string, string>> {
   const out = new Map<Art, Map<string, string>>();

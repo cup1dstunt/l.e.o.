@@ -1,6 +1,6 @@
 // Prüft das Fundament F1 (Daten je Objektart) ohne Browser.
 // Aufruf: npm test
-import { zerlegen, unterschied, datensatz, zusammensetzen, ARTEN, type Art, type Datensatz } from '../src/lib/ablage.ts';
+import { kennungenEindeutig, zerlegen, unterschied, datensatz, zusammensetzen, ARTEN, type Art, type Datensatz } from '../src/lib/ablage.ts';
 import { beispielDaten } from '../src/lib/beispiel.ts';
 
 let ok = 0;
@@ -49,6 +49,23 @@ gleich('Schema-Version', datensatz('s1', '{}', 0).v, 1);
 
 // Ohne Einstellungen keine Daten (leere Datenbank)
 gleich('leere Datenbank', zusammensetzen(new Map()), undefined);
+
+// Doppelte Kennungen (28.11.2026): kein stilles Überschreiben mehr
+{
+  const x = beispielDaten();
+  const voll = x.kurse[0];
+  const leerKurs = { ...JSON.parse(JSON.stringify(voll)), zellen: {}, name: 'leer' };
+  x.kurse.push(leerKurs, { ...JSON.parse(JSON.stringify(voll)), id: voll.id + '~2', name: 'schon da' });
+  const vorher = zerlegen(x).get('kurse')!.size;
+  gleich('vorher fehlt ein Kurs im Speicher', vorher, x.kurse.length - 1);
+  const r = kennungenEindeutig(x);
+  gleich('eine Kennung repariert', r.map((y) => [y.art, y.alt, y.neu]), [['kurse', voll.id, voll.id + '~3']]);
+  gleich('erster Kurs behält Kennung', x.kurse[0].id, voll.id);
+  gleich('alle Kurse im Speicher', zerlegen(x).get('kurse')!.size, x.kurse.length);
+  gleich('Noten des ersten Kurses bleiben', zerlegen(x).get('kurse')!.get(voll.id), JSON.stringify(voll));
+  gleich('zweiter Lauf ändert nichts', kennungenEindeutig(x).length, 0);
+  gleich('Beispieldaten ohne Doppelte', kennungenEindeutig(beispielDaten()).length, 0);
+}
 
 console.log(`${ok} Ablage-Prüfungen bestanden, ${fehler} fehlgeschlagen`);
 if (fehler) process.exit(1);
