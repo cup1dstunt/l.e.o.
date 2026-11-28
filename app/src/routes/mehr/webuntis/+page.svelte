@@ -7,6 +7,7 @@
   import { app, zeige, speichern, geheimHolen, geheimSetzen } from '$lib/speicher.svelte';
   import { MERK, untisAuto } from '$lib/untisauto.svelte';
   import { ABSTAND_MIN } from '$lib/untisauto';
+  import { BEISPIEL_KURSE } from '$lib/beispiel';
 
   const d = app.d!;
 
@@ -37,7 +38,7 @@
   let schritt = $state('');
   let ergebnis = $state<Ergebnis | null>(null);
   let fehler = $state('');
-  const beispielDa = $derived(d.kurse.some((k) => !k.untis));
+  const beispielDa = $derived(d.kurse.some((k) => !k.untis && BEISPIEL_KURSE.includes(k.id)));
   let beispielEntfernen = $state(true);
   const stand = $derived(d.einstellungen.untis);
   let schluesselGemerkt = $state(false);
@@ -178,7 +179,7 @@
       </label>
       <label class="zeile schalter"><input type="checkbox" bind:checked={merken} /> Schlüssel bzw. Passwort auf diesem Gerät merken</label>
       {#if beispielDa}
-        <label class="zeile schalter"><input type="checkbox" bind:checked={beispielEntfernen} /> Beispielklassen und Beispielschüler beim Abgleich entfernen</label>
+        <label class="zeile schalter"><input type="checkbox" bind:checked={beispielEntfernen} /> Beispielklassen und Beispielschüler beim Abgleich entfernen (eigene und importierte Klassen bleiben)</label>
       {/if}
       <div class="zeile wrap">
         <button class="knopf haupt" type="submit" disabled={abgleich || laeuft}>{abgleich ? 'Gleiche ab …' : 'Jetzt abgleichen'}</button>

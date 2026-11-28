@@ -6,6 +6,7 @@ import type { Daten, Fehlzeit, Kurs, Leistung, Schueler, Stunde, Termin, Verspae
 import { quelleAbgleichen, type AbgleichZahlen } from './kalender.ts';
 import { alsListe, kennungenVon, type Sitzung } from './untis.ts';
 import { ausVorlage, verteilen } from './sitzplan.ts';
+import { BEISPIEL_KURSE, istBeispielSchueler } from './beispiel.ts';
 
 // ---------- kleine, getestete Bausteine ----------
 
@@ -543,15 +544,17 @@ export function falscheKlasseEntfernen(d: Daten): number {
  */
 export function uebernehmen(d: Daten, p: Paket, opt: { beispielEntfernen: boolean; benutzer: string; schule: string }): Ergebnis {
   if (opt.beispielEntfernen) {
-    const weg = new Set(d.kurse.filter((k) => !k.untis).map((k) => k.id));
-    const wegS = new Set(d.schueler.filter((s) => s.untisId === undefined && s.herkunft !== 'datei').map((s) => s.id));
+    // Nur die mitgelieferten Beispielklassen. Eigene, importierte (V20) und Testklassen ohne WebUntis bleiben mit allen Smileys.
+    const weg = new Set(d.kurse.filter((k) => !k.untis && BEISPIEL_KURSE.includes(k.id)).map((k) => k.id));
+    const bleiben = new Set(d.kurse.filter((k) => !weg.has(k.id)).flatMap((k) => k.schueler));
+    const wegS = new Set(d.schueler.filter((s) => istBeispielSchueler(s) && !bleiben.has(s.id)).map((s) => s.id));
     d.kurse = d.kurse.filter((k) => !weg.has(k.id));
     d.schueler = d.schueler.filter((s) => !wegS.has(s.id));
     d.mitarbeit = d.mitarbeit.filter((e) => !weg.has(e.kursId));
     d.fehlzeiten = d.fehlzeiten.filter((e) => !weg.has(e.kursId));
     d.verspaetungen = d.verspaetungen.filter((e) => !weg.has(e.kursId));
     d.notizen = d.notizen.filter((n) => !wegS.has(n.schuelerId));
-    d.stundenplan = d.stundenplan.filter((s) => s.quelle === 'untis');
+    d.stundenplan = d.stundenplan.filter((s) => s.quelle === 'untis' || !weg.has(s.kursId));
   }
 
   // Schüler

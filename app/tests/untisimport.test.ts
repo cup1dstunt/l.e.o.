@@ -48,7 +48,19 @@ const paket: Paket = {
   verspaetungen: [{ key: '1-2', untisId: 9001, datum: '2026-11-04', ankunft: '08:09', minuten: 9 }],
   ausfaelle: [], stammdaten: []
 };
+// Eigene bzw. importierte Klasse ohne WebUntis (z. B. Testklasse) mit Smiley: darf beim Entfernen der Beispiele nicht verschwinden
+d.schueler.push({ id: 'eigen1', vorname: 'Eva', nachname: 'Eigen', geschlecht: 'w', geburt: '', mailDienst: '' });
+d.kurse.push({ ...d.kurse[0], id: 'eigene-klasse', name: 'Testklasse', schueler: ['eigen1', 's0'], untis: undefined });
+d.mitarbeit.push({ id: 'smiley-eigen', kursId: 'eigene-klasse', schuelerId: 'eigen1', zeit: '2026-11-27T09:00:00.000Z', stufe: 4, bausteine: [] });
+d.stundenplan.push({ kursId: 'eigene-klasse', tag: 5, beginn: '10:00', ende: '11:30' } as any);
 const e = uebernehmen(d, paket, { beispielEntfernen: true, benutzer: 'x', schule: 'osz-lus' });
+gleich('eigene Klasse bleibt', d.kurse.some((k) => k.id === 'eigene-klasse'), true);
+gleich('Smiley der eigenen Klasse bleibt', d.mitarbeit.some((m) => m.id === 'smiley-eigen'), true);
+gleich('Beispiel-Smileys weg', d.mitarbeit.filter((m) => m.kursId === 'k-fos' || m.kursId === 'k-osz').length, 0);
+gleich('Schüler der eigenen Klasse bleiben', ['eigen1', 's0'].map((i) => d.schueler.some((s) => s.id === i)), [true, true]);
+gleich('eigener Stundenplan bleibt', d.stundenplan.some((s) => s.kursId === 'eigene-klasse'), true);
+d.kurse = d.kurse.filter((k) => k.id !== 'eigene-klasse');
+d.stundenplan = d.stundenplan.filter((s) => s.kursId !== 'eigene-klasse');
 gleich('ergebnis', [e.kurse, e.kurseNeu, e.schueler, e.fehlzeiten, e.verspaetungen], [1, 1, 2, 1, 1]);
 gleich('beispiel weg', d.kurse.length, 1);
 gleich('stundenplan', d.stundenplan.length, 1);
