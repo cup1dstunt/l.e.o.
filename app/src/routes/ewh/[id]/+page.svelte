@@ -31,6 +31,15 @@
     ohne: v.filter((x) => x.aenderung === 'ohne' || x.aenderung === 'behalten').length,
     unklar: zuordnung.filter((z) => !z.sid).length
   });
+  let adresseFehler = $state('');
+  function adresseSetzen(e: Event) {
+    const w = (e.currentTarget as HTMLInputElement).value.trim();
+    if (w && !/^https?:\/\/[^\s]+$/i.test(w)) { adresseFehler = 'Bitte eine Adresse mit https:// eingeben.'; return; }
+    adresseFehler = '';
+    if (w) d.einstellungen.ewhAdresse = w; else delete d.einstellungen.ewhAdresse;
+    speichern();
+    zeige(w ? 'EWH-Adresse gespeichert' : 'EWH-Adresse entfernt');
+  }
   const fehlenInDatei = $derived(liste.filter((s) => !zuordnung.some((z) => z.sid === s.id)));
 
   async function lesen() {
@@ -89,6 +98,12 @@
           {#if klausur}<span class="klein leise">{datei?.art === 'halbjahr' ? 'Notenübersicht' : 'Notenliste'} mit {klausur.werte.length} Zeilen</span>{/if}
         </div>
         {#if fehler}<p class="klein warn">{fehler}</p>{/if}
+        <details class="adresse">
+          <summary class="klein">Link zu EWH (optional)</summary>
+          <p class="klein leise">Trägst du die Adresse deiner EWH-Installation ein, zeigt die Auswertung an übernommenen Klausuren einen Link „Genaueres in EWH“. Es werden keine Daten gesendet.</p>
+          <input type="url" placeholder="https://ewh.example.de" value={d.einstellungen.ewhAdresse ?? ''} onchange={adresseSetzen} aria-label="Adresse von EWH" />
+          {#if adresseFehler}<p class="klein warn">{adresseFehler}</p>{/if}
+        </details>
         {#if datei && datei.klausuren.length > 1}
           <p class="klein leise">Welche Klausur?</p>
           <div class="zeile wrap">{#each datei.klausuren as k, i}<button class="pille" aria-pressed={wahl === i} onclick={() => waehlen(i)}>{k.titel}{k.datum ? ' · ' + datumKurz(k.datum) : ''}</button>{/each}</div>
@@ -157,4 +172,6 @@
   select.warn { border-color: var(--leo-warnung); }
   .warn { color: var(--leo-warnung); }
   @media (max-width: 720px) { .seite { padding: 12px 16px 40px; } td, th { padding: 6px 4px; } }
+  .adresse { margin-top: 12px; }
+  .adresse input { width: 100%; max-width: 420px; min-height: 40px; border: 1px solid var(--leo-linie); border-radius: var(--leo-r-m); padding: 0 10px; background: var(--leo-karte); color: var(--leo-tinte); }
 </style>
