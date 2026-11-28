@@ -151,7 +151,7 @@
       <section class="karte laeuft" class:aktiv={!!plan.laeuft}>
         <div class="oben">
           <span class="marke">{plan.laeuft ? 'Läuft gerade' : `Als Nächstes${'tagText' in haupt && haupt.tagText ? ' · ' + haupt.tagText : ''}`}</span>
-          <span class="leise">Raum {k.raum} · {k.schueler.length} Schüler</span>
+          <span class="leise">Raum {k.raum} · Schüler ({k.schueler.length})</span>
         </div>
         <h2 class="kursname">{k.name}</h2>
         {#if plan.ausfallJetzt && !plan.laeuft}
@@ -261,12 +261,12 @@
 
     {#if kalenderAn}
       <section class="karte">
-        <a class="titelzeile" href="/stundenplan?ansicht=monat"><h2 class="raum">Demnächst</h2><span class="klein">Kalender ›</span></a>
+        <a class="titelzeile" href="/kalender"><h2 class="raum">Demnächst</h2><span class="klein">Kalender ›</span></a>
         {#if !demnaechst.length}<p class="leise">In den nächsten zwei Wochen nichts eingetragen.</p>{/if}
         <ul class="liste">
           {#each demnaechst as e (e.art + e.id)}
             <li>
-              <a href={e.href ?? '/stundenplan?ansicht=monat'}>{e.datum === hISO ? 'Heute' : datumWt(e.datum)}{e.beginn ? ` ${e.beginn}` : ''} · {e.titel}</a>
+              <a href={e.href ?? '/kalender'}>{e.datum === hISO ? 'Heute' : datumWt(e.datum)}{e.beginn ? ` ${e.beginn}` : ''} · {e.titel}</a>
               <span class="klein leise">{e.klasse ?? (e.art === 'klausur' || e.art === 'test' || e.art === 'nachschreiben' || e.art === 'ferien' ? '' : artName(e.art))}{e.frei ? ' · unterrichtsfrei' : ''}</span>
             </li>
           {/each}

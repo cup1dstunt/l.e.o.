@@ -28,7 +28,7 @@
     {#each d.kurse as k (k.id)}
       <div class="karte">
         <h2>{k.name}</h2>
-        <p class="leise">{k.schueler.length} Schüler · Raum {k.raum} · Profil {k.profil}</p>
+        <p class="leise">Schüler ({k.schueler.length}) · Raum {k.raum} · Profil {k.profil}</p>
         {#if standAn}
           {@const v = letzterStand(k)}
           {@const mk = faelligeMerker(k, '9999-12-31')}

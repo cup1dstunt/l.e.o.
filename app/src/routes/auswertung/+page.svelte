@@ -25,7 +25,7 @@
         <tbody>
           {#each zeilen as z (z.kurs.id)}
             <tr>
-              <td><a href="/auswertung/{z.kurs.id}"><b>{z.kurs.name}</b></a><div class="klein leise">{z.kurs.schueler.length} Schüler · {z.leistungen} Leistungen</div></td>
+              <td><a href="/auswertung/{z.kurs.id}"><b>{z.kurs.name}</b></a><div class="klein leise">Schüler ({z.kurs.schueler.length}) · {z.leistungen} Leistungen</div></td>
               <td>{z.kurs.profil}</td>
               <td class="r">{schnitt(z.kurs.profil, z.schnitt)}</td>
               <td class="r" class:warn={z.unter > 0}>{z.unter}</td>

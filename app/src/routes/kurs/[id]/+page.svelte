@@ -242,7 +242,7 @@
         <table class="zahl">
           <thead>
             <tr>
-              <th rowspan="3" class="name kopfname">Schüler</th>
+              <th rowspan="3" class="name kopfname">Schüler ({liste.length})</th>
               <th colspan={spalten.klausuren.length + 1} rowspan="2" class="gk"><div class="gkb fest">Klausuren</div></th>
               <th colspan={spalten.mitarbeit.length + spalten.sl.length + 2} class="gk"><div class="gkb fest">Sonstige Leistungen (AT)</div></th>
               <th rowspan="3" class="ges kopfges">Gesamtnote<div class="klein">live · {fos ? 'Notenpunkte' : 'Note'}</div></th>

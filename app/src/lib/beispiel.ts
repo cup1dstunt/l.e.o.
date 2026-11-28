@@ -174,7 +174,9 @@ export function beispielDaten(heute = new Date()): Daten {
     { id: 't3', datum: '2026-12-03', titel: 'Exkursion Messe', art: 'ausflug', kursIds: ['k-osz'], unterrichtFrei: true },
     { id: 't4', datum: '2026-12-04', beginn: '15:00', ende: '18:00', titel: 'Elternsprechtag', art: 'sprechtag' },
     { id: 't5', datum: '2026-12-15', titel: 'Abgabe Portfolio', art: 'abgabe', kursIds: ['k-fos'] },
-    { id: 't6', datum: '2027-01-20', titel: 'Zeugniskonferenzen, unterrichtsfrei', art: 'frei', unterrichtFrei: true }
+    { id: 't6', datum: '2027-01-20', titel: 'Zeugniskonferenzen, unterrichtsfrei', art: 'frei', unterrichtFrei: true },
+    // Prüfung einer anderen Lehrkraft in einer eigenen Klasse, wie sie der WebUntis-Abgleich liefert (E125: Klasse wird angezeigt)
+    { id: 'up-bsp1', uid: 'bsp1', quelle: 'untis', art: 'pruefung', titel: 'Prüfung IT-Systeme (andere Lehrkraft)', datum: '2026-12-01', kursIds: ['k-osz'], fremd: true }
   ];
 
   // Dateiablage (V14): Beispiel nur mit Links, Dateien legt man selbst ab

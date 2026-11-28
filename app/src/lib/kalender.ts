@@ -40,6 +40,16 @@ export interface Eintrag {
   klausurOhneDatum?: { kursId: string; leistungId: string; name: string }; // WebUntis-Prüfung: Datum ins Notenbuch übernehmbar
 }
 
+/**
+ * Klassen eines Termins zur Anzeige. Prüfungen anderer Lehrkräfte (WebUntis, `fremd`) nur mit Klassenname,
+ * denn das eigene Fach wäre dort irreführend: „Prüfung IT-Systeme (andere Lehrkraft) · KA25-i“.
+ */
+export function terminKlassen(d: Pick<Daten, 'kurse'>, kursIds: string[] | undefined, fremd?: boolean): string | undefined {
+  const ks = (kursIds ?? []).map((id) => d.kurse.find((k) => k.id === id)).filter((k): k is NonNullable<typeof k> => !!k);
+  const namen = [...new Set(ks.map((k) => (fremd ? k.klasse : `${k.klasse} ${k.fach}`)))];
+  return namen.join(', ') || undefined;
+}
+
 const ueberlappt = (e: { datum: string; bis?: string }, von: string, bis: string) => e.datum <= bis && (e.bis || e.datum) >= von;
 
 /** Alle Einträge im Zeitraum, nach Datum und Uhrzeit sortiert. */
@@ -59,7 +69,7 @@ export function eintraege(d: Daten, von: string, bis: string): Eintrag[] {
       if (!t.fremd && t.kursIds?.some((id) => klausurTag.has(`${id}|${t.datum}`))) { t.kursIds.forEach((id) => untisGesehen.add(`${id}|${t.datum}`)); continue; }
     }
     const e: Eintrag = { id: t.id, datum: t.datum, bis: t.bis, beginn: t.beginn, ende: t.ende, titel: t.titel, art: t.art, termin: t, frei: t.unterrichtFrei, quelle: t.quelle,
-      klasse: t.kursIds?.map(kursName).filter(Boolean).join(', ') || undefined };
+      klasse: terminKlassen(d, t.kursIds, t.fremd) };
     if (t.quelle === 'untis' && !t.fremd && t.kursIds?.length === 1) {
       const k = d.kurse.find((x) => x.id === t.kursIds![0]);
       const l = k?.leistungen.find((x) => x.art === 'Klausur' && !x.datum);

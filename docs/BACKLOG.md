@@ -408,6 +408,17 @@ Quelle: [prototyp-feedback/2026-11-18.md](prototyp-feedback/2026-11-18.md), Ents
 | WU2 | **Automatischer Abgleich** beim Öffnen, braucht verschlüsselt gespeicherten Schlüssel (FB1) | C | 1 | M | ✅ umgesetzt 20.11. (E108): beim Entsperren, beim Zurückkehren in den Tab und alle 30 Minuten, Schalter unter Mehr › WebUntis |
 | WU3 | **Doppelsteckung:** beide Lehrkräfte dürfen Abwesenheiten eintragen, meist ist eine verantwortlich; Klassenliste kommt aus Einträgen aller Lehrkräfte der Stunde | K | 1 | S | im Prototyp (PR #15) |
 
+## Aus dem Feedback vom 28.11.2026 (Kalender und Wochenplan)
+
+| # | Punkt | Herkunft | Prio | Aufwand | Status |
+|---|---|---|---|---|---|
+| KW1 | Kalender als eigener Reiter in der linken Navigation | K | 1 | S | Entwurf (E125) |
+| KW2 | Stundenplan springt nach Tagesende/Wochenende zum nächsten Unterrichtstag, Woche dazu | K | 1 | S | Entwurf (E125) |
+| KW3 | Wochenplan: Tag und Datum größer, Klick öffnet Tagesansicht, Tagesbalken nach Uhrzeit | K | 1 | S | Entwurf (E125) |
+| KW4 | Klasse an Terminen anzeigen, z. B. „Prüfung IT-Systeme (andere Lehrkraft) · KA25-i“ | K | 1 | S | Entwurf (E125) |
+| KW5 | Schülerzahl in Klammern: „Schüler (24)“ | K | 2 | S | Entwurf (E125) |
+| KW6 | Wochenraster auf dem Handy: automatisch zum heutigen Tag scrollen | C | 3 | S | offen |
+
 ## Offen
 
 | # | Punkt | Herkunft | Prio |
